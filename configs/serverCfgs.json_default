@@ -1,0 +1,19 @@
+{
+    "servers":{
+        "Sky":{
+          "invocation":"java -server -Xmx6G -Xms4G -XX:+UseConcMarkSweepGC -XX:+ExplicitGCInvokesConcurrent -Djava.net.preferIPv4Stack=true -jar Sky.jar",
+          "backup":true,
+          "worldname":"world",
+          "promotecmd":"lp user {player} parent add {rank}",
+          "demotecmd":"lp user {player} parent set {rank}"
+        }
+    },
+    "serverspath":"/home/Servers",
+    "backupspath":"/backups/Servers",
+    "keepbackspath":"/backups/sendToVps",
+    "oldTimer":"1440",
+    "restartCountdowns":{
+      "default":["10m","3m","1m","10s","5s"],
+      "5Min":["5m","3m","1m","30s","10s","5s"]
+    }
+}
