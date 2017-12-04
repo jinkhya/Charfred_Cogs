@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 from discord.ext import commands
 import asyncio
 import os
@@ -103,22 +101,24 @@ class serverCmds:
                 cntd = self.servercfg['restartCountdowns']['default']
             steps = []
             for i, step in enumerate(cntd):
-                s = self.countpat(step)
+                s = self.countpat.search(step)
                 if s.group('minutes'):
-                    time = int(s.group('time')) * 60
+                    time = int(s.group('time'))
+                    secs = time * 60
                     unit = 'minutes'
                 else:
                     time = int(s.group('time'))
+                    secs = time
                     unit = 'seconds'
                 if i + 1 > len(cntd) - 1:
-                    steps.append((time, time, unit))
+                    steps.append((time, secs, unit))
                 else:
-                    st = self.countpat(cntd[i + 1])
+                    st = self.countpat.search(cntd[i + 1])
                     if st.group('minutes'):
                         t = int(st.group('time')) * 60
                     else:
                         t = int(st.group('time'))
-                    steps.append((time, time - t, unit))
+                    steps.append((time, secs - t, unit))
             for step in steps:
                 await sendCmds(
                     self.loop,
@@ -128,7 +128,7 @@ class serverCmds:
                     'title @a title {\"text\":\"Restarting\", \"bold\":true}',
                     f'broadcast Restarting in {step[0]} {step[2]}!'
                 )
-                await ctx.send(f'Restarting {server} in {step[0]} {step[2]}')
+                await ctx.send(f'Restarting {server} in {step[0]} {step[2]}!')
                 await asyncio.sleep(step[1], loop=self.loop)
             await sendCmd(
                 self.loop,
@@ -236,9 +236,9 @@ class serverCmds:
     @config.command(name='list')
     async def _list(self, ctx, server: str):
         if server not in self.servercfg['servers']:
-            ctx.send(f'No configurations for {server} listed!')
+            await ctx.send(f'No configurations for {server} listed!')
             return
-        ctx.send(f'Configuration entries for {server}:\n')
+        await ctx.send(f'Configuration entries for {server}:\n')
         for k, v in self.servercfg['servers'][server].items():
             ctx.send(f'{k}: {v}\n')
 
@@ -291,6 +291,8 @@ class serverCmds:
             await ctx.send(f'Configurations for {server} have been deleted!')
         else:
             await ctx.send(f'Deletion of configurations aborted!')
+
+# TODO: Ability to change other settings in serverCfg.json, either here or charwizard
 
 
 def setup(bot):

@@ -84,6 +84,7 @@ class gearbox:
         else:
             await ctx.send(f'Could not reload \"{cogname}\"!')
 
+    # NOTE: Raises RuntimeError: dictionary changed size during iteration!
     @cog.command(name='reinitiate')
     @commands.is_owner()
     async def reinitiatecogs(self, ctx):

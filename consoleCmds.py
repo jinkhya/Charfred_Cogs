@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 from discord.ext import commands
 import logging
 from .utils.config import Config
@@ -23,8 +21,8 @@ class consoleCmds:
 
     @player.group()
     @has_permission('whitelist')
-    async def whitelist(self, ctx, player: str):
-        if ctx.invoked_subcommand is None:
+    async def whitelist(self, ctx, player: str=None):
+        if ctx.invoked_subcommand is None and player is not None:
             ctx.invoke(self.add, player)
 
     @whitelist.command()
