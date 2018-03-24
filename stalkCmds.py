@@ -64,14 +64,14 @@ class stalkCmds:
                 )
                 if mcU.demo:
                     reportCard.add_field(
-						name="__**DEMO ACCOUNT**__",
-						value="Watch out for this!"
-					)
+			name="__**DEMO ACCOUNT**__",
+			value="Watch out for this!"
+		    )
                 if mcU.legacy:
                     reportCard.add_field(
-						name="*Legacy*",
-						value="This guy is old-school!"
-					)
+			name="*Legacy*",
+			value="This guy is old-school!"
+		    )
                 if mcU.nameHistory is not None:
                     pastNames = ', '.join(mcU.nameHistory)
                     reportCard.add_field(name="Past names:",
