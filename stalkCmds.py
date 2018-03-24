@@ -63,9 +63,15 @@ class stalkCmds:
                     value="```\n" + mcU.uuid + "\n```"
                 )
                 if mcU.demo:
-                    reportCard.add_field(name="__**DEMO ACCOUNT**__")
+                    reportCard.add_field(
+						name="__**DEMO ACCOUNT**__",
+						value="Watch out for this!"
+					)
                 if mcU.legacy:
-                    reportCard.add_field(name="*Legacy*")
+                    reportCard.add_field(
+						name="*Legacy*",
+						value="This guy is old-school!"
+					)
                 if mcU.nameHistory is not None:
                     pastNames = ', '.join(mcU.nameHistory)
                     reportCard.add_field(name="Past names:",
