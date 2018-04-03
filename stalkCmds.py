@@ -30,55 +30,53 @@ class stalkCmds:
             except mojException as e:
                 log.warning(e.message)
                 reportCard = discord.Embed(
-                    title="ERROR",
+                    title="Error fetching user from Mojang",
                     type="rich",
                     colour=discord.Colour.dark_red()
                 )
                 await sendEmbed(ctx, reportCard)
-            else:
-                # TODO: All this else stuff doesn't get executed if user is retrieved from stalkdict (dummy)
-                reportCard = discord.Embed(
-                    title="__Subject: " + mcU.name + "__",
-                    url='http://mcbouncer.com/u/' + mcU.uuid,
-                    type='rich',
-                    color=0x0080c0
-                )
-                reportCard.set_author(
-                    name="Classified Report",
-                    url='https://google.com/search?q=minecraft%20' +
-                    mcU.name,
-                    icon_url='https://crafatar.com/avatars/' +
-                    mcU.uuid
-                )
-                reportCard.set_thumbnail(
-                    url='https://crafatar.com/renders/head/' +
-                    mcU.uuid + '?overlay'
-                )
-                reportCard.add_field(
-                    name="Current Name:",
-                    value="```\n" + mcU.name + "\n```"
-                )
-                reportCard.add_field(
-                    name="UUID:",
-                    value="```\n" + mcU.uuid + "\n```"
-                )
-                if mcU.demo:
-                    reportCard.add_field(
-			name="__**DEMO ACCOUNT**__",
-			value="Watch out for this!"
-		    )
-                if mcU.legacy:
-                    reportCard.add_field(
-			name="*Legacy*",
-			value="This guy is old-school!"
-		    )
-                if mcU.nameHistory is not None:
-                    pastNames = ', '.join(mcU.nameHistory)
-                    reportCard.add_field(name="Past names:",
-                                         value=pastNames)
-                reportCard.set_footer(text="Report compiled by Agent Charfred")
-                log.info('Sent Reportcard.')
-                await sendEmbed(ctx, reportCard)
+        reportCard = discord.Embed(
+            title="__Subject: " + mcU.name + "__",
+            url='http://mcbouncer.com/u/' + mcU.uuid,
+            type='rich',
+            color=0x0080c0
+        )
+        reportCard.set_author(
+            name="Classified Report",
+            url='https://google.com/search?q=minecraft%20' +
+            mcU.name,
+            icon_url='https://crafatar.com/avatars/' +
+            mcU.uuid
+        )
+        reportCard.set_thumbnail(
+            url='https://crafatar.com/renders/head/' +
+            mcU.uuid + '?overlay'
+        )
+        reportCard.add_field(
+            name="Current Name:",
+            value="```\n" + mcU.name + "\n```"
+        )
+        reportCard.add_field(
+            name="UUID:",
+            value="```\n" + mcU.uuid + "\n```"
+        )
+        if mcU.demo:
+            reportCard.add_field(
+                name="__**DEMO ACCOUNT**__",
+                value="Watch out for this!"
+            )
+        if mcU.legacy:
+            reportCard.add_field(
+                name="*Legacy*",
+                value="This guy is old-school!"
+            )
+        if mcU.nameHistory is not None:
+            pastNames = ', '.join(mcU.nameHistory)
+            reportCard.add_field(name="Past names:",
+                                 value=pastNames)
+        reportCard.set_footer(text="Report compiled by Agent Charfred")
+        log.info('Sent Reportcard.')
+        await sendEmbed(ctx, reportCard)
 
 
 def setup(bot):
