@@ -62,10 +62,10 @@ class stalkCmds:
         )
         reportCard.add_field(
             name="Links!:",
-            value=f"https://www.mcbans.com/player/{mcU.name}/\n"
-            f"https://minecraft-statistic.net/en/player/{mcU.name}.html\n"
-            f"http://mcbouncer.com/u/{mcU.uuid}"
-            f"https://google.com/search?q=minecraft%20{mcU.name}"
+            value=f"[MCBans](https://www.mcbans.com/player/{mcU.name}/)\n"
+            f"[Statistic](https://minecraft-statistic.net/en/player/{mcU.name}.html)\n"
+            f"[MCBouncer](http://mcbouncer.com/u/{mcU.uuid})\n"
+            f"[Google](https://google.com/search?q=minecraft%20{mcU.name})"
         )
         if mcU.demo:
             reportCard.add_field(
