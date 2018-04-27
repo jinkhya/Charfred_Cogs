@@ -88,7 +88,7 @@ class gearbox:
     @cog.command(name='reinitiate')
     @commands.is_owner()
     async def reinitiatecogs(self, ctx):
-        for cog in self.bot.extensions:
+        for cog in list(self.bot.extensions):
             self._unload(cog)
         for cog in self.cogfig['cogs']:
             self._load(cog)
@@ -103,7 +103,7 @@ class gearbox:
     @cog.command(name='remove')
     @commands.is_owner()
     async def removecog(self, ctx, cogname: str):
-        del self.config['cogs'][cogname]
+        del self.cogfig['cogs'][cogname]
         await self.cogfig.save()
         await ctx.send(f'\"{cogname}\" will no longer be loaded automatically.')
 
