@@ -30,11 +30,12 @@ class stalkCmds:
             except mojException as e:
                 log.warning(e.message)
                 reportCard = discord.Embed(
-                    title="Error fetching user from Mojang",
+                    title=e.message,
                     type="rich",
                     colour=discord.Colour.dark_red()
                 )
                 await sendEmbed(ctx, reportCard)
+                return
         reportCard = discord.Embed(
             title="__Subject: " + mcU.name + "__",
             url='http://mcbouncer.com/u/' + mcU.uuid,
