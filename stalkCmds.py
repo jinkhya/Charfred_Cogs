@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 import discord
 import logging
 from ttldict import TTLOrderedDict

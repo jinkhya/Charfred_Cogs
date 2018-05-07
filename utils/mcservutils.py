@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 import psutil
 import asyncio
 import logging
