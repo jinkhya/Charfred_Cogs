@@ -53,7 +53,7 @@ class crashReporter:
             return
         report = stdout.decode().strip().split('\n\n')
         for paragraph in report:
-            if paragraph.len() >= 1800:
+            if len(paragraph) >= 1800:
                 await ctx.send(f'```{paragraph[:1800]}\n'
                                'Additional lines have been cut off, because they suck!```')
             else:
