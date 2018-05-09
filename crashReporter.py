@@ -51,10 +51,13 @@ class crashReporter:
         else:
             log.warning('Failed to retrieve report!')
             return
-        report = stdout.decode().strip()
-        report = report.split('\n\n')
+        report = stdout.decode().strip().split('\n\n')
         for paragraph in report:
-            await ctx.send(f'```{paragraph}```')
+            if paragraph.len() >= 1800:
+                await ctx.send(f'```{paragraph[:1800]}\n'
+                               'Additional lines have been cut off, because they suck!```')
+            else:
+                await ctx.send(f'```{paragraph}```')
             await asyncio.sleep(1, loop=self.bot.loop)
 
 
