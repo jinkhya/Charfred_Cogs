@@ -59,3 +59,6 @@ class crashReporter:
 
 def setup(bot):
     bot.add_cog(crashReporter(bot))
+
+
+permissionNodes = ['crashreport']
