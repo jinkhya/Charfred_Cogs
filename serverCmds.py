@@ -259,7 +259,7 @@ class serverCmds:
         if r not in self.servercfg['servers'][server]:
             await ctx.send(f'{r.content.lower()} is not a valid entry!')
             return
-        await ctx.send(f'Please enter the new value for {r.content}:')
+        await ctx.send(f'Please enter the new value for {r}:')
         r2 = await self.bot.wait_for('message', check=check, timeout=120)
         await ctx.send(f'You have entered the following for {server}:\n' +
                        f'{r}: {r2.content}\n' +

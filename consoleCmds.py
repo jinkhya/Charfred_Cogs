@@ -17,12 +17,14 @@ class consoleCmds:
     @commands.guild_only()
     async def player(self, ctx):
         if ctx.invoked_subcommand is None:
+            log.info('Invoked \'player\' cmd without subcommand!')
             pass
 
     @player.group()
     @has_permission('whitelist')
     async def whitelist(self, ctx, player: str=None):
         if ctx.invoked_subcommand is None and player is not None:
+            log.info(f'Trying to whitelist {player}!')
             ctx.invoke(self.add, player)
 
     @whitelist.command()
