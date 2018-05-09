@@ -54,7 +54,7 @@ class gearbox:
             log.info(f'\"{cog}\" reloaded!')
             return True
 
-    @commands.group(hidden=True, aliases=['gear', 'extension'])
+    @commands.group(hidden=True, aliases=['gear', 'extension', 'cogs'])
     @commands.is_owner()
     async def cog(self, ctx):
         if ctx.invoked_subcommand is None:
