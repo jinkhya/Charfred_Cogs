@@ -54,7 +54,8 @@ class crashReporter:
         report = stdout.decode().strip()
         report = report.split('\n\n')
         for paragraph in report:
-            await sendReply(ctx, f'```{paragraph}```')
+            await ctx.send(f'```{paragraph}```')
+            await asyncio.sleep(1, loop=self.bot.loop)
 
 
 def setup(bot):
