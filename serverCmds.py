@@ -29,6 +29,10 @@ class serverCmds:
     @server.command(aliases=['failsafe'])
     @has_permission('start')
     async def start(self, ctx, server: str):
+        if server not in self.servercfg['servers']:
+            log.warning(f'{server} has been misspelled or not configured!')
+            await ctx.send(f'{server} has been misspelled or not configured!')
+            return
         if isUp(server):
             log.info(f'{server} appears to be running already!')
             await ctx.send(f'{server} appears to be running already!')
@@ -55,6 +59,10 @@ class serverCmds:
     @server.command()
     @has_permission('stop')
     async def stop(self, ctx, server: str):
+        if server not in self.servercfg['servers']:
+            log.warning(f'{server} has been misspelled or not configured!')
+            await ctx.send(f'{server} has been misspelled or not configured!')
+            return
         if isUp(server):
             log.info(f'Stopping {server}...')
             await ctx.send(f'Stopping {server}')
@@ -86,6 +94,10 @@ class serverCmds:
     @server.command()
     @has_permission('restart')
     async def restart(self, ctx, server: str, countdown: str=None):
+        if server not in self.servercfg['servers']:
+            log.warning(f'{server} has been misspelled or not configured!')
+            await ctx.send(f'{server} has been misspelled or not configured!')
+            return
         if isUp(server):
             if countdown:
                 if countdown not in self.servercfg['restartCountdowns']:
@@ -174,6 +186,10 @@ class serverCmds:
     @server.command()
     @has_permission('status')
     async def status(self, ctx, server: str):
+        if server not in self.servercfg['servers']:
+            log.warning(f'{server} has been misspelled or not configured!')
+            await ctx.send(f'{server} has been misspelled or not configured!')
+            return
         if isUp(server):
             log.info(f'{server} is running.')
             await ctx.send(f'{server} is running.')
@@ -184,6 +200,10 @@ class serverCmds:
     @server.command()
     @has_permission('terminate')
     async def terminate(self, ctx, server: str):
+        if server not in self.servercfg['servers']:
+            log.warning(f'{server} has been misspelled or not configured!')
+            await ctx.send(f'{server} has been misspelled or not configured!')
+            return
         if termProc(server):
             log.info(f'Terminating {server}.')
             await ctx.send(f'Terminating {server}.')
