@@ -110,7 +110,7 @@ class consoleCmds:
     @commands.guild_only()
     @has_permission('relay')
     async def relay(self, ctx, server: str, command: str):
-        """Replays a command to a servers\' console.
+        """Relays a command to a servers\' console.
 
         Takes a servername and a command, in that order.
         If your command is not just one word, wrap it in \"\"

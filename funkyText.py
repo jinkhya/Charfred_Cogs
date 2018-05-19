@@ -52,6 +52,11 @@ class funkyText:
 
     @funky.command()
     async def zalgo(self, ctx, amount: int, *, text: str):
+        """Zalgofy some text.
+
+        Takes a number for the amount and some text.
+        """
+
         zalgo = []
 
         for char in text:
@@ -71,6 +76,11 @@ class funkyText:
 
     @funky.command()
     async def figlet(self, ctx, fnt: str, *, text: str):
+        """Apply a figlet font to some text.
+
+        Takes a fontname and some text.
+        """
+
         try:
             log.info('Figyfy!')
             fig = Figlet(font=fnt)
@@ -86,7 +96,7 @@ class funkyText:
                 log.warning('Couldn\'t delete msg!')
                 pass
             finally:
-                await ctx.send(figText)
+                await ctx.send(f'```\n{figText}\n```')
 
 
 def setup(bot):
