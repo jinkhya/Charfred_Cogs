@@ -24,6 +24,13 @@ class moderation:
                     message.delete()
                 except discord.Forbidden:
                     message.add_reaction(':poop:')
+        else:
+            if message.author.status is discord.Status.offline:
+                message.add_reaction(':poop:')
+
+
+def setup(bot):
+    bot.add_cog(moderation(bot))
 
 
 permissionNodes = {

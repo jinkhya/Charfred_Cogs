@@ -63,6 +63,8 @@ class gearbox:
     @cog.command(name='load')
     @commands.is_owner()
     async def loadcog(self, ctx, cogname: str):
+        """Load a cog."""
+
         if self._load(cogname):
             await ctx.send(f'\"{cogname}\" loaded!')
         else:
@@ -71,6 +73,8 @@ class gearbox:
     @cog.command(name='unload')
     @commands.is_owner()
     async def unloadcog(self, ctx, cogname: str):
+        """Unload a cog."""
+
         if self._unload(cogname):
             await ctx.send(f'\"{cogname}\" unloaded!')
         else:
@@ -79,6 +83,8 @@ class gearbox:
     @cog.command(name='reload')
     @commands.is_owner()
     async def reloadcog(self, ctx, cogname: str):
+        """Reload a cog."""
+
         if self._reload(cogname):
             await ctx.send(f'\"{cogname}\" reloaded!')
         else:
@@ -90,6 +96,12 @@ class gearbox:
     @cog.command(name='reinitiate')
     @commands.is_owner()
     async def reinitiatecogs(self, ctx):
+        """One-off reload of all cogs.
+
+        Won\'t reload the gearbox, so this is a
+        one-time per bot-uptime use! (workin on it)
+        """
+
         for cog in list(self.bot.extensions):
             self._unload(cog)
         for cog in self.cogfig['cogs']:
@@ -98,6 +110,8 @@ class gearbox:
     @cog.command(name='add')
     @commands.is_owner()
     async def addcog(self, ctx, cogname: str):
+        """Adds a cog to be loaded automatically in the future."""
+
         self.cogfig['cogs'].append(cogname)
         await self.cogfig.save()
         await ctx.send(f'\"{cogname}\" will now be loaded automatically.')
@@ -105,6 +119,8 @@ class gearbox:
     @cog.command(name='remove')
     @commands.is_owner()
     async def removecog(self, ctx, cogname: str):
+        """Removes a cog from being loaded automatically in the future."""
+
         del self.cogfig['cogs'][cogname]
         await self.cogfig.save()
         await ctx.send(f'\"{cogname}\" will no longer be loaded automatically.')

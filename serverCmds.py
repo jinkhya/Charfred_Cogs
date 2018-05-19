@@ -29,6 +29,8 @@ class serverCmds:
     @server.command(aliases=['failsafe'])
     @has_permission('start')
     async def start(self, ctx, server: str):
+        """Start a server."""
+
         if server not in self.servercfg['servers']:
             log.warning(f'{server} has been misspelled or not configured!')
             await ctx.send(f'{server} has been misspelled or not configured!')
@@ -59,6 +61,8 @@ class serverCmds:
     @server.command()
     @has_permission('stop')
     async def stop(self, ctx, server: str):
+        """Stop a server."""
+
         if server not in self.servercfg['servers']:
             log.warning(f'{server} has been misspelled or not configured!')
             await ctx.send(f'{server} has been misspelled or not configured!')
@@ -94,6 +98,12 @@ class serverCmds:
     @server.command()
     @has_permission('restart')
     async def restart(self, ctx, server: str, countdown: str=None):
+        """Restart a server with a countdown.
+
+        Takes a servername and optionally the name
+        of a pre-configured countdown.
+        """
+
         if server not in self.servercfg['servers']:
             log.warning(f'{server} has been misspelled or not configured!')
             await ctx.send(f'{server} has been misspelled or not configured!')
@@ -186,6 +196,8 @@ class serverCmds:
     @server.command()
     @has_permission('status')
     async def status(self, ctx, server: str):
+        """Queries the status of a server."""
+
         if server not in self.servercfg['servers']:
             log.warning(f'{server} has been misspelled or not configured!')
             await ctx.send(f'{server} has been misspelled or not configured!')
@@ -200,6 +212,8 @@ class serverCmds:
     @server.command()
     @has_permission('terminate')
     async def terminate(self, ctx, server: str):
+        """Terminates a serverprocess forcefully."""
+
         if server not in self.servercfg['servers']:
             log.warning(f'{server} has been misspelled or not configured!')
             await ctx.send(f'{server} has been misspelled or not configured!')
@@ -219,6 +233,8 @@ class serverCmds:
 
     @config.command()
     async def add(self, ctx, server: str):
+        """Interactively add a server configuration."""
+
         if server in self.servercfg['servers']:
             await ctx.send(f'{server} is already listed!')
             return
@@ -255,6 +271,8 @@ class serverCmds:
 
     @config.command(name='list')
     async def _list(self, ctx, server: str):
+        """Lists all configurations for a given server."""
+
         if server not in self.servercfg['servers']:
             await ctx.send(f'No configurations for {server} listed!')
             return
@@ -264,6 +282,8 @@ class serverCmds:
 
     @config.command()
     async def edit(self, ctx, server: str):
+        """Interactively edit the configurations for a given server."""
+
         if server not in self.servercfg['servers']:
             await ctx.send(f'No configurations for {server} listed!')
             return
@@ -294,6 +314,8 @@ class serverCmds:
 
     @config.command()
     async def delete(self, ctx, server: str):
+        """Delete the configuration of a given server."""
+
         if server not in self.servercfg['servers']:
             await ctx.send(f'Nothing to delete for {server}!')
             return

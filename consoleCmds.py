@@ -27,6 +27,8 @@ class consoleCmds:
 
     @whitelist.command()
     async def add(self, ctx, player: str):
+        """Add a player to the whitelist."""
+
         msg = ['Command Log', '==========']
         for server in self.servercfg['servers']:
             if isUp(server):
@@ -40,6 +42,8 @@ class consoleCmds:
 
     @whitelist.command()
     async def remove(self, ctx, player: str):
+        """Remove a player from the whitelist."""
+
         msg = ['Command Log', '==========']
         for server in self.servercfg['servers']:
             if isUp(server):
@@ -54,6 +58,8 @@ class consoleCmds:
     @whitelist.command()
     @has_permission('whitelistcheck')
     async def check(self, ctx, player: str):
+        """Check if a player is on the whitelist."""
+
         msg = ['Command Log', '==========']
         for server in self.servercfg['servers']:
             with open(
@@ -68,6 +74,11 @@ class consoleCmds:
     @player.command()
     @has_permission('kick')
     async def kick(self, ctx, server: str, player: str):
+        """Kick a player from a specified server.
+
+        Takes a servername and playername, in that order.
+        """
+
         msg = ['Command Log', '==========']
         if isUp(server):
             log.info(f'Kicking {player} from {server}.')
@@ -80,6 +91,8 @@ class consoleCmds:
     @player.command()
     @has_permission('ban')
     async def ban(self, ctx, player: str):
+        """Bans a player, and unwhitelists just to be safe."""
+
         msg = ['Command Log', '==========']
         for server in self.servercfg['servers']:
             if isUp(server):
@@ -97,6 +110,12 @@ class consoleCmds:
     @commands.guild_only()
     @has_permission('relay')
     async def relay(self, ctx, server: str, command: str):
+        """Replays a command to a servers\' console.
+
+        Takes a servername and a command, in that order.
+        If your command is not just one word, wrap it in \"\"
+        """
+
         msg = ['Command Log', '==========']
         if isUp(server):
             log.info(f'Relaying \"{command}\" to {server}.')

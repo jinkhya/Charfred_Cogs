@@ -17,6 +17,11 @@ class stalkCmds:
     @commands.cooldown(60, 60)
     @has_permission('stalk')
     async def stalk(self, ctx, lookupName: str):
+        """Fetch some incriminatory information on a player.
+
+        Gets info such as UUID, past-names and avatar.
+        """
+
         log.info(f'Stalking \"{lookupName}\"...')
         if lookupName in self.stalkdict.keys():
             mcU = self.stalkdict.get(lookupName)
