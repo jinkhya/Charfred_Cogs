@@ -278,7 +278,7 @@ class serverCmds:
             return
         await ctx.send(f'Configuration entries for {server}:\n')
         for k, v in self.servercfg['servers'][server].items():
-            ctx.send(f'{k}: {v}\n')
+            await ctx.send(f'{k}: {v}\n')
 
     @config.command()
     async def edit(self, ctx, server: str):
