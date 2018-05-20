@@ -15,13 +15,18 @@ class consoleCmds:
 
     @commands.group()
     @commands.guild_only()
+    @has_permission('whitelistcheck')
     async def player(self, ctx):
+        """Command group providing Minecraft player management commands."""
+
         if ctx.invoked_subcommand is None:
             pass
 
     @player.group()
     @has_permission('whitelist')
     async def whitelist(self, ctx):
+        """Command group providing Minecraft player whitelisting commands."""
+
         if ctx.invoked_subcommand is None:
             pass
 
@@ -136,4 +141,4 @@ def setup(bot):
 
 
 permissionNodes = ['whitelist', 'whitelistcheck', 'kick', 'ban',
-                   'promote', 'demote', 'relay']
+                   'relay']
