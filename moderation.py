@@ -21,12 +21,12 @@ class moderation:
             if message.author.status is discord.Status.offline:
                 await message.author.send(f'Don\'t be rude! Go online before you post!')
                 try:
-                    message.delete()
+                    await message.delete()
                 except discord.Forbidden:
-                    message.add_reaction(':poop:')
+                    await message.add_reaction(':poop:')
         else:
             if message.author.status is discord.Status.offline:
-                message.add_reaction(':poop:')
+                await message.add_reaction(':poop:')
 
 
 def setup(bot):
