@@ -121,9 +121,17 @@ class gearbox:
     async def removecog(self, ctx, cogname: str):
         """Removes a cog from being loaded automatically in the future."""
 
-        del self.cogfig['cogs'][cogname]
+        self.cogfig['cogs'].remove(cogname)
         await self.cogfig.save()
         await ctx.send(f'\"{cogname}\" will no longer be loaded automatically.')
+
+    @cog.command(name='list')
+    @commands.is_owner()
+    async def listcogs(self, ctx):
+        """Lists all cogs to be loaded automatically."""
+
+        cogList = ', '.join(self.cogfig['cogs'])
+        await ctx.send(f'Cogs being loaded on startup: `{cogList}`')
 
 
 def setup(bot):
