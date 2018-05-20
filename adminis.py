@@ -17,8 +17,8 @@ class adminis:
         of all current prefixes.
         """
         if ctx.invoked_subcommand is None:
-            prefixes = self.botCfg['prefixes']
-            await ctx.send(f'Current prefixes: `{print(prefixes)}`')
+            prefixes = ' '.join(self.botCfg['prefixes'])
+            await ctx.send(f'Current prefixes: `{prefixes}`')
 
     @prefix.command(hidden=True)
     @commands.is_owner()
