@@ -18,7 +18,8 @@ class adminis:
         """
         if ctx.invoked_subcommand is None:
             prefixes = ' '.join(self.botCfg['prefixes'])
-            await ctx.send(f'Current prefixes: `{prefixes}`')
+            await ctx.send(f'Current prefixes: `{prefixes}`\n'
+                           'Mentioning \@Charfred works too!')
 
     @prefix.command(hidden=True)
     @commands.is_owner()
