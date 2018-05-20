@@ -23,10 +23,10 @@ class moderation:
                 try:
                     await message.delete()
                 except discord.Forbidden:
-                    await message.add_reaction(':poop:')
+                    await message.add_reaction('\N{PILE OF POO}')
         else:
             if message.author.status is discord.Status.offline:
-                await message.add_reaction(':poop:')
+                await message.add_reaction('\N{PILE OF POO}')
 
 
 def setup(bot):
