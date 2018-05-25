@@ -3,7 +3,7 @@ import os
 import glob
 import asyncio
 import logging
-from .utils.discoutils import has_permission, sendReply
+from ..utils.discoutils import has_permission, sendReply
 
 log = logging.getLogger('charfred')
 

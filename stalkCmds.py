@@ -2,8 +2,8 @@ import discord
 import logging
 from ttldict import TTLOrderedDict
 from discord.ext import commands
-from .utils.discoutils import has_permission, sendEmbed
-from .utils.mcuser import MCUser, mojException
+from ..utils.discoutils import has_permission, sendEmbed
+from ..utils.mcuser import MCUser, mojException
 
 log = logging.getLogger('charfred')
 

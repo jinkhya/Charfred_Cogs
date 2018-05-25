@@ -3,9 +3,9 @@ import asyncio
 import os
 import re
 import logging
-from .utils.config import Config
-from .utils.discoutils import has_permission
-from .utils.mcservutils import isUp, termProc, sendCmd, sendCmds
+from ..utils.config import Config
+from ..utils.discoutils import has_permission
+from ..utils.mcservutils import isUp, termProc, sendCmd, sendCmds
 
 log = logging.getLogger('charfred')
 
@@ -339,8 +339,8 @@ class serverCmds:
 
 def setup(bot):
     if not hasattr(bot, 'servercfg'):
-        bot.servercfg = Config(f'{bot.dir}/cogs/configs/serverCfgs.json',
-                               default=f'{bot.dir}/cogs/configs/serverCfgs.json_default',
+        bot.servercfg = Config(f'{bot.dir}/configs/serverCfgs.json',
+                               default=f'{bot.dir}/configs/serverCfgs.json_default',
                                load=True, loop=bot.loop)
     bot.add_cog(serverCmds(bot))
 
