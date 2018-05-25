@@ -2,9 +2,9 @@ from discord.ext import commands
 import re
 import json
 import logging
-from ..utils.config import Config
-from ..utils.discoutils import has_permission, sendReply_codeblocked, sendReply
-from ..utils.mcservutils import isUp, sendCmd
+from utils.config import Config
+from utils.discoutils import has_permission, sendReply_codeblocked, sendReply
+from utils.mcservutils import isUp, sendCmd
 
 log = logging.getLogger('charfred')
 

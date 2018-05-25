@@ -3,9 +3,9 @@ import asyncio
 import os
 import re
 import logging
-from ..utils.config import Config
-from ..utils.discoutils import has_permission
-from ..utils.mcservutils import isUp, termProc, sendCmd, sendCmds
+from utils.config import Config
+from utils.discoutils import has_permission
+from utils.mcservutils import isUp, termProc, sendCmd, sendCmds
 
 log = logging.getLogger('charfred')
 
