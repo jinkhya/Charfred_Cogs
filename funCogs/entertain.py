@@ -28,6 +28,12 @@ class entertain:
             await step.edit(content=move)
             await asyncio.sleep(2, loop=self.loop)
 
+    @commands.command()
+    async def tableflip(self, ctx):
+        unflipped = await ctx.send(u"(ಠ_ಠ) ┳━┳")
+        await asyncio.sleep(2, loop=self.loop)
+        await unflipped.edit(content=u"(╯ಠ_ಠ)╯︵┻━┻")
+
 
 def setup(bot):
     bot.add_cog(entertain(bot))
