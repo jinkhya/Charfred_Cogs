@@ -19,7 +19,7 @@ class entertain:
         self.bot = bot
         self.loop = bot.loop
 
-    @commands.command()
+    @commands.command(aliases=['partytime'])
     async def dance(self, ctx):
         dance = random.choice(dances)
         step = await ctx.send(dance[0])
@@ -28,7 +28,7 @@ class entertain:
             await step.edit(content=move)
             await asyncio.sleep(2, loop=self.loop)
 
-    @commands.command()
+    @commands.command(aliases=['flip', 'table'])
     async def tableflip(self, ctx):
         unflipped = await ctx.send(u"(ಠ_ಠ) ┳━┳")
         await asyncio.sleep(2, loop=self.loop)
