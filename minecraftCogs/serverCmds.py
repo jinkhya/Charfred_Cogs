@@ -219,11 +219,11 @@ class serverCmds:
             await ctx.send(f'{server} has been misspelled or not configured!')
             return
         if termProc(server):
-            log.info(f'Terminating {server}.')
-            await ctx.send(f'Terminating {server}.')
+            log.info(f'Terminated {server}.')
+            await ctx.send(f'Terminated {server}.')
         else:
-            log.info(f'Could not terminate, {server} process not found.')
-            await ctx.send(f'Could not terminate, {server} process not found.')
+            log.info(f'Could not terminate {server}!')
+            await ctx.send(f'Could not terminate {server}!')
 
     @server.group()
     @has_permission('management')
