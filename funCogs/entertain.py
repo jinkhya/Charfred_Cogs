@@ -24,7 +24,7 @@ class entertain:
         dance = random.choice(dances)
         step = await ctx.send(dance[0])
         for move in dance[1]:
-            await step.edit(move)
+            await step.edit(content=move)
             await asyncio.sleep(2, loop=self.loop)
 
 
