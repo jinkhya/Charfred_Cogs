@@ -3,7 +3,7 @@ import re
 import json
 import logging
 from utils.config import Config
-from utils.discoutils import has_permission, sendReply_codeblocked, sendReply
+from utils.discoutils import permissionNode, sendReply_codeblocked, sendReply
 from .utils.mcservutils import isUp, sendCmd
 
 log = logging.getLogger('charfred')
@@ -21,7 +21,7 @@ class customs:
 
     @commands.group(hidden=True, aliases=['cc'])
     @commands.guild_only()
-    @has_permission('custom')
+    @permissionNode('custom')
     async def custom(self, ctx):
         if ctx.invoked_subcommand is None and ctx.subcommand_passed is not None:
             if ctx.subcommand_passed in self.customcmds and len(ctx.args) >= 2:

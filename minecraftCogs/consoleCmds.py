@@ -1,7 +1,7 @@
 from discord.ext import commands
 import logging
 from utils.config import Config
-from utils.discoutils import sendReply_codeblocked, has_permission
+from utils.discoutils import sendReply_codeblocked, permissionNode
 from .utils.mcservutils import isUp, sendCmd
 
 log = logging.getLogger('charfred')
@@ -15,7 +15,7 @@ class consoleCmds:
 
     @commands.group()
     @commands.guild_only()
-    @has_permission('whitelistcheck')
+    @permissionNode('whitelistcheck')
     async def player(self, ctx):
         """Command group providing Minecraft player management commands."""
 
@@ -23,7 +23,7 @@ class consoleCmds:
             pass
 
     @player.group()
-    @has_permission('whitelist')
+    @permissionNode('whitelist')
     async def whitelist(self, ctx):
         """Command group providing Minecraft player whitelisting commands."""
 
@@ -61,7 +61,7 @@ class consoleCmds:
         await sendReply_codeblocked(ctx, '\n'.join(msg))
 
     @whitelist.command()
-    @has_permission('whitelistcheck')
+    @permissionNode('whitelistcheck')
     async def check(self, ctx, player: str):
         """Check if a player is on the whitelist."""
 
@@ -77,7 +77,7 @@ class consoleCmds:
         await sendReply_codeblocked(ctx, '\n'.join(msg))
 
     @player.command()
-    @has_permission('kick')
+    @permissionNode('kick')
     async def kick(self, ctx, server: str, player: str):
         """Kick a player from a specified server.
 
@@ -94,7 +94,7 @@ class consoleCmds:
         await sendReply_codeblocked(ctx, '\n'.join(msg))
 
     @player.command()
-    @has_permission('ban')
+    @permissionNode('ban')
     async def ban(self, ctx, player: str):
         """Bans a player, and unwhitelists just to be safe."""
 
@@ -113,7 +113,7 @@ class consoleCmds:
 
     @commands.command(aliases=['pass'])
     @commands.guild_only()
-    @has_permission('relay')
+    @permissionNode('relay')
     async def relay(self, ctx, server: str, command: str):
         """Relays a command to a servers\' console.
 

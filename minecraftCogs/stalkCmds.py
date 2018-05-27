@@ -2,7 +2,7 @@ import discord
 import logging
 from ttldict import TTLOrderedDict
 from discord.ext import commands
-from utils.discoutils import has_permission, sendEmbed
+from utils.discoutils import permissionNode, sendEmbed
 from .utils.mcuser import MCUser, mojException
 
 log = logging.getLogger('charfred')
@@ -15,7 +15,7 @@ class stalkCmds:
 
     @commands.command(aliases=['backgroundcheck', 'check', 'creep'])
     @commands.cooldown(60, 60)
-    @has_permission('stalk')
+    @permissionNode('stalk')
     async def stalk(self, ctx, lookupName: str):
         """Fetch some incriminatory information on a player.
 

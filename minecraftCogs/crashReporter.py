@@ -3,7 +3,7 @@ import os
 import glob
 import asyncio
 import logging
-from utils.discoutils import has_permission, sendReply
+from utils.discoutils import permissionNode, sendReply
 
 log = logging.getLogger('charfred')
 
@@ -15,7 +15,7 @@ class crashReporter:
 
     @commands.command(aliases=['report', 'crashreports'])
     @commands.guild_only()
-    @has_permission('crashreport')
+    @permissionNode('crashreport')
     async def crashreport(self, ctx, server: str, age: int=None):
         """Retrieves the last crashreport for the given server.
 

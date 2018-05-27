@@ -5,7 +5,7 @@ import re
 import logging
 import functools
 from utils.config import Config
-from utils.discoutils import has_permission
+from utils.discoutils import permissionNode
 from .utils.mcservutils import isUp, termProc, sendCmd, sendCmds
 
 log = logging.getLogger('charfred')
@@ -22,13 +22,13 @@ class serverCmds:
 
     @commands.group()
     @commands.guild_only()
-    @has_permission('status')
+    @permissionNode('status')
     async def server(self, ctx):
         if ctx.invoked_subcommand is None:
             pass
 
     @server.command(aliases=['failsafe'])
-    @has_permission('start')
+    @permissionNode('start')
     async def start(self, ctx, server: str):
         """Start a server."""
 
@@ -60,7 +60,7 @@ class serverCmds:
                 await ctx.send(f'{server} does not appear to have started!')
 
     @server.command()
-    @has_permission('stop')
+    @permissionNode('stop')
     async def stop(self, ctx, server: str):
         """Stop a server."""
 
@@ -97,7 +97,7 @@ class serverCmds:
             await ctx.send(f'{server} already is not running.')
 
     @server.command()
-    @has_permission('restart')
+    @permissionNode('restart')
     async def restart(self, ctx, server: str, countdown: str=None):
         """Restart a server with a countdown.
 
@@ -195,7 +195,7 @@ class serverCmds:
             await ctx.send(f'Restart cancelled, {server} is offline!')
 
     @server.command()
-    @has_permission('status')
+    @permissionNode('status')
     async def status(self, ctx, server: str):
         """Queries the status of a server."""
 
@@ -211,7 +211,7 @@ class serverCmds:
             await ctx.send(f'{server} is not running.')
 
     @server.command()
-    @has_permission('terminate')
+    @permissionNode('terminate')
     async def terminate(self, ctx, server: str):
         """Terminates a serverprocess forcefully."""
 
@@ -236,7 +236,7 @@ class serverCmds:
             await ctx.send(f'Well this is awkward... {server} is still up!')
 
     @server.group()
-    @has_permission('management')
+    @permissionNode('management')
     async def config(self, ctx):
         if ctx.invoked_subcommand is None:
             pass
