@@ -15,7 +15,7 @@ class consoleCmds:
 
     @commands.group()
     @commands.guild_only()
-    @permissionNode('whitelistcheck')
+    @permissionNode('whitelist')
     async def player(self, ctx):
         """Command group providing Minecraft player management commands."""
 
@@ -61,7 +61,6 @@ class consoleCmds:
         await sendReply_codeblocked(ctx, '\n'.join(msg))
 
     @whitelist.command()
-    @permissionNode('whitelistcheck')
     async def check(self, ctx, player: str):
         """Check if a player is on the whitelist."""
 
@@ -140,4 +139,4 @@ def setup(bot):
     bot.add_cog(consoleCmds(bot))
 
 
-permissionNodes = ['whitelist', 'whitelistcheck', 'kick', 'ban', 'relay']
+permissionNodes = ['whitelist', 'kick', 'ban', 'relay']
