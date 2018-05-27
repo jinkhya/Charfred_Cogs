@@ -3,6 +3,7 @@ import asyncio
 import os
 import re
 import logging
+import functools
 from utils.config import Config
 from utils.discoutils import has_permission
 from .utils.mcservutils import isUp, termProc, sendCmd, sendCmds
@@ -218,12 +219,21 @@ class serverCmds:
             log.warning(f'{server} has been misspelled or not configured!')
             await ctx.send(f'{server} has been misspelled or not configured!')
             return
-        if termProc(server):
-            log.info(f'Terminated {server}.')
-            await ctx.send(f'Terminated {server}.')
+        log.info(f'Attempting termination of {server}...')
+        if not isUp(server):
+            log.info(f'{server} is not running!')
+            await ctx.send(f'{server} is not running!')
+            return
+        await ctx.send(f'Attempting termination of {server}\n'
+                       'Please hold, this may take a couple of seconds.')
+        _termProc = functools.partial(termProc, server)
+        killed = await self.loop.run_in_executor(None, _termProc)
+        if killed:
+            log.info(f'{server} terminated.')
+            await ctx.send(f'{server} terminated.')
         else:
             log.info(f'Could not terminate {server}!')
-            await ctx.send(f'Could not terminate {server}!')
+            await ctx.send(f'Well this is awkward... {server} is still up!')
 
     @server.group()
     @has_permission('management')

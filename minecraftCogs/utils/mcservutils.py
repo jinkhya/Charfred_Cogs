@@ -18,8 +18,18 @@ def termProc(server):
     """Finds the process for a given server and terminates it."""
     for process in psutil.process_iter(attrs=['cmdline']):
         if f'{server}.jar' in process.info['cmdline']:
-            process.kill()
-            return True
+            toKill = process.children()
+            toKill.append(process)
+            for p in toKill:
+                p.terminate()
+            gone, alive = psutil.wait_procs(toKill, timeout=3)
+            for p in alive:
+                p.kill()
+            gone, alive = psutil.wait_procs(toKill, timeout=3)
+            if not alive:
+                return True
+            else:
+                return False
     return False
 
 
