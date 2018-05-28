@@ -50,7 +50,7 @@ class customs:
         part of the command.
         If you want your command to take arguments,
         you can place them anywhere in the command,
-        by putting \{\} in their place.
+        by putting {} in their place.
         These will later be replaced in order from
         left to right, with the given arguments,
         when the command is ran.
