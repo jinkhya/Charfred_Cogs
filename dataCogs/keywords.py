@@ -22,8 +22,8 @@ class keywords:
         """
 
         if ctx.invoked_subcommand is None:
-            categories = '\n'.join(self.phrases.keys())
-            await ctx.send(f'I know these categories:\n ```{categories}```')
+            categories = '\n '.join(self.phrases.keys())
+            await ctx.send(f'I know these categories:\n ``` {categories}```')
 
     @vocab.command()
     @permissionNode('vocabAdd')
