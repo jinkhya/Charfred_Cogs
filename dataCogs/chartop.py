@@ -10,7 +10,7 @@ class chartop:
         self.bot = bot
         self.loop = bot.loop
 
-    def getCharInfo(pid):
+    def getCharInfo(self, pid):
         proc = psutil.Process(pid)
         with proc.oneshot():
             cpuPerc = proc.cpu_percent(interval=2)
