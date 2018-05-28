@@ -59,7 +59,7 @@ class keywords:
         """
         if category is None:
             log.info('Random gibberish!')
-            await ctx.send(f'{random.choice(self.phrases[random.choice(self.phrases)])}')
+            await ctx.send(f'{random.choice(random.choice(list(self.phrases.values())))}')
         else:
             log.info(f'Random gibberish from {category}!')
             await ctx.send(f'{random.choice(self.phrases[category])}')
