@@ -70,22 +70,20 @@ class funkyText:
             await ctx.send(zalgo)
 
     @commands.command()
-    async def figlet(self, ctx, *, text: str, font=None):
+    async def figlet(self, ctx, fnt: str, *, text: str):
         """Apply a figlet font to some text.
 
         Takes a fontname and some text.
         """
-        if font is None:
-            await ctx.send('Please see http://www.figlet.org/fontdb.cgi\n'
-                           'for a list of all available fonts, with examples!')
-            return
 
         try:
             log.info('Figyfy!')
-            fig = Figlet(font=font)
+            fig = Figlet(font=fnt)
         except:
             log.warning('Couldn\'t find font!')
-            await ctx.send(f'Sorry, but {font} isn\'t known to pyfiglet!')
+            await ctx.send(f'Sorry, but {fnt} isn\'t known to pyfiglet!')
+            await ctx.send('Please see http://www.figlet.org/fontdb.cgi\n'
+                           'for a list of all available fonts, with examples!')
         else:
             figText = fig.renderText(text)
 
