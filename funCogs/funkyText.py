@@ -56,7 +56,7 @@ class funkyText:
 
         for char in text:
             for i in range(amount):
-                char = f'{random.choice(random.choice(zalgoScripts))}{char}{random.choice(random.choice(zalgoScripts))}'
+                char = f'{random.choice(random.choice(zalgoScripts))}{char}'
             zalgo.append(char)
         zalgo = ''.join(zalgo)
 
