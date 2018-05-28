@@ -19,7 +19,7 @@ class customs:
             load=True
         )
 
-    @commands.group(hidden=True, aliases=['cc'])
+    @commands.group(aliases=['cc'])
     @commands.guild_only()
     @permissionNode('custom')
     async def custom(self, ctx):
@@ -30,43 +30,45 @@ class customs:
                     self.run, ctx.subcommand_passed, ctx.args[1:]
                 )
 
-    @custom.command(hidden=True, aliases=['edit', 'modify'])
-    async def add(self, ctx, name: str, *cmds: str):
-        self.customcmds[name] = cmds
-        log.info(f'Added \"{cmds}\" to your custom console commands library.')
-        await sendReply(ctx, f'Added \"{cmds}\" to your custom console commands library.')
+    @custom.command(aliases=['edit', 'modify'])
+    @permissionNode('customEdit')
+    async def add(self, ctx, name: str, *, cmd: str):
+        self.customcmds[name] = cmd
+        log.info(f'Added \"{cmd}\" to your custom console commands library.')
+        await sendReply(ctx, f'Added \"{cmd}\" to your custom console commands library.')
         await self.customcmds.save()
 
-    @custom.command(hidden=True, aliases=['delete'])
+    @custom.command(aliases=['delete'])
+    @permissionNode('customEdit')
     async def remove(self, ctx, name: str):
         del self.customcmds[name]
         log.info(f'Removed \"{name}\" from your custom console commands library.')
         await sendReply(ctx, f'Removed \"{name}\" from your custom console commands library.')
         await self.customcmds.save()
 
-    @custom.command(hidden=True, name='list')
+    @custom.command(name='list')
     async def _list(self, ctx):
         msg = ['Custom Console Commands Library',
                '===============================']
         msg.append(json.dumps(self.customcmds))
         await sendReply_codeblocked(ctx, msg, encoding='json')
 
-    @custom.command(hidden=True, aliases=['execute', 'exec'])
+    @custom.command(aliases=['execute', 'exec'])
     async def run(self, ctx, cmd: str, server: str, *args: str):
         msg = ['Command Log', '===========']
         if cmd not in self.customcmds:
             log.warning(f'\"{cmd}\" is undefined!')
             msg.append(f'[Error]: \"{cmd}\" is undefined!')
             return
+        _cmd = self.customcmds[cmd]
         if re.match('all$', server, flags=re.I):
             for server in self.servercfg['servers']:
                 if isUp(server):
                     log.info(f'Executing \"{cmd}\" on {server}.')
-                    for _cmd in self.customcmds[cmd]:
-                        if args:
-                            await sendCmd(self.loop, server, _cmd.format(*args))
-                        else:
-                            await sendCmd(self.loop, server, _cmd)
+                    if args:
+                        await sendCmd(self.loop, server, _cmd.format(*args))
+                    else:
+                        await sendCmd(self.loop, server, _cmd)
                     msg.append(f'[Info] Executed \"{cmd}\" on {server}.')
                 else:
                     log.warning(f'Could not execute \"{cmd}\", {server} is offline!')
@@ -74,11 +76,10 @@ class customs:
         else:
             if isUp(server):
                 log.info(f'Executing \"{cmd}\" on {server}.')
-                for _cmd in self.customcmds[cmd]:
-                    if args:
-                        await sendCmd(self.loop, server, _cmd.format(*args))
-                    else:
-                        await sendCmd(self.loop, server, _cmd)
+                if args:
+                    await sendCmd(self.loop, server, _cmd.format(*args))
+                else:
+                    await sendCmd(self.loop, server, _cmd)
                 msg.append(f'[Info] Executed \"{cmd}\" on {server}.')
             else:
                 log.warning(f'Could not execute \"{cmd}\", {server} is offline!')
@@ -88,3 +89,6 @@ class customs:
 
 def setup(bot):
     bot.add_cog(customs(bot))
+
+
+permissionNodes = ['custom', 'customEdit']

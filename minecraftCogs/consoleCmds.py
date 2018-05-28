@@ -113,11 +113,10 @@ class consoleCmds:
     @commands.command(aliases=['pass'])
     @commands.guild_only()
     @permissionNode('relay')
-    async def relay(self, ctx, server: str, command: str):
+    async def relay(self, ctx, server: str, *, command: str):
         """Relays a command to a servers\' console.
 
         Takes a servername and a command, in that order.
-        If your command is not just one word, wrap it in \"\"
         """
 
         msg = ['Command Log', '==========']
