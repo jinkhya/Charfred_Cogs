@@ -1,6 +1,5 @@
 from discord.ext import commands
 import re
-import json
 import logging
 from utils.config import Config
 from utils.discoutils import permissionNode, sendReply_codeblocked, sendReply
@@ -12,6 +11,7 @@ log = logging.getLogger('charfred')
 class customs:
     def __init__(self, bot):
         self.bot = bot
+        self.loop = bot.loop
         self.servercfg = bot.servercfg
         self.customcmds = Config(
             f'{self.bot.dir}/configs/customCmds.json',
@@ -50,7 +50,10 @@ class customs:
     async def _list(self, ctx):
         msg = ['Custom Console Commands Library',
                '===============================']
-        msg.append(json.dumps(self.customcmds))
+        for name, cmd in self.customcmds.items():
+            msg.append(name)
+            msg.append(f'\t{cmd}')
+        msg = '\n'.join(msg)
         await sendReply_codeblocked(ctx, msg, encoding='json')
 
     @custom.command(aliases=['execute', 'exec'])
