@@ -45,12 +45,7 @@ class funkyText:
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.group()
-    async def funky(self, ctx):
-        if ctx.invoked_subcommand is None:
-            pass
-
-    @funky.command()
+    @commands.command()
     async def zalgo(self, ctx, amount: int, *, text: str):
         """Zalgofy some text.
 
@@ -74,19 +69,23 @@ class funkyText:
         finally:
             await ctx.send(zalgo)
 
-    @funky.command()
-    async def figlet(self, ctx, fnt: str, *, text: str):
+    @commands.command()
+    async def figlet(self, ctx, *, text: str, font=None):
         """Apply a figlet font to some text.
 
         Takes a fontname and some text.
         """
+        if font is None:
+            await ctx.send('Please see http://www.figlet.org/fontdb.cgi\n'
+                           'for a list of all available fonts, with examples!')
+            return
 
         try:
             log.info('Figyfy!')
-            fig = Figlet(font=fnt)
+            fig = Figlet(font=font)
         except:
             log.warning('Couldn\'t find font!')
-            await ctx.send(f'Sorry, but {fnt} isn\'t known to pyfiglet!')
+            await ctx.send(f'Sorry, but {font} isn\'t known to pyfiglet!')
         else:
             figText = fig.renderText(text)
 
