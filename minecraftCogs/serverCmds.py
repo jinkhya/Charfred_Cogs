@@ -101,8 +101,10 @@ class serverCmds:
     async def restart(self, ctx, server: str, countdown: str=None):
         """Restart a server with a countdown.
 
-        Takes a servername and optionally the name
-        of a pre-configured countdown.
+        Takes a servername and optionally the
+        count-step for the restart countdown.
+        Possible steps are: 20m, 15m, 10m, 5m,
+        3m, 2m, 1m, 30s, 10s, 5s
         """
 
         if server not in self.servercfg['servers']:
@@ -110,18 +112,21 @@ class serverCmds:
             await ctx.send(f'{server} has been misspelled or not configured!')
             return
         if isUp(server):
+            countdownSteps = ["20m", "15m", "10m", "5m", "3m",
+                              "2m", "1m", "30s", "10s", "5s"]
             if countdown:
-                if countdown not in self.servercfg['restartCountdowns']:
-                    log.error(f'{countdown} is undefined under restartCountdowns!')
-                    await ctx.send(f'{countdown} is undefined under restartCountdowns!')
+                if countdown not in countdownSteps:
+                    log.error(f'{countdown} is an undefined step, aborting!')
+                    await ctx.send(f'{countdown} is an undefined step, aborting!')
                     return
                 log.info(f'Restarting {server} with {countdown}-countdown.')
                 await ctx.send(f'Restarting {server} with {countdown}-countdown.')
-                cntd = self.servercfg['restartCountdowns'][countdown]
+                indx = countdownSteps.index(countdown)
+                cntd = countdownSteps[indx:]
             else:
-                log.info(f'Restarting {server} with default countdown.')
-                await ctx.send(f'Restarting {server} with default countdown.')
-                cntd = self.servercfg['restartCountdowns']['default']
+                log.info(f'Restarting {server} with default 10min countdown.')
+                await ctx.send(f'Restarting {server} with default 10min countdown.')
+                cntd = countdownSteps[2:]
             steps = []
             for i, step in enumerate(cntd):
                 s = self.countpat.search(step)
