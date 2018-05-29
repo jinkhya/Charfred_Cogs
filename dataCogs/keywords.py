@@ -114,4 +114,4 @@ def setup(bot):
     bot.add_cog(keywords(bot))
 
 
-permissionNodes = ['vocabAdd', 'vocabRemove']
+permissionNodes = ['vocabAdd', 'vocabRemove', 'categoryAdd', 'categoryRemove']
