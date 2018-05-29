@@ -1,7 +1,7 @@
 import logging
 import random
 from discord.ext import commands
-from utils.discoutils import permissionNode
+from utils.discoutils import permissionNode, promptConfirm
 
 log = logging.getLogger('charfred')
 
@@ -51,7 +51,52 @@ class keywords:
             log.info('Invalid category!')
             await ctx.send('I don\'t know that category!')
 
-    @commands.command(aliases=['talktome', 'speak', 'whatsonyourmind'])
+    @vocab.group()
+    @permissionNode('categoryAdd')
+    async def category(self, ctx):
+        """Vocab category operations."""
+
+        if ctx.invoked_subcommand is None:
+            pass
+
+    @category.command(name='add')
+    @permissionNode('categoryAdd')
+    async def catAdd(self, ctx, category: str):
+        """Add new vocab category."""
+
+        if category in self.phrases:
+            log.info('Category already exists!')
+            await ctx.send('Category already exists!')
+        else:
+            log.info(f'Adding {category} as new category.')
+            self.phrases[category] = []
+            await ctx.send(f'Added {category}!')
+
+    @category.command(name='remove')
+    @permissionNode('categoryRemove')
+    async def catRemove(self, ctx, category: str):
+        """Remove a whole vocab category.
+
+        Be real careful with this!
+        """
+        if category in ['nacks', 'errormsgs', 'replies']:
+            log.info('Tried to delete important categories!')
+            await ctx.send(f'{category} cannot be deleted, '
+                           'it is vital to my character!')
+            return
+
+        if category in self.phrases:
+            r = await promptConfirm(ctx, f'You are about to delete {category},'
+                                    '\nare you certain? [y|N]')
+            if r:
+                del self.phrases[category]
+                log.info(f'{category} deleted!')
+                await ctx.send(f'{category} deleted!')
+        else:
+            log.info(f'{category} doesn\'t exist!')
+            await ctx.send(f'{category} doesn\'t exist!')
+
+    @commands.command(aliases=['talktome', 'speak', 'recite'])
     async def talk(self, ctx, category: str=None):
         """Say a word or phrase from the vocabulary.
 
