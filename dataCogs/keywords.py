@@ -33,6 +33,7 @@ class keywords:
         if category in self.phrases:
             log.info('Learning something!')
             self.phrases[category].append(phrase)
+            await self.phrases.save()
             await ctx.send(phrase)
         else:
             log.info('Invalid category!')
@@ -46,6 +47,7 @@ class keywords:
         if category in self.phrases:
             log.info('Forgetting something!')
             self.phrases[category].remove(phrase)
+            await self.phrases.save()
             await ctx.send('Oh man, I think I forgot something...')
         else:
             log.info('Invalid category!')
@@ -70,6 +72,7 @@ class keywords:
         else:
             log.info(f'Adding {category} as new category.')
             self.phrases[category] = []
+            await self.phrases.save()
             await ctx.send(f'Added {category}!')
 
     @category.command(name='remove')
@@ -90,6 +93,7 @@ class keywords:
                                     '\nare you certain? [y|N]')
             if r:
                 del self.phrases[category]
+                await self.phrases.save()
                 log.info(f'{category} deleted!')
                 await ctx.send(f'{category} deleted!')
         else:
