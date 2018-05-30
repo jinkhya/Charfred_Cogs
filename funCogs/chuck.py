@@ -22,8 +22,8 @@ class chuck:
         if ctx.invoked_subcommand is None:
             log.info('Getting random chuck joke.')
             async with self.session.get('https://api.chucknorris.io/jokes/random') as r:
-                joke = await r.json()['value']
-                await ctx.send(f'`{joke}`')
+                joke = await r.json()
+                await ctx.send(f"`{joke['value']}`")
 
     @norris.command()
     async def category(self, ctx, category: str=None):
@@ -42,8 +42,8 @@ class chuck:
         else:
             log.info(f'Trying for a random joke from {category}.')
             async with self.session.get(f'https://api.chucknorris.io/jokes/random?category={category}') as r:
-                joke = await r.json()['value']
-                await ctx.send(f'`{joke}`')
+                joke = await r.json()
+                await ctx.send(f"`{joke['value']}`")
 
 
 def setup(bot):
