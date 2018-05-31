@@ -14,7 +14,7 @@ dances = [
 ]
 
 
-class entertain:
+class Entertain:
     def __init__(self, bot):
         self.bot = bot
         self.loop = bot.loop
@@ -36,4 +36,4 @@ class entertain:
 
 
 def setup(bot):
-    bot.add_cog(entertain(bot))
+    bot.add_cog(Entertain(bot))

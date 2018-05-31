@@ -6,7 +6,7 @@ from utils.discoutils import permissionNode, promptConfirm
 log = logging.getLogger('charfred')
 
 
-class keywords:
+class Keywords:
     def __init__(self, bot):
         self.bot = bot
         self.phrases = bot.keywords
@@ -115,7 +115,7 @@ class keywords:
 
 
 def setup(bot):
-    bot.add_cog(keywords(bot))
+    bot.add_cog(Keywords(bot))
 
 
 permissionNodes = ['vocabAdd', 'vocabRemove', 'categoryAdd', 'categoryRemove']

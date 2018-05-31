@@ -7,7 +7,7 @@ from .utils.mcservutils import isUp, sendCmd
 log = logging.getLogger('charfred')
 
 
-class consoleCmds:
+class ConsoleCmds:
     def __init__(self, bot):
         self.bot = bot
         self.loop = bot.loop
@@ -135,7 +135,7 @@ def setup(bot):
         bot.servercfg = Config(f'{bot.dir}/configs/serverCfgs.json',
                                default=f'{bot.dir}/configs/serverCfgs.json_default',
                                load=True, loop=bot.loop)
-    bot.add_cog(consoleCmds(bot))
+    bot.add_cog(ConsoleCmds(bot))
 
 
 permissionNodes = ['whitelist', 'kick', 'ban', 'relay']

@@ -8,7 +8,7 @@ from utils.discoutils import permissionNode, sendReply
 log = logging.getLogger('charfred')
 
 
-class crashReporter:
+class CrashReporter:
     def __init__(self, bot):
         self.bot = bot
         self.servercfg = bot.servercfg
@@ -62,7 +62,7 @@ class crashReporter:
 
 
 def setup(bot):
-    bot.add_cog(crashReporter(bot))
+    bot.add_cog(CrashReporter(bot))
 
 
 permissionNodes = ['crashreport']

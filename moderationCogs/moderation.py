@@ -5,7 +5,7 @@ from discord.ext import commands
 log = logging.getLogger('charfred')
 
 
-class moderation:
+class Moderation:
     def __init__(self, bot):
         self.bot = bot
         self.dir = bot.dir
@@ -51,7 +51,7 @@ class moderation:
 
 
 def setup(bot):
-    bot.add_cog(moderation(bot))
+    bot.add_cog(Moderation(bot))
 
 
 permissionNodes = {

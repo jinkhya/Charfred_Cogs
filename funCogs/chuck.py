@@ -5,7 +5,7 @@ from utils.discoutils import permissionNode
 log = logging.getLogger('charfred')
 
 
-class chuck:
+class Chuck:
     def __init__(self, bot):
         self.bot = bot
         self.session = bot.session
@@ -47,7 +47,7 @@ class chuck:
 
 
 def setup(bot):
-    bot.add_cog(chuck(bot))
+    bot.add_cog(Chuck(bot))
 
 
 permissionNodes = ['chuck']

@@ -11,7 +11,7 @@ from .utils.mcservutils import isUp, termProc, sendCmd, sendCmds
 log = logging.getLogger('charfred')
 
 
-class serverCmds:
+class ServerCmds:
     def __init__(self, bot):
         self.bot = bot
         self.loop = bot.loop
@@ -383,7 +383,7 @@ def setup(bot):
         bot.servercfg = Config(f'{bot.dir}/configs/serverCfgs.json',
                                default=f'{bot.dir}/configs/serverCfgs.json_default',
                                load=True, loop=bot.loop)
-    bot.add_cog(serverCmds(bot))
+    bot.add_cog(ServerCmds(bot))
 
 
 permissionNodes = ['start', 'stop', 'status', 'restart', 'terminate', 'management']
