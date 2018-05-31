@@ -102,9 +102,12 @@ class serverCmds:
         """Restart a server with a countdown.
 
         Takes a servername and optionally the
-        count-step for the restart countdown.
-        Possible steps are: 20m, 15m, 10m, 5m,
-        3m, 2m, 1m, 30s, 10s, 5s
+        starting point for the countdown.
+        Possible starting points are: 20m, 15m,
+        10m, 5m, 3m, 2m, 1m, 30s, 10s, 5s.
+
+        Additionally the issuer of this command
+        may abort the countdown at any step.
         """
 
         if server not in self.servercfg['servers']:
@@ -156,8 +159,30 @@ class serverCmds:
                     'title @a title {\"text\":\"Restarting\", \"bold\":true}',
                     f'broadcast Restarting in {step[0]} {step[2]}!'
                 )
-                await ctx.send(f'Restarting {server} in {step[0]} {step[2]}!')
-                await asyncio.sleep(step[1], loop=self.loop)
+                msg = await ctx.send(f'Restarting {server} in {step[0]} {step[2]}!\n'
+                                     'React with ✋ to abort!')
+
+                def check(reaction, user):
+                    if reaction.message.id != msg.id:
+                        return False
+
+                    return str(reaction.emoji) == '✋' and user == ctx.author
+
+                try:
+                    await self.bot.wait_for('reaction_add', timeout=step[1], check=check)
+                except asyncio.TimeoutError:
+                    pass
+                else:
+                    await sendCmds(
+                        self.loop,
+                        server,
+                        'title @a times 20 40 20',
+                        'title @a title {\"text\":\"Restart aborted!\", \"bold\":true}',
+                        'broadcast Restart aborted!'
+                    )
+                    await ctx.send(f'Restart of {server} aborted!')
+                    return
+                # await asyncio.sleep(step[1], loop=self.loop)
             await sendCmd(
                 self.loop,
                 server,
