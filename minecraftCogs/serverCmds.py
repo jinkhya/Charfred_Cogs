@@ -1,4 +1,5 @@
 from discord.ext import commands
+import discord
 import asyncio
 import os
 import re
@@ -6,6 +7,7 @@ import logging
 import functools
 from utils.config import Config
 from utils.discoutils import permissionNode
+from utils.flipbooks import EmbedFlipbook
 from .utils.mcservutils import isUp, termProc, sendCmd, sendCmds
 
 log = logging.getLogger('charfred')
@@ -320,6 +322,26 @@ class ServerCmds:
         await ctx.send(f'Configuration entries for {server}:\n')
         for k, v in self.servercfg['servers'][server].items():
             await ctx.send(f'{k}: {v}\n')
+
+    def buildEmbeds(self):
+        embeds = []
+        for name, cfgs in self.servercfgs['servers'].items():
+            embed = discord.Embed(color=discord.Color.dark_gold())
+            embed.description = f'Configurations for {name}:'
+            for k, v in cfgs.items():
+                embed.add_field(name=k, value=f'``` {v}```', inline=False)
+            embeds.append(embed)
+        return embeds
+
+    @config.command()
+    async def listAll(self, ctx):
+        """Lists all known server configurations,
+        via Flipbook."""
+
+        embeds = await self.loop.run_in_executor(None, self.buildEmbeds)
+        cfgFlip = EmbedFlipbook(ctx, embeds, entries_per_page=1,
+                                title='Server Configurations')
+        await cfgFlip.flip()
 
     @config.command()
     async def edit(self, ctx, server: str):
