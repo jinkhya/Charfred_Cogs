@@ -123,13 +123,14 @@ class serverCmds:
                     await ctx.send(f'{countdown} is an undefined step, aborting!')
                     return
                 log.info(f'Restarting {server} with {countdown}-countdown.')
-                await ctx.send(f'Restarting {server} with {countdown}-countdown.')
+                announcement = await ctx.send(f'Restarting {server} with {countdown}-countdown.')
                 indx = countdownSteps.index(countdown)
                 cntd = countdownSteps[indx:]
             else:
                 log.info(f'Restarting {server} with default 10min countdown.')
-                await ctx.send(f'Restarting {server} with default 10min countdown.')
+                announcement = await ctx.send(f'Restarting {server} with default 10min countdown.')
                 cntd = countdownSteps[2:]
+            await asyncio.sleep(1, loop=self.loop)  # Tiny delay to allow message to be edited!
             steps = []
             for i, step in enumerate(cntd):
                 s = self.countpat.search(step)
@@ -159,11 +160,11 @@ class serverCmds:
                     'title @a title {\"text\":\"Restarting\", \"bold\":true}',
                     f'broadcast Restarting in {step[0]} {step[2]}!'
                 )
-                msg = await ctx.send(f'Restarting {server} in {step[0]} {step[2]}!\n'
-                                     'React with ✋ to abort!')
+                msg = f'Restarting {server} in {step[0]} {step[2]}!\nReact with ✋ to abort!'
+                await announcement.edit(content=msg)
 
                 def check(reaction, user):
-                    if reaction.message.id != msg.id:
+                    if reaction.message.id != announcement.id:
                         return False
 
                     return str(reaction.emoji) == '✋' and user == ctx.author
