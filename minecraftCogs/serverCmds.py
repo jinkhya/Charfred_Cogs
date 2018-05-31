@@ -338,7 +338,7 @@ class ServerCmds:
         """Lists all known server configurations,
         via Flipbook."""
 
-        embeds = await self.loop.run_in_executor(None, self.buildEmbeds)
+        embeds = self.buildEmbeds()
         cfgFlip = EmbedFlipbook(ctx, embeds, entries_per_page=1,
                                 title='Server Configurations')
         await cfgFlip.flip()
