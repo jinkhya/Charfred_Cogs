@@ -248,12 +248,12 @@ class ServerCmds:
         def getStatus():
             statuses = []
             for s in servers:
-                if isUp(server):
-                    log.info(f'{server} is running.')
-                    statuses.append(f'# {server} is running.')
+                if isUp(s):
+                    log.info(f'{s} is running.')
+                    statuses.append(f'# {s} is running.')
                 else:
-                    log.info(f'{server} is not running.')
-                    statuses.append(f'< {server} is not running! >')
+                    log.info(f'{s} is not running.')
+                    statuses.append(f'< {s} is not running! >')
             statuses = '\n'.join(statuses)
             return statuses
 
