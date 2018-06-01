@@ -6,7 +6,7 @@ import re
 import logging
 import functools
 from utils.config import Config
-from utils.discoutils import permissionNode
+from utils.discoutils import permissionNode, sendMarkdown
 from utils.flipbooks import EmbedFlipbook
 from .utils.mcservutils import isUp, termProc, sendCmd, sendCmds
 
@@ -26,6 +26,7 @@ class ServerCmds:
     @commands.guild_only()
     @permissionNode('status')
     async def server(self, ctx):
+        """Minecraft server operations."""
         if ctx.invoked_subcommand is None:
             pass
 
@@ -36,15 +37,15 @@ class ServerCmds:
 
         if server not in self.servercfg['servers']:
             log.warning(f'{server} has been misspelled or not configured!')
-            await ctx.send(f'{server} has been misspelled or not configured!')
+            await sendMarkdown(ctx, f'< {server} has been misspelled or not configured! >')
             return
         if isUp(server):
             log.info(f'{server} appears to be running already!')
-            await ctx.send(f'{server} appears to be running already!')
+            await sendMarkdown(ctx, f'< {server} appears to be running already! >')
         else:
             cwd = os.getcwd()
             log.info(f'Starting {server}')
-            await ctx.send(f'Starting {server}.')
+            await sendMarkdown(ctx, f'> Starting {server}...')
             os.chdir(self.servercfg['serverspath'] + f'/{server}')
             proc = await asyncio.create_subprocess_exec(
                 'screen', '-h', '5000', '-dmS', server,
@@ -56,10 +57,10 @@ class ServerCmds:
             await asyncio.sleep(5, loop=self.loop)
             if isUp(server):
                 log.info(f'{server} is now running!')
-                await ctx.send(f'{server} is now running!')
+                await sendMarkdown(ctx, f'# {server} is now running!')
             else:
                 log.warning(f'{server} does not appear to have started!')
-                await ctx.send(f'{server} does not appear to have started!')
+                await sendMarkdown(ctx, f'< {server} does not appear to have started! >')
 
     @server.command()
     @permissionNode('stop')
@@ -68,11 +69,11 @@ class ServerCmds:
 
         if server not in self.servercfg['servers']:
             log.warning(f'{server} has been misspelled or not configured!')
-            await ctx.send(f'{server} has been misspelled or not configured!')
+            await sendMarkdown(ctx, f'< {server} has been misspelled or not configured! >')
             return
         if isUp(server):
             log.info(f'Stopping {server}...')
-            await ctx.send(f'Stopping {server}')
+            await sendMarkdown(ctx, f'> Stopping {server}...')
             await sendCmds(
                 self.loop,
                 server,
@@ -90,13 +91,13 @@ class ServerCmds:
             await asyncio.sleep(20, loop=self.loop)
             if isUp(server):
                 log.warning(f'{server} does not appear to have stopped!')
-                await ctx.send(f'{server} does not appear to have stopped!')
+                await sendMarkdown(ctx, f'< {server} does not appear to have stopped! >')
             else:
                 log.info(f'{server} was stopped.')
-                await ctx.send(f'{server} was stopped.')
+                await sendMarkdown(ctx, f'# {server} was stopped.')
         else:
             log.info(f'{server} already is not running.')
-            await ctx.send(f'{server} already is not running.')
+            await sendMarkdown(ctx, f'< {server} already is not running. >')
 
     @server.command()
     @permissionNode('restart')
@@ -114,7 +115,7 @@ class ServerCmds:
 
         if server not in self.servercfg['servers']:
             log.warning(f'{server} has been misspelled or not configured!')
-            await ctx.send(f'{server} has been misspelled or not configured!')
+            await sendMarkdown(ctx, f'< {server} has been misspelled or not configured! >')
             return
         if isUp(server):
             countdownSteps = ["20m", "15m", "10m", "5m", "3m",
@@ -122,15 +123,15 @@ class ServerCmds:
             if countdown:
                 if countdown not in countdownSteps:
                     log.error(f'{countdown} is an undefined step, aborting!')
-                    await ctx.send(f'{countdown} is an undefined step, aborting!')
+                    await sendMarkdown(ctx, f'< {countdown} is an undefined step, aborting! >')
                     return
                 log.info(f'Restarting {server} with {countdown}-countdown.')
-                announcement = await ctx.send(f'Restarting {server} with {countdown}-countdown.')
+                announcement = await sendMarkdown(ctx, f'> Restarting {server} with {countdown}-countdown.')
                 indx = countdownSteps.index(countdown)
                 cntd = countdownSteps[indx:]
             else:
                 log.info(f'Restarting {server} with default 10min countdown.')
-                announcement = await ctx.send(f'Restarting {server} with default 10min countdown.')
+                announcement = await sendMarkdown(ctx, f'> Restarting {server} with default 10min countdown.')
                 cntd = countdownSteps[2:]
             await asyncio.sleep(1, loop=self.loop)  # Tiny delay to allow message to be edited!
             steps = []
@@ -162,7 +163,7 @@ class ServerCmds:
                     'title @a title {\"text\":\"Restarting\", \"bold\":true}',
                     f'broadcast Restarting in {step[0]} {step[2]}!'
                 )
-                msg = f'Restarting {server} in {step[0]} {step[2]}!\nReact with ✋ to abort!'
+                msg = f'```markdown\nRestarting {server} in {step[0]} {step[2]}!\nReact with ✋ to abort!\n```'
                 await announcement.edit(content=msg)
 
                 def check(reaction, user):
@@ -183,7 +184,7 @@ class ServerCmds:
                         'title @a title {\"text\":\"Restart aborted!\", \"bold\":true}',
                         'broadcast Restart aborted!'
                     )
-                    await ctx.send(f'Restart of {server} aborted!')
+                    await sendMarkdown(ctx, f'# Restart of {server} aborted!')
                     return
                 # await asyncio.sleep(step[1], loop=self.loop)
             await sendCmd(
@@ -197,17 +198,17 @@ class ServerCmds:
                 server,
                 'stop'
             )
-            await ctx.send(f'Stopping {server}.')
+            await sendMarkdown(ctx, f'> Stopping {server}.')
             await asyncio.sleep(30, loop=self.loop)
             if isUp(server):
                 log.warning(f'Restart failed, {server} appears not to have stopped!')
-                await ctx.send(f'Restart failed, {server} appears not to have stooped!')
+                await sendMarkdown(ctx, f'< Restart failed, {server} appears not to have stooped! >')
             else:
                 log.info(f'Restart in progress, {server} was stopped.')
-                await ctx.send(f'Restart in progress, {server} was stopped.')
+                await sendMarkdown(ctx, f'# Restart in progress, {server} was stopped.')
                 cwd = os.getcwd()
                 log.info(f'Starting {server}')
-                await ctx.send(f'Starting {server}.')
+                await sendMarkdown(ctx, f'> Starting {server}.')
                 os.chdir(self.servercfg['serverspath'] + f'/{server}')
                 proc = await asyncio.create_subprocess_exec(
                     'screen', '-h', '5000', '-dmS', server,
@@ -219,29 +220,45 @@ class ServerCmds:
                 await asyncio.sleep(5, loop=self.loop)
                 if isUp(server):
                     log.info(f'Restart successful, {server} is now running!')
-                    await ctx.send(f'Restart successful, {server} is now running!')
+                    await sendMarkdown(ctx, f'# Restart successful, {server} is now running!')
                 else:
                     log.warning(f'Restart failed, {server} does not appear to have started!')
-                    await ctx.send(f'Restart failed, {server} does not appear to have started!')
+                    await sendMarkdown(ctx, f'< Restart failed, {server} does not appear to have started! >')
         else:
             log.warning(f'Restart cancelled, {server} is offline!')
-            await ctx.send(f'Restart cancelled, {server} is offline!')
+            await sendMarkdown(ctx, f'< Restart cancelled, {server} is offline! >')
 
     @server.command()
     @permissionNode('status')
-    async def status(self, ctx, server: str):
-        """Queries the status of a server."""
+    async def status(self, ctx, server: str=None):
+        """Queries the status of servers.
 
-        if server not in self.servercfg['servers']:
+        Without a servername specified, this returns
+        a list with the status of all registered servers.
+        """
+        if server is None:
+            servers = self.servercfg['servers'].keys()
+        elif server not in self.servercfg['servers']:
             log.warning(f'{server} has been misspelled or not configured!')
-            await ctx.send(f'{server} has been misspelled or not configured!')
+            await sendMarkdown(ctx, f'< {server} has been misspelled or not configured! >')
             return
-        if isUp(server):
-            log.info(f'{server} is running.')
-            await ctx.send(f'{server} is running.')
         else:
-            log.info(f'{server} is not running.')
-            await ctx.send(f'{server} is not running.')
+            servers = [server]
+
+        def getStatus():
+            statuses = []
+            for s in servers:
+                if isUp(server):
+                    log.info(f'{server} is running.')
+                    statuses.append(f'# {server} is running.')
+                else:
+                    log.info(f'{server} is not running.')
+                    statuses.append(f'< {server} is not running! >')
+            statuses = '\n'.join(statuses)
+            return statuses
+
+        statuses = await self.loop.run_in_executor(None, getStatus)
+        await sendMarkdown(ctx, f'{statuses}')
 
     @server.command()
     @permissionNode('terminate')
@@ -250,23 +267,23 @@ class ServerCmds:
 
         if server not in self.servercfg['servers']:
             log.warning(f'{server} has been misspelled or not configured!')
-            await ctx.send(f'{server} has been misspelled or not configured!')
+            await sendMarkdown(ctx, f'< {server} has been misspelled or not configured! >')
             return
         log.info(f'Attempting termination of {server}...')
         if not isUp(server):
             log.info(f'{server} is not running!')
-            await ctx.send(f'{server} is not running!')
+            await sendMarkdown(ctx, f'< {server} is not running! >')
             return
-        await ctx.send(f'Attempting termination of {server}\n'
-                       'Please hold, this may take a couple of seconds.')
+        await sendMarkdown(ctx, f'> Attempting termination of {server}\n'
+                           '> Please hold, this may take a couple of seconds.')
         _termProc = functools.partial(termProc, server)
         killed = await self.loop.run_in_executor(None, _termProc)
         if killed:
             log.info(f'{server} terminated.')
-            await ctx.send(f'{server} terminated.')
+            await sendMarkdown(ctx, f'# {server} terminated.')
         else:
             log.info(f'Could not terminate {server}!')
-            await ctx.send(f'Well this is awkward... {server} is still up!')
+            await sendMarkdown(ctx, f'< Well this is awkward... {server} is still up! >')
 
     @server.group()
     @permissionNode('management')
@@ -287,7 +304,7 @@ class ServerCmds:
 
         self.servercfg['servers'][server] = {}
         await ctx.send(f'Beginning configuration for {server}!'
-                       '\nPlease enter the invocation for {server}:')
+                       f'\nPlease enter the invocation for {server}:')
         r1 = await self.bot.wait_for('message', check=check, timeout=120)
         self.servercfg['servers'][server]['invocation'] = r1.content
         await ctx.send(f'Do you want to run backups on {server}? [y/n]')
