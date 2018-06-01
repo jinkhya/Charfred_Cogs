@@ -1,7 +1,7 @@
 from discord.ext import commands
 import logging
 from utils.config import Config
-from utils.discoutils import sendReply_codeblocked, permissionNode
+from utils.discoutils import sendMarkdown, permissionNode
 from .utils.mcservutils import isUp, sendCmd
 
 log = logging.getLogger('charfred')
@@ -17,7 +17,7 @@ class ConsoleCmds:
     @commands.guild_only()
     @permissionNode('whitelist')
     async def player(self, ctx):
-        """Command group providing Minecraft player management commands."""
+        """Minecraft player management operations."""
 
         if ctx.invoked_subcommand is None:
             pass
@@ -25,7 +25,7 @@ class ConsoleCmds:
     @player.group()
     @permissionNode('whitelist')
     async def whitelist(self, ctx):
-        """Command group providing Minecraft player whitelisting commands."""
+        """Minecraft player whitelisting operations."""
 
         if ctx.invoked_subcommand is None:
             pass
@@ -39,11 +39,11 @@ class ConsoleCmds:
             if isUp(server):
                 log.info(f'Whitelisting {player} on {server}.')
                 await sendCmd(self.loop, server, f'whitelist add {player}')
-                msg.append(f'[Info] Whitelisted {player} on {server}.')
+                msg.append(f'# Whitelisted {player} on {server}.')
             else:
                 log.warning(f'Could not whitelist {player} on {server}.')
-                msg.append(f'[Error]: Unable to whitelist {player}, {server} is offline!')
-        await sendReply_codeblocked(ctx, '\n'.join(msg))
+                msg.append(f'< Unable to whitelist {player}, {server} is offline! >')
+        await sendMarkdown(ctx, '\n'.join(msg))
 
     @whitelist.command()
     async def remove(self, ctx, player: str):
@@ -54,11 +54,11 @@ class ConsoleCmds:
             if isUp(server):
                 log.info(f'Unwhitelisting {player} on {server}.')
                 await sendCmd(self.loop, server, f'whitelist remove {player}')
-                msg.append(f'[Info] Unwhitelisting {player} on {server}.')
+                msg.append(f'# Unwhitelisting {player} on {server}.')
             else:
                 log.warning(f'Could not unwhitelist {player} on {server}.')
-                msg.append(f'[Error]: Unable to unwhitelist {player}, {server} is offline!')
-        await sendReply_codeblocked(ctx, '\n'.join(msg))
+                msg.append(f'< Unable to unwhitelist {player}, {server} is offline! >')
+        await sendMarkdown(ctx, '\n'.join(msg))
 
     @whitelist.command()
     async def check(self, ctx, player: str):
@@ -70,10 +70,10 @@ class ConsoleCmds:
                 self.servercfg['serverspath'] + f'/{server}/whitelist.json', 'r'
             ) as whitelist:
                 if player in whitelist.read():
-                    msg.append(f'[Info] {player} is whitelisted on {server}.')
+                    msg.append(f'# {player} is whitelisted on {server}.')
                 else:
-                    msg.append(f'[Warning]: {player} is NOT whitelisted on {server}.')
-        await sendReply_codeblocked(ctx, '\n'.join(msg))
+                    msg.append(f'< {player} is NOT whitelisted on {server}. >')
+        await sendMarkdown(ctx, '\n'.join(msg))
 
     @player.command()
     @permissionNode('kick')
@@ -87,10 +87,10 @@ class ConsoleCmds:
         if isUp(server):
             log.info(f'Kicking {player} from {server}.')
             await sendCmd(self.loop, server, f'kick {player}')
-            msg.append(f'[Info] Kicked {player} from {server}.')
+            msg.append(f'# Kicked {player} from {server}.')
         else:
-            msg.append(f'[Error] {server} is not online!')
-        await sendReply_codeblocked(ctx, '\n'.join(msg))
+            msg.append(f'< {server} is not online! >')
+        await sendMarkdown(ctx, '\n'.join(msg))
 
     @player.command()
     @permissionNode('ban')
@@ -104,11 +104,11 @@ class ConsoleCmds:
                 await sendCmd(self.loop, server, f'ban {player}')
                 log.info(f'Unwhitelisting {player} on {server}.')
                 await sendCmd(self.loop, server, f'whitelist remove {player}')
-                msg.append(f'[Info] Banned {player} from {server}.')
+                msg.append(f'# Banned {player} from {server}.')
             else:
                 log.warning(f'Could not ban {player} from {server}.')
-                msg.append(f'[Error]: Unable to ban {player}, {server} is offline!')
-        await sendReply_codeblocked(ctx, '\n'.join(msg))
+                msg.append(f'< Unable to ban {player}, {server} is offline! >')
+        await sendMarkdown(ctx, '\n'.join(msg))
 
     @commands.command(aliases=['pass'])
     @commands.guild_only()
@@ -123,11 +123,11 @@ class ConsoleCmds:
         if isUp(server):
             log.info(f'Relaying \"{command}\" to {server}.')
             await sendCmd(self.loop, server, command)
-            msg.append(f'[Info] Relayed \"{command}\" to {server}.')
+            msg.append(f'# Relayed \"{command}\" to {server}.')
         else:
             log.warning(f'Could not relay \"{command}\" to {server}.')
-            msg.append(f'[Error] Unable to relay command, {server} is offline!')
-        await sendReply_codeblocked(ctx, '\n'.join(msg))
+            msg.append(f'< Unable to relay command, {server} is offline! >')
+        await sendMarkdown(ctx, '\n'.join(msg))
 
 
 def setup(bot):
