@@ -1,8 +1,9 @@
 from discord.ext import commands
+from discord.utils import find
 import re
 import logging
 from utils.config import Config
-from utils.discoutils import permissionNode, sendReply_codeblocked, sendReply
+from utils.discoutils import permissionNode, sendReply_codeblocked, sendMarkdown
 from .utils.mcservutils import isUp, sendCmd
 
 log = logging.getLogger('charfred')
@@ -41,11 +42,12 @@ class Customs:
 
     @custom.command(aliases=['edit', 'modify'])
     @permissionNode('customEdit')
-    async def add(self, ctx, name: str, *, cmd: str):
+    async def add(self, ctx, name: str, minRole: str, *, cmd: str):
         """Add a custom command to the library.
 
-        Takes a name to save the command under
-        and a variable length console command.
+        Takes a name to save the command under,
+        a minimum required Discord role, and
+        a variable length console command.
         Anything after the name parameter becomes
         part of the command.
         If you want your command to take arguments,
@@ -55,9 +57,9 @@ class Customs:
         left to right, with the given arguments,
         when the command is ran.
         """
-        self.customcmds[name] = cmd
+        self.customcmds[name] = {'role': minRole, 'cmd': cmd}
         log.info(f'Added \"{cmd}\" to your custom console commands library.')
-        await sendReply(ctx, f'Added \"{cmd}\" to your custom console commands library.')
+        await sendMarkdown(ctx, f'# Added \"{cmd}\" to your custom console commands library.')
         await self.customcmds.save()
 
     @custom.command(aliases=['delete'])
@@ -70,7 +72,7 @@ class Customs:
         """
         del self.customcmds[name]
         log.info(f'Removed \"{name}\" from your custom console commands library.')
-        await sendReply(ctx, f'Removed \"{name}\" from your custom console commands library.')
+        await sendMarkdown(ctx, f'# Removed \"{name}\" from your custom console commands library.')
         await self.customcmds.save()
 
     @custom.command(aliases=['execute', 'exec'])
@@ -90,7 +92,14 @@ class Customs:
             log.warning(f'\"{cmd}\" is undefined!')
             msg.append(f'[Error]: \"{cmd}\" is undefined!')
             return
-        _cmd = self.customcmds[cmd]
+        _cmd = self.customcmds[cmd]['cmd']
+        minRole = self.customcmds[cmd]['role']
+        minRole = find(lambda r: r.name == minRole, ctx.guild.roles)
+        if ctx.author.top_role < minRole:
+            log.warning(f'User is missing permissions for {cmd}!')
+            await sendMarkdown(ctx, f'< You are not permitted to run {cmd}! >\n'
+                               f'< Minimum required role is {str(minRole)}. >')
+            return
         if re.match('^all$', server, flags=re.I):
             for server in self.servercfg['servers']:
                 if isUp(server):
