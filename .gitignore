@@ -96,9 +96,11 @@ ENV/
 .mypy_cache/
 
 #Project Specific
-configs/configs.py
-configs/*.json
-cogs/
-default_config.txt
-old_main.py
+/*
+!/.gitignore
+!/requirements.txt
+!/dataCogs
+!/funCogs
+!/minecraftCogs
+!/moderationCogs
 .flake8
