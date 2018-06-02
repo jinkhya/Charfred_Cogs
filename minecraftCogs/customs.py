@@ -3,7 +3,7 @@ from discord.utils import find
 import re
 import logging
 from utils.config import Config
-from utils.discoutils import permissionNode, sendReply_codeblocked, sendMarkdown
+from utils.discoutils import permissionNode, sendMarkdown
 from .utils.mcservutils import isUp, sendCmd
 
 log = logging.getLogger('charfred')
@@ -39,7 +39,7 @@ class Customs:
                 msg.append(f"\t{cmd['role']}")
                 msg.append(f"\t{cmd['cmd']}\n")
             msg = '\n'.join(msg)
-            await sendReply_codeblocked(ctx, msg, encoding='json')
+            await sendMarkdown(ctx, msg)
 
     @custom.command(aliases=['edit', 'modify'])
     @permissionNode('customEdit')
@@ -110,10 +110,10 @@ class Customs:
                         await sendCmd(self.loop, server, _cmd.format(*args))
                     else:
                         await sendCmd(self.loop, server, _cmd)
-                    msg.append(f'[Info] Executed \"{cmd}\" on {server}.')
+                    msg.append(f'# Executed \"{cmd}\" on {server}.')
                 else:
                     log.warning(f'Could not execute \"{cmd}\", {server} is offline!')
-                    msg.append(f'[Error]: Unable to execute \"{cmd}\", {server}, is offline!')
+                    msg.append(f'< Unable to execute \"{cmd}\", {server}, is offline! >')
         else:
             if isUp(server):
                 log.info(f'Executing \"{cmd}\" on {server}.')
@@ -121,11 +121,11 @@ class Customs:
                     await sendCmd(self.loop, server, _cmd.format(*args))
                 else:
                     await sendCmd(self.loop, server, _cmd)
-                msg.append(f'[Info] Executed \"{cmd}\" on {server}.')
+                msg.append(f'# Executed \"{cmd}\" on {server}.')
             else:
                 log.warning(f'Could not execute \"{cmd}\", {server} is offline!')
-                msg.append(f'[Error]: Unable to execute \"{cmd}\", {server}, is offline!')
-        await sendReply_codeblocked(ctx, '\n'.join(msg))
+                msg.append(f'< Unable to execute \"{cmd}\", {server}, is offline! >')
+        await sendMarkdown(ctx, '\n'.join(msg))
 
 
 def setup(bot):
