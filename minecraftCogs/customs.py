@@ -36,7 +36,8 @@ class Customs:
                    '===============================']
             for name, cmd in self.customcmds.items():
                 msg.append(name)
-                msg.append(f'\t{cmd}')
+                msg.append(f"\t{cmd['role']}")
+                msg.append(f"\t{cmd['cmd']}\n")
             msg = '\n'.join(msg)
             await sendReply_codeblocked(ctx, msg, encoding='json')
 
@@ -90,7 +91,7 @@ class Customs:
         msg = ['Command Log', '===========']
         if cmd not in self.customcmds:
             log.warning(f'\"{cmd}\" is undefined!')
-            msg.append(f'[Error]: \"{cmd}\" is undefined!')
+            await sendMarkdown(ctx, f'< \"{cmd}\" is undefined! >')
             return
         _cmd = self.customcmds[cmd]['cmd']
         minRole = self.customcmds[cmd]['role']
@@ -100,6 +101,7 @@ class Customs:
             await sendMarkdown(ctx, f'< You are not permitted to run {cmd}! >\n'
                                f'< Minimum required role is {str(minRole)}. >')
             return
+        log.info(f'Required: {str(minRole)}; User has: {str(ctx.author.top_role)}')
         if re.match('^all$', server, flags=re.I):
             for server in self.servercfg['servers']:
                 if isUp(server):
