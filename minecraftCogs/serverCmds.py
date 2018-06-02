@@ -202,7 +202,41 @@ class ServerCmds:
             await asyncio.sleep(30, loop=self.loop)
             if isUp(server):
                 log.warning(f'Restart failed, {server} appears not to have stopped!')
-                await sendMarkdown(ctx, f'< Restart failed, {server} appears not to have stooped! >')
+
+                def termcheck(reaction, user):
+                    if reaction.message.id != announcement.id:
+                        return False
+
+                    return str(reaction.emoji) == '❌' and user == ctx.author
+
+                msg = (f'```markdown\n< Restart failed, {server} appears not to have stooped! >\n'
+                       f'React with ❌ within 60 seconds to force stop {server}!\n```')
+                await announcement.edit(content=msg)
+                await announcement.add_reaction('❌')
+
+                log.info(f'Awaiting confirm on {server} termination... 60 seconds')
+                try:
+                    await self.bot.wait_for('reaction_add', timeout=60, check=termcheck)
+                except asyncio.TimeoutError:
+                    log.info('Termination cancelled!')
+                    await announcement.clear_reactions()
+                    await announcement.edit(content='```markdown\n< Restart incomplete,'
+                                            'termination cancelled! >\n```')
+                else:
+                    log.info('Attempting termination...')
+                    await announcement.clear_reactions()
+                    await announcement.edit(content='```markdown\n> Attempting termination!\n'
+                                            '> Please hold, this may take a couple of seconds.```')
+                    _termProc = functools.partial(termProc, server)
+                    killed = await self.loop.run_in_executor(None, _termProc)
+                    if killed:
+                        log.info(f'{server} terminated.')
+                        await announcement.edit(content=f'```markdown\n# {server} terminated.\n'
+                                                '< Please investigate why termination was necessary >\n'
+                                                f'< and start {server} manually afterwards! >```')
+                    else:
+                        log.info(f'{server} termination failed!')
+                        await announcement.edit(content=f'```markdown\n< {server} termination failed! >\n')
             else:
                 log.info(f'Restart in progress, {server} was stopped.')
                 await sendMarkdown(ctx, f'# Restart in progress, {server} was stopped.')
