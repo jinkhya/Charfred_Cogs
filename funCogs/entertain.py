@@ -18,6 +18,23 @@ faces = [
     u"٩(^ᴗ^)۶", u"ಥ◡ಥ", u"⚈ ̫ ⚈", u"∠(^ー^)", u"(^-^)ゝ", u"(∩^o^)⊃━☆ﾟ.*･｡ﾟ", u"ლ(・ヮ・ლ)"
 ]
 
+pleasures = [
+    'My pleasure, sir!', 'My pleasure, ma\'am', 'You are very welcome, sir!',
+    'You are very welcome, madam!', 'Of course, your highness!', 'Of course, your ladyship!',
+    'M\'lord *tips tophat*', 'Indubitably!', 'Fuck you!', '...', ' '
+]
+
+loves = [
+    u"•́ε•̀٥", u"˶⚈Ɛ⚈˵", u"(・ε・｀)", u"(~￣³￣)~", u".+(´^ω^`)+.", u"ﾟ*｡(･∀･)ﾟ*｡", u"",
+    u"(∩^o^)⊃━☆゜.*", u"ಠ◡ಠ", u"ʢᵕᴗᵕʡ", u"(^￢^)", u"(º﹃º)", u"ಠ_ರೃ", u"d(´･ω･`)"
+]
+
+gn9s = [
+    'Good night, sir!', 'Good night!', 'Nighty night!', 'Sweet dreams!',
+    'Sleep well!', 'Don\'t let the bedbugs bite!', 'Pleasant dreams!',
+    'Glorious dreams to you, too!'
+]
+
 
 class Entertain:
     def __init__(self, bot):
@@ -41,8 +58,13 @@ class Entertain:
 
     @commands.command(aliases=['thank'])
     async def thanks(self, ctx):
-        await ctx.send('You are very welcome, sir!\n' +
+        await ctx.send(random.choice(pleasures) + ' ' +
                        random.choice(faces))
+
+    @commands.command(aliases=['gn9', 'gn8', 'goodnight'])
+    async def gn(self, ctx):
+        await ctx.send(random.choice(gn9s) + ' ' +
+                       random.choice(loves))
 
 
 def setup(bot):
