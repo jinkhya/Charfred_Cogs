@@ -13,6 +13,11 @@ dances = [
     [u"(ノ￣ー￣)ノ", [u"(〜￣△￣)〜", u"(ノ￣ω￣)ノ", u"(ノ￣ー￣)ノ", u"(〜￣△￣)〜", u"(ノ￣ω￣)ノ"]]
 ]
 
+faces = [
+    u"(´﹃｀)", u"(・ε・｀)", u"(ง •̀ω•́)ง✧", u"╭( ･ㅂ･)و", u"ಠ‿↼", u"d(-_^)", u"d(´･ω･`)",
+    u"٩(^ᴗ^)۶", u"ಥ◡ಥ", u"⚈ ̫ ⚈", u"∠(^ー^)", u"(^-^)ゝ", u"(∩^o^)⊃━☆ﾟ.*･｡ﾟ", u"ლ(・ヮ・ლ)"
+]
+
 
 class Entertain:
     def __init__(self, bot):
@@ -33,6 +38,11 @@ class Entertain:
         unflipped = await ctx.send(u"(ಠ_ಠ) ┳━┳")
         await asyncio.sleep(2, loop=self.loop)
         await unflipped.edit(content=u"(╯ಠ_ಠ)╯︵┻━┻")
+
+    @commands.command(aliases=['thank'])
+    async def thanks(self, ctx):
+        await ctx.send('You are very welcome, sir!\n' +
+                       random.choice(faces))
 
 
 def setup(bot):
