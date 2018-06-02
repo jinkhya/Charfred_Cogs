@@ -65,7 +65,11 @@ class ServerCmds:
     @server.command()
     @permissionNode('stop')
     async def stop(self, ctx, server: str):
-        """Stop a server."""
+        """Stop a server.
+
+        If stop fails, prompts for forceful
+        termination of server.
+        """
 
         if server not in self.servercfg['servers']:
             log.warning(f'{server} has been misspelled or not configured!')
@@ -91,7 +95,38 @@ class ServerCmds:
             await asyncio.sleep(20, loop=self.loop)
             if isUp(server):
                 log.warning(f'{server} does not appear to have stopped!')
-                await sendMarkdown(ctx, f'< {server} does not appear to have stopped! >')
+                msg = await sendMarkdown(ctx, f'< {server} does not appear to have stopped! >'
+                                         f'React with ❌ within 60 seconds to force stop {server}!')
+                await msg.add_reaction('❌')
+
+                def termcheck(reaction, user):
+                    if reaction.message.id != msg.id:
+                        return False
+
+                    return str(reaction.emoji) == '❌' and user == ctx.author
+
+                log.info(f'Awaiting confirm on {server} termination... 60 seconds')
+                try:
+                    await self.bot.wait_for('reaction_add', timeout=60, check=termcheck)
+                except asyncio.TimeoutError:
+                    log.info('Termination cancelled!')
+                    await msg.clear_reactions()
+                    await msg.edit(content='```markdown\n< Stop incomplete,'
+                                   'termination cancelled! >\n```')
+                else:
+                    log.info('Attempting termination...')
+                    await msg.clear_reactions()
+                    await msg.edit(content='```markdown\n> Attempting termination!\n'
+                                   '> Please hold, this may take a couple of seconds.```')
+                    _termProc = functools.partial(termProc, server)
+                    killed = await self.loop.run_in_executor(None, _termProc)
+                    if killed:
+                        log.info(f'{server} terminated.')
+                        await msg.edit(content=f'```markdown\n# {server} terminated.\n'
+                                       '< Please investigate why termination was necessary! >```')
+                    else:
+                        log.info(f'{server} termination failed!')
+                        await msg.edit(content=f'```markdown\n< {server} termination failed! >\n')
             else:
                 log.info(f'{server} was stopped.')
                 await sendMarkdown(ctx, f'# {server} was stopped.')
@@ -110,7 +145,8 @@ class ServerCmds:
         10m, 5m, 3m, 2m, 1m, 30s, 10s, 5s.
 
         Additionally the issuer of this command
-        may abort the countdown at any step.
+        may abort the countdown at any step,
+        and issue termination, if stop fails.
         """
 
         if server not in self.servercfg['servers']:
