@@ -222,7 +222,6 @@ class ServerCmds:
                     )
                     await sendMarkdown(ctx, f'# Restart of {server} aborted!')
                     return
-                # await asyncio.sleep(step[1], loop=self.loop)
             await sendCmd(
                 self.loop,
                 server,
@@ -234,7 +233,7 @@ class ServerCmds:
                 server,
                 'stop'
             )
-            await sendMarkdown(ctx, f'> Stopping {server}.')
+            await announcement.edit(content=f'> Stopping {server}.')
             await asyncio.sleep(30, loop=self.loop)
             if isUp(server):
                 log.warning(f'Restart failed, {server} appears not to have stopped!')

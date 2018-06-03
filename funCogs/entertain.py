@@ -61,7 +61,7 @@ class Entertain:
         await ctx.send(random.choice(pleasures) + ' ' +
                        random.choice(faces))
 
-    @commands.command(aliases=['gn9', 'gn8', 'goodnight'])
+    @commands.command(aliases=['gn9', 'gn8', 'goodnight', 'nn'])
     async def gn(self, ctx):
         await ctx.send(random.choice(gn9s) + ' ' +
                        random.choice(loves))
