@@ -12,6 +12,8 @@ class Moderation:
         self.loop = bot.loop
 
     async def on_message(self, message):
+        if message.author.bot:
+            return
         if message.author.id in (self.bot.user.id, self.bot.owner_id):
             return
         if message.guild.id is None:
