@@ -1,5 +1,5 @@
 import logging
-import random
+from random import randrange
 from discord.ext import commands
 from utils.config import Config
 
@@ -18,20 +18,22 @@ class Quotator:
             if user.bot or reaction.message.author.bot:
                 return
 
+            if reaction.message.embeds:
+                await reaction.message.add_reaction('\N{CROSS MARK}')
+                return
+
             log.info('Saving a quote!')
             quotee = reaction.message.author
             quote = reaction.message.content
 
             if quotee.name not in self.quotes:
-                self.quotes[quotee.name] = {}
-            elif quote in self.quotes[quotee.name]:
-                await reaction.message.add_reaction('\N{CROSS MARK}')
-                return
+                self.quotes[quotee.name] = []
 
-            self.quotes[quotee.name][quote] = {'quotee': quotee.id,
-                                               'savedBy': user.id}
-            await reaction.message.add_reaction('\N{HEAVY CHECK MARK}')
+            self.quotes[quotee.name].append({'quote': quote,
+                                             'quotee': quotee.id,
+                                             'savedBy': user.id})
             await self.quotes.save()
+            await reaction.message.add_reaction('\N{WHITE HEAVY CHECK MARK}')
 
     @commands.group(invoke_without_command=True)
     async def quote(self, ctx, user: str=None):
@@ -44,18 +46,21 @@ class Quotator:
 
         if user and user in self.quotes:
             log.info('Random quote!')
-            q = random.choice(list(self.quotes[user].keys()))
-            await ctx.send(f'{user}: {q}')
+            qIndex = randrange(len(self.quotes[user]))
+            q = self.quotes[user][qIndex]['quote']
+            await ctx.send(f'{q}\n\n_Quote #{qIndex}_')
         else:
             users = '\n '.join(self.quotes.keys())
             await ctx.send(f'I have quotes from these users:\n ```\n{users}\n```')
 
     @quote.command(aliases=['delete', 'unquote'])
-    async def remove(self, ctx, user: str, *, _quote: str):
+    async def remove(self, ctx, user: str, *, _index: int):
         """Remove a specific quote.
 
         Takes the user who was quoted, and
-        the exact quote to be removed.
+        the ID of the quote to be removed,
+        which is shown at the bottom of each
+        quote.
 
         Only the user who saved the quote,
         and the quoted user can do this.
@@ -64,9 +69,9 @@ class Quotator:
         if user in self.quotes:
             log.info('Removing a quote!')
             try:
-                if ctx.author.id == self.quotes[user][_quote]['quotee'] or \
-                        ctx.author.id == self.quotes[user][_quote]['savedBy']:
-                    del self.quotes[user][_quote]
+                if ctx.author.id == self.quotes[user][_index]['quotee'] or \
+                        ctx.author.id == self.quotes[user][_index]['savedBy']:
+                    del self.quotes[user][_index]
                     await ctx.send('We shall never speak of it again, sir!')
                     await self.quotes.save()
                 else:
