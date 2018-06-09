@@ -26,6 +26,8 @@ class Quotator:
             quotee = reaction.message.author
             quote = reaction.message.content
 
+            # TODO: Usernames are not unique, find a better solution
+            # that won't make getting quotes too annoying.
             if quotee.name not in self.quotes:
                 self.quotes[quotee.name] = []
 
@@ -48,9 +50,9 @@ class Quotator:
             log.info('Random quote!')
             qIndex = randrange(len(self.quotes[user]))
             q = self.quotes[user][qIndex]['quote']
-            await ctx.send(f'{q}\n\n_Quote #{qIndex}_')
+            await ctx.send(f'{q}\n\n_{user}; Quote #{qIndex}_')
         else:
-            users = '\n '.join(self.quotes.keys())
+            users = '\n'.join(self.quotes.keys())
             await ctx.send(f'I have quotes from these users:\n ```\n{users}\n```')
 
     @quote.command(aliases=['delete', 'unquote'])
