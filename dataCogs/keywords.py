@@ -109,9 +109,12 @@ class Keywords:
         if category is None:
             log.info('Random gibberish!')
             await ctx.send(f'{random.choice(random.choice(list(self.phrases.values())))}')
-        else:
+        elif category in self.phrases:
             log.info(f'Random gibberish from {category}!')
             await ctx.send(f'{random.choice(self.phrases[category])}')
+        else:
+            log.info('Invalid category!')
+            await ctx.send(f'Category: {category} does not exist or has been misspelled!')
 
 
 def setup(bot):
