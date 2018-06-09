@@ -21,6 +21,10 @@ class Quotator:
             log.info('Saving a quote!')
             quotee = reaction.message.author
             quote = reaction.message.content
+
+            if quotee.name not in self.quotes:
+                self.quotes[quotee.name] = {}
+
             self.quotes[quotee.name][quote] = {'quotee': quotee.id,
                                                'savedBy': user.id}
             await reaction.message.add_reaction('✔️')
