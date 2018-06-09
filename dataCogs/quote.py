@@ -45,7 +45,7 @@ class Quotator:
         if user and user in self.quotes:
             log.info('Random quote!')
             q = random.choice(list(self.quotes[user].keys()))
-            await ctx.send(f'```\n{q}\n```')
+            await ctx.send(f'{user}: {q}')
         else:
             users = '\n '.join(self.quotes.keys())
             await ctx.send(f'I have quotes from these users:\n ```\n{users}\n```')
