@@ -31,6 +31,7 @@ class Quotator:
             self.quotes[quotee.name][quote] = {'quotee': quotee.id,
                                                'savedBy': user.id}
             await reaction.message.add_reaction('\N{HEAVY CHECK MARK}')
+            await self.quotes.save()
 
     @commands.group(invoke_without_command=True)
     async def quote(self, ctx, user: str=None):
@@ -67,6 +68,7 @@ class Quotator:
                         ctx.author.id == self.quotes[user][_quote]['savedBy']:
                     del self.quotes[user][_quote]
                     await ctx.send('We shall never speak of it again, sir!')
+                    await self.quotes.save()
                 else:
                     await ctx.send('I am sorry, sir, but you are neither the quotee, '
                                    'nor the person who requested this quote to be saved.')
