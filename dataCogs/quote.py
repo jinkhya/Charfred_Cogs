@@ -10,7 +10,7 @@ class Quotator:
     def __init__(self, bot):
         self.bot = bot
         self.loop = bot.loop
-        self.quotes = Config(f'{bot.dir}/data/quotes.json',
+        self.quotes = Config(f'{bot.dir}/configs/quotes.json',
                              load=True, loop=self.loop)
 
     async def on_reaction_add(self, reaction, user):
