@@ -19,7 +19,7 @@ class Quotator:
                 return
 
             if reaction.message.embeds:
-                await reaction.message.add_reaction('\N{CROSS MARK}')
+                await reaction.message.add_reaction('🖕')
                 return
 
             log.info('Saving a quote!')
@@ -35,10 +35,10 @@ class Quotator:
                                              'quotee': quotee.id,
                                              'savedBy': user.id})
             await self.quotes.save()
-            await reaction.message.add_reaction('\N{WHITE HEAVY CHECK MARK}')
+            await reaction.message.add_reaction('👌')
 
     @commands.group(invoke_without_command=True)
-    async def quote(self, ctx, user: str=None):
+    async def quote(self, ctx, user: str=None, _index: int=None):
         """User Quote operations.
 
         Without a subcommand, this returns a list
@@ -47,10 +47,19 @@ class Quotator:
         """
 
         if user and user in self.quotes:
-            log.info('Random quote!')
-            qIndex = randrange(len(self.quotes[user]))
-            q = self.quotes[user][qIndex]['quote']
-            await ctx.send(f'{q}\n\n_{user}; Quote #{qIndex}_')
+            if _index is None:
+                log.info('Random quote!')
+                _index = randrange(len(self.quotes[user]))
+                q = self.quotes[user][_index]['quote']
+            else:
+                try:
+                    log.info('Specific quote!')
+                    q = self.quotes[user][_index]['quote']
+                except KeyError:
+                    log.info('No quote with that index!')
+                    await ctx.send('Sorry sir, there is no quote under that number!')
+                    return
+            await ctx.send(f'{q}\n\n_{user}; Quote #{_index}_')
         else:
             users = '\n'.join(self.quotes.keys())
             await ctx.send(f'I have quotes from these users:\n ```\n{users}\n```')
