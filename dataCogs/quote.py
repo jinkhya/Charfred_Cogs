@@ -24,10 +24,13 @@ class Quotator:
 
             if quotee.name not in self.quotes:
                 self.quotes[quotee.name] = {}
+            elif quote in self.quotes[quotee.name]:
+                await reaction.message.add_reaction('\N{CROSS MARK}')
+                return
 
             self.quotes[quotee.name][quote] = {'quotee': quotee.id,
                                                'savedBy': user.id}
-            await reaction.message.add_reaction('✔️')
+            await reaction.message.add_reaction('\N{HEAVY CHECK MARK}')
 
     @commands.group(invoke_without_command=True)
     async def quote(self, ctx, user: str=None):
