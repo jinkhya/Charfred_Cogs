@@ -23,7 +23,7 @@ class Keywords:
 
         if ctx.invoked_subcommand is None:
             categories = '\n '.join(self.phrases.keys())
-            await ctx.send(f'I know these categories:\n ``` {categories}```')
+            await ctx.send(f'I know these categories:\n ```\n{categories}\n```')
 
     @vocab.command()
     @permissionNode('vocabAdd')
@@ -46,9 +46,14 @@ class Keywords:
 
         if category in self.phrases:
             log.info('Forgetting something!')
-            self.phrases[category].remove(phrase)
-            await self.phrases.save()
-            await ctx.send('Oh man, I think I forgot something...')
+            try:
+                self.phrases[category].remove(phrase)
+            except:
+                log.info('Cannot remove, phrase unknown!')
+                await ctx.send('Can\'t forget this, because I never even knew that!')
+            else:
+                await self.phrases.save()
+                await ctx.send('Oh man, I think I forgot something...')
         else:
             log.info('Invalid category!')
             await ctx.send('I don\'t know that category!')
