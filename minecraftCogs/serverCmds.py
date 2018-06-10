@@ -376,7 +376,7 @@ class ServerCmds:
             else:
                 await sendMarkdown(ctx, f'# {server} watchdog active!')
 
-    @watchdog.command(name='activate')
+    @watchdog.command(name='activate', aliases=['start', 'watch'])
     async def wdstart(self, ctx, server: str):
         """Start the process watchdog for a server."""
 
@@ -416,7 +416,7 @@ class ServerCmds:
             self.watchdogs[server] = (watchFuture, event)
             await sendMarkdown(ctx, '# Watchdog activated!')
 
-    @watchdog.command(name='deactivate')
+    @watchdog.command(name='deactivate', aliases=['stop', 'unwatch'])
     async def wdstop(self, ctx, server: str):
         """Stop the process watchdog for a server."""
 
