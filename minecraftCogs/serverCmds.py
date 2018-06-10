@@ -5,7 +5,7 @@ import os
 import re
 import logging
 import functools
-from multiprocessing import Process
+from threading import Event
 from utils.config import Config
 from utils.discoutils import permissionNode, sendMarkdown
 from utils.flipbooks import EmbedFlipbook
@@ -371,7 +371,7 @@ class ServerCmds:
         """
 
         for server, wd in self.watchdogs.items():
-            if wd.is_alive():
+            if wd[0].running():
                 await sendMarkdown(f'# {server} watchdog active!')
             else:
                 await sendMarkdown(f'< {server} watchdog inactive! >')
@@ -380,36 +380,49 @@ class ServerCmds:
     async def wdstart(self, ctx, server: str):
         """Start the process watchdog for a server."""
 
-        if server in self.watchdogs and self.watchdogs[server].is_alive():
+        if server in self.watchdogs and self.watchdogs[server][0].running():
+            log.info(f'{server} watchdog active.')
             await sendMarkdown('# Watchdog already active!')
         else:
             async def serverGone():
-                await ctx.send(f'{server} is gone! It may have crashed, been stopped '
-                               'or it\'s restarting!')
+                await sendMarkdown(f'< {server} is gone! >\n'
+                                   '< It may have crashed, been stopped or is restarting! >')
 
-            def gone_callback(self):
-                gone = functools.partial(serverGone, server)
-                asyncio.run_coroutine_threadsafe(gone, self.loop)
+            async def watchGone():
+                await sendMarkdown(f'> Ended watch on {server}!')
 
-            def watch():
+            def watchDone(future):
+                log.info(f'WD: Ending watch on {server}.')
+                if future.exception():
+                    log.warning(f'WD: Exception in watchdog for {server}!')
+                asyncio.run_coroutine_threadsafe(watchGone(), self.loop)
+
+            def watch(event):
+                log.info(f'WD: Starting watch on {server}.')
                 serverProc = getProc(server)
-                if serverProc:
-                    serverProc.wait()
-                gone_callback()
+                while not event.is_set():
+                    if serverProc.is_running():
+                        event.wait(timeout=20)
+                    else:
+                        log.info(f'WD: {server} is gone!')
+                        asyncio.run_coroutine_threadsafe(serverGone(), self.loop)
+                else:
+                    return
 
-            wd = Process(target=watch, daemon=True)
-            self.watchdogs[server] = wd
-            wd.start()
+            event = Event()
+            watchFuture = self.loop.run_in_executor(None, watch, event)
+            watchFuture.add_done_callback(watchDone)
+            self.watchdogs[server] = (watchFuture, event)
             await ctx.send('# Watchdog activated!')
 
     @watchdog.command(name='deactivate')
     async def wdstop(self, ctx, server: str):
         """Stop the process watchdog for a server."""
 
-        if server in self.watchdogs and self.watchdogs[server].is_alive():
-            self.watchdogs[server].terminate()
-            await sendMarkdown(f'> Terminating {server} watchdog...\n'
-                               '> Please see watchdog list in a few seconds, for status.')
+        if server in self.watchdogs and self.watchdogs[server][0].running():
+            watcher = self.watchdogs[server]
+            watcher[1].set()
+            await sendMarkdown(f'> Terminating {server} watchdog...')
         else:
             await sendMarkdown('# Watchdog already inactive!')
 
