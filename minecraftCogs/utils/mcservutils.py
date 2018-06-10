@@ -33,6 +33,14 @@ def termProc(server):
     return False
 
 
+def getProc(server):
+    """Finds and returns the Process object for a given server."""
+    for process in psutil.process_iter(attrs=['cmdline']):
+        if f'{server}.jar' in process.info['cmdline']:
+            return process
+    return None
+
+
 async def sendCmd(loop, server, cmd):
     """Passes a given command string to a server's screen."""
     log.info(f'Sending \"{cmd}\" to {server}.')

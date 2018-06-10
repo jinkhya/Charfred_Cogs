@@ -5,10 +5,11 @@ import os
 import re
 import logging
 import functools
+from multiprocessing import Process
 from utils.config import Config
 from utils.discoutils import permissionNode, sendMarkdown
 from utils.flipbooks import EmbedFlipbook
-from .utils.mcservutils import isUp, termProc, sendCmd, sendCmds
+from .utils.mcservutils import isUp, termProc, sendCmd, sendCmds, getProc
 
 log = logging.getLogger('charfred')
 
@@ -18,9 +19,15 @@ class ServerCmds:
         self.bot = bot
         self.loop = bot.loop
         self.servercfg = bot.servercfg
+        self.watchdogs = {}
         self.countpat = re.compile(
             '(?P<time>\d+)((?P<minutes>[m].*)|(?P<seconds>[s].*))', flags=re.I
         )
+
+    def __unload(self):
+        if self.watchdogs:
+            for thread in self.watchdogs.values():
+                thread.cancel()
 
     @commands.group()
     @commands.guild_only()
@@ -354,6 +361,58 @@ class ServerCmds:
             log.info(f'Could not terminate {server}!')
             await sendMarkdown(ctx, f'< Well this is awkward... {server} is still up! >')
 
+    @server.group(invoke_without_command=True)
+    @permissionNode('watchdog')
+    async def watchdog(self, ctx):
+        """Server process watchdog operations.
+
+        Without a subcommand this returns a list of all
+        active watchdogs.
+        """
+
+        for server, wd in self.watchdogs.items():
+            if wd.is_alive():
+                await sendMarkdown(f'# {server} watchdog active!')
+            else:
+                await sendMarkdown(f'< {server} watchdog inactive! >')
+
+    @watchdog.command(name='activate')
+    async def wdstart(self, ctx, server: str):
+        """Start the process watchdog for a server."""
+
+        if server in self.watchdogs and self.watchdogs[server].is_alive():
+            await sendMarkdown('# Watchdog already active!')
+        else:
+            async def serverGone():
+                await ctx.send(f'{server} is gone! It may have crashed, been stopped '
+                               'or it\'s restarting!')
+
+            def gone_callback(self):
+                gone = functools.partial(serverGone, server)
+                asyncio.run_coroutine_threadsafe(gone, self.loop)
+
+            def watch():
+                serverProc = getProc(server)
+                if serverProc:
+                    serverProc.wait()
+                gone_callback()
+
+            wd = Process(target=watch, daemon=True)
+            self.watchdogs[server] = wd
+            wd.start()
+            await ctx.send('# Watchdog activated!')
+
+    @watchdog.command(name='deactivate')
+    async def wdstop(self, ctx, server: str):
+        """Stop the process watchdog for a server."""
+
+        if server in self.watchdogs and self.watchdogs[server].is_alive():
+            self.watchdogs[server].terminate()
+            await sendMarkdown(f'> Terminating {server} watchdog...\n'
+                               '> Please see watchdog list in a few seconds, for status.')
+        else:
+            await sendMarkdown('# Watchdog already inactive!')
+
     @server.group()
     @permissionNode('management')
     async def config(self, ctx):
@@ -494,4 +553,4 @@ def setup(bot):
     bot.add_cog(ServerCmds(bot))
 
 
-permissionNodes = ['start', 'stop', 'status', 'restart', 'terminate', 'management']
+permissionNodes = ['start', 'stop', 'status', 'restart', 'terminate', 'management', 'watchdog']
