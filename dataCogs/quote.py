@@ -55,7 +55,7 @@ class Quotator:
                 try:
                     log.info('Specific quote!')
                     q = self.quotes[user][_index]['quote']
-                except KeyError:
+                except (KeyError, IndexError):
                     log.info('No quote with that index!')
                     await ctx.send('Sorry sir, there is no quote under that number!')
                     return
