@@ -372,9 +372,9 @@ class ServerCmds:
 
         for server, wd in self.watchdogs.items():
             if wd[0].running():
-                await sendMarkdown(f'# {server} watchdog active!')
+                await sendMarkdown(ctx, f'# {server} watchdog active!')
             else:
-                await sendMarkdown(f'< {server} watchdog inactive! >')
+                await sendMarkdown(ctx, f'< {server} watchdog inactive! >')
 
     @watchdog.command(name='activate')
     async def wdstart(self, ctx, server: str):
@@ -385,11 +385,11 @@ class ServerCmds:
             await sendMarkdown('# Watchdog already active!')
         else:
             async def serverGone():
-                await sendMarkdown(f'< {server} is gone! >\n'
+                await sendMarkdown(ctx, f'< {server} is gone! >\n'
                                    '< It may have crashed, been stopped or is restarting! >')
 
             async def watchGone():
-                await sendMarkdown(f'> Ended watch on {server}!')
+                await sendMarkdown(ctx, f'> Ended watch on {server}!')
 
             def watchDone(future):
                 log.info(f'WD: Ending watch on {server}.')
@@ -405,6 +405,7 @@ class ServerCmds:
                         event.wait(timeout=20)
                     else:
                         log.info(f'WD: {server} is gone!')
+                        event.set()
                         asyncio.run_coroutine_threadsafe(serverGone(), self.loop)
                 else:
                     return
@@ -413,7 +414,7 @@ class ServerCmds:
             watchFuture = self.loop.run_in_executor(None, watch, event)
             watchFuture.add_done_callback(watchDone)
             self.watchdogs[server] = (watchFuture, event)
-            await ctx.send('# Watchdog activated!')
+            await sendMarkdown(ctx, '# Watchdog activated!')
 
     @watchdog.command(name='deactivate')
     async def wdstop(self, ctx, server: str):
@@ -422,9 +423,9 @@ class ServerCmds:
         if server in self.watchdogs and self.watchdogs[server][0].running():
             watcher = self.watchdogs[server]
             watcher[1].set()
-            await sendMarkdown(f'> Terminating {server} watchdog...')
+            await sendMarkdown(ctx, f'> Terminating {server} watchdog...')
         else:
-            await sendMarkdown('# Watchdog already inactive!')
+            await sendMarkdown(ctx, '# Watchdog already inactive!')
 
     @server.group()
     @permissionNode('management')
