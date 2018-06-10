@@ -26,8 +26,9 @@ class ServerCmds:
 
     def __unload(self):
         if self.watchdogs:
-            for thread in self.watchdogs.values():
-                thread.cancel()
+            for fut, event in self.watchdogs.values():
+                event.set()
+                fut.cancel()
 
     @commands.group()
     @commands.guild_only()
