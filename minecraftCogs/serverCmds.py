@@ -371,16 +371,16 @@ class ServerCmds:
         """
 
         for server, wd in self.watchdogs.items():
-            if wd[0].running():
-                await sendMarkdown(ctx, f'# {server} watchdog active!')
-            else:
+            if wd[0].done():
                 await sendMarkdown(ctx, f'< {server} watchdog inactive! >')
+            else:
+                await sendMarkdown(ctx, f'# {server} watchdog active!')
 
     @watchdog.command(name='activate')
     async def wdstart(self, ctx, server: str):
         """Start the process watchdog for a server."""
 
-        if server in self.watchdogs and self.watchdogs[server][0].running():
+        if server in self.watchdogs and not self.watchdogs[server][0].done():
             log.info(f'{server} watchdog active.')
             await sendMarkdown('# Watchdog already active!')
         else:
@@ -420,7 +420,7 @@ class ServerCmds:
     async def wdstop(self, ctx, server: str):
         """Stop the process watchdog for a server."""
 
-        if server in self.watchdogs and self.watchdogs[server][0].running():
+        if server in self.watchdogs and not self.watchdogs[server][0].done():
             watcher = self.watchdogs[server]
             watcher[1].set()
             await sendMarkdown(ctx, f'> Terminating {server} watchdog...')
