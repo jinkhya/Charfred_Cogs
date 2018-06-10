@@ -28,7 +28,6 @@ class ServerCmds:
         if self.watchdogs:
             for fut, event in self.watchdogs.values():
                 event.set()
-                fut.cancel()
 
     @commands.group()
     @commands.guild_only()
