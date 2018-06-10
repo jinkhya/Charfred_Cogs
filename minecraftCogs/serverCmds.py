@@ -386,15 +386,15 @@ class ServerCmds:
         if server in self.watchdogs and self.watchdogs[server].is_alive():
             await sendMarkdown(ctx, '# Watchdog already active!')
         else:
-            async def serverGone():
+            async def serverGone(self):
                 await sendMarkdown(ctx, f'< {server} is gone! It may have crashed, been stopped '
                                    'or it\'s restarting! >')
 
-            def gone_callback():
+            def gone_callback(self):
                 gone = functools.partial(serverGone, server)
                 asyncio.run_coroutine_threadsafe(gone, self.loop)
 
-            def watch():
+            def watch(self):
                 serverProc = getProc(server)
                 if serverProc:
                     serverProc.wait()
