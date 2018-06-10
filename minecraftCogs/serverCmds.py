@@ -370,14 +370,11 @@ class ServerCmds:
         active watchdogs.
         """
 
-        activeDogs = ['Woof woof!', '============']
         for server, wd in self.watchdogs.items():
             if wd.is_alive():
-                activeDogs.append(f'# {server} watchdog active!')
+                await sendMarkdown(ctx, f'# {server} watchdog active!')
             else:
-                activeDogs.append(f'< {server} watchdog inactive! >')
-        activeDogs = '\n'.join(activeDogs)
-        await sendMarkdown(ctx, activeDogs)
+                await sendMarkdown(ctx, f'< {server} watchdog inactive! >')
 
     @watchdog.command(name='activate')
     async def wdstart(self, ctx, server: str):
@@ -386,7 +383,7 @@ class ServerCmds:
         if server in self.watchdogs and self.watchdogs[server].is_alive():
             await sendMarkdown(ctx, '# Watchdog already active!')
         else:
-            async def serverGone(self):
+            async def serverGone():
                 await sendMarkdown(ctx, f'< {server} is gone! It may have crashed, been stopped '
                                    'or it\'s restarting! >')
 
@@ -394,7 +391,7 @@ class ServerCmds:
                 gone = functools.partial(serverGone, server)
                 asyncio.run_coroutine_threadsafe(gone, self.loop)
 
-            def watch(self):
+            def watch():
                 serverProc = getProc(server)
                 if serverProc:
                     serverProc.wait()
