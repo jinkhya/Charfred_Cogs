@@ -390,11 +390,15 @@ class ServerCmds:
                 await sendMarkdown(ctx, f'< {server} is gone! It may have crashed, been stopped '
                                    'or it\'s restarting! >')
 
+            def gone_callback():
+                gone = functools.partial(serverGone, server)
+                asyncio.run_coroutine_threadsafe(gone, self.loop)
+
             def watch():
                 serverProc = getProc(server)
                 if serverProc:
                     serverProc.wait()
-                asyncio.run_coroutine_threadsafe(serverGone, self.loop)
+                gone_callback()
 
             wd = Process(target=watch, daemon=True)
             self.watchdogs[server] = wd
