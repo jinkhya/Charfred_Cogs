@@ -2,6 +2,7 @@ import logging
 from random import randrange
 from discord.ext import commands
 from utils.config import Config
+from utils.discoutils import permissionNode
 
 log = logging.getLogger('charfred')
 
@@ -38,6 +39,7 @@ class Quotator:
             await reaction.message.add_reaction('👌')
 
     @commands.group(invoke_without_command=True)
+    @permissionNode('quote')
     async def quote(self, ctx, user: str=None, _index: int=None):
         """User Quote operations.
 
@@ -94,5 +96,7 @@ class Quotator:
 
 
 def setup(bot):
-
     bot.add_cog(Quotator(bot))
+
+
+permissionNodes = ['quote']
