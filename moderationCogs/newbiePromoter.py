@@ -12,7 +12,7 @@ class NewbiePromoter:
     def __init__(self, bot):
         self.bot = bot
         self.promotees = Config(f'{self.bot.dir}/data/promotees_persist.json',
-                                load=True, loop=self.loop)
+                                load=True, loop=self.bot.loop)
         self.memberRoleName = bot.cfg['nodes']['spec:memberRole'][0]
 
     async def on_member_join(self, member):
