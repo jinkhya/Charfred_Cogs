@@ -240,7 +240,7 @@ class ServerCmds:
                 server,
                 'stop'
             )
-            await announcement.edit(content=f'> Stopping {server}.')
+            await announcement.edit(content=f'```markdown\n> Stopping {server}\n```.')
             await asyncio.sleep(30, loop=self.loop)
             if isUp(server):
                 log.warning(f'Restart failed, {server} appears not to have stopped!')
@@ -384,9 +384,25 @@ class ServerCmds:
             log.info(f'{server} watchdog active.')
             await sendMarkdown('# Watchdog already active!')
         else:
+            if server not in self.servercfg['servers']:
+                log.warning(f'{server} has been misspelled or not configured!')
+                await sendMarkdown(ctx, f'< {server} has been misspelled or not configured! >')
+                return
+
+            if isUp(server):
+                log.info(f'Starting watchdog on online server.')
+                await sendMarkdown(f'# {server} is up and running.')
+            else:
+                log.info(f'Starting watchdog on offline server.')
+                await sendMarkdown(f'< {server} is not running. >')
+
             async def serverGone():
                 await sendMarkdown(ctx, f'< {server} is gone! >\n'
-                                   '< It may have crashed, been stopped or is restarting! >')
+                                   '> Watching for it to return...')
+
+            async def serverBack():
+                await sendMarkdown(ctx, f'# {server} is back online!\n'
+                                   '> Continuing watch!')
 
             async def watchGone():
                 await sendMarkdown(ctx, f'> Ended watch on {server}!')
@@ -400,13 +416,22 @@ class ServerCmds:
             def watch(event):
                 log.info(f'WD: Starting watch on {server}.')
                 serverProc = getProc(server)
+                if serverProc.is_running():
+                    lastState = True
+                else:
+                    lastState = False
                 while not event.is_set():
                     if serverProc.is_running():
-                        event.wait(timeout=20)
+                        if not lastState:
+                            log.info(f'WD: {server} is back online!')
+                            lastState = True
+                            asyncio.run_coroutine_threadsafe(serverBack(), self.loop)
                     else:
-                        log.info(f'WD: {server} is gone!')
-                        event.set()
-                        asyncio.run_coroutine_threadsafe(serverGone(), self.loop)
+                        if lastState:
+                            log.info(f'WD: {server} is gone!')
+                            lastState = False
+                            asyncio.run_coroutine_threadsafe(serverGone(), self.loop)
+                    event.wait(timeout=20)
                 else:
                     return
 
@@ -425,7 +450,11 @@ class ServerCmds:
             watcher[1].set()
             await sendMarkdown(ctx, f'> Terminating {server} watchdog...')
         else:
-            await sendMarkdown(ctx, '# Watchdog already inactive!')
+            if server not in self.servercfg['servers']:
+                log.warning(f'{server} has been misspelled or not configured!')
+                await sendMarkdown(ctx, f'< {server} has been misspelled or not configured! >')
+            else:
+                await sendMarkdown(ctx, '# Watchdog already inactive!')
 
     @server.group()
     @permissionNode('management')
