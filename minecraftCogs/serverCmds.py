@@ -382,7 +382,7 @@ class ServerCmds:
 
         if server in self.watchdogs and not self.watchdogs[server][0].done():
             log.info(f'{server} watchdog active.')
-            await sendMarkdown('# Watchdog already active!')
+            await sendMarkdown(ctx, '# Watchdog already active!')
         else:
             if server not in self.servercfg['servers']:
                 log.warning(f'{server} has been misspelled or not configured!')
@@ -391,10 +391,10 @@ class ServerCmds:
 
             if isUp(server):
                 log.info(f'Starting watchdog on online server.')
-                await sendMarkdown(f'# {server} is up and running.')
+                await sendMarkdown(ctx, f'# {server} is up and running.')
             else:
                 log.info(f'Starting watchdog on offline server.')
-                await sendMarkdown(f'< {server} is not running. >')
+                await sendMarkdown(ctx, f'< {server} is not running. >')
 
             async def serverGone():
                 await sendMarkdown(ctx, f'< {server} is gone! >\n'
