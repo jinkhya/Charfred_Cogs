@@ -416,22 +416,26 @@ class ServerCmds:
             def watch(event):
                 log.info(f'WD: Starting watch on {server}.')
                 serverProc = getProc(server)
-                if serverProc.is_running():
+                if serverProc and serverProc.is_running():
                     lastState = True
                 else:
                     lastState = False
                 while not event.is_set():
-                    if serverProc.is_running():
-                        if not lastState:
-                            log.info(f'WD: {server} is back online!')
-                            lastState = True
-                            asyncio.run_coroutine_threadsafe(serverBack(), self.loop)
-                    else:
-                        if lastState:
+                    if lastState:
+                        if not serverProc.is_running():
                             log.info(f'WD: {server} is gone!')
                             lastState = False
                             asyncio.run_coroutine_threadsafe(serverGone(), self.loop)
-                    event.wait(timeout=20)
+                        event.wait(timeout=20)
+                    else:
+                        serverProc = getProc(server)
+                        if serverProc and serverProc.is_running():
+                            log.info(f'WD: {server} is back online!')
+                            lastState = True
+                            asyncio.run_coroutine_threadsafe(serverBack(), self.loop)
+                            event.wait(timeout=20)
+                        else:
+                            event.wait(timeout=60)
                 else:
                     return
 
