@@ -5,6 +5,7 @@ import os
 import re
 import logging
 import functools
+from time import strftime
 from threading import Event
 from utils.config import Config
 from utils.discoutils import permissionNode, sendMarkdown
@@ -397,11 +398,11 @@ class ServerCmds:
                 await sendMarkdown(ctx, f'< {server} is not running. >')
 
             async def serverGone():
-                await sendMarkdown(ctx, f'< {server} is gone! >\n'
+                await sendMarkdown(ctx, '< ' + strftime("%H:%M") + f' {server} is gone! >\n'
                                    '> Watching for it to return...')
 
             async def serverBack():
-                await sendMarkdown(ctx, f'# {server} is back online!\n'
+                await sendMarkdown(ctx, '# ' + strftime("%H:%M") + f' {server} is back online!\n'
                                    '> Continuing watch!')
 
             async def watchGone():
