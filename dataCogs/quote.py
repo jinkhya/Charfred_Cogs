@@ -48,6 +48,7 @@ class Quotator:
 
         if member:
             try:
+                log.info('Got this far!')
                 member = await commands.MemberConverter().convert(ctx, member)
             except commands.BadArgument:
                 await sendMarkdown(ctx, 'Given member could not be resolved, sorry!')
@@ -71,6 +72,8 @@ class Quotator:
                     name = member.name
                 await ctx.send(f'{q}\n\n_{name}; Quote #{_index}_')
                 return
+            else:
+                log.warning('Whoa nelly!')
 
         converter = commands.MemberConverter()
 
