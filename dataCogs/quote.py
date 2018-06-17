@@ -3,7 +3,7 @@ import discord
 from random import randrange
 from discord.ext import commands
 from utils.config import Config
-from utils.discoutils import permissionNode, sendMarkdown
+from utils.discoutils import permissionNode
 
 log = logging.getLogger('charfred')
 
@@ -27,18 +27,19 @@ class Quotator:
             log.info('Saving a quote!')
             quotee = reaction.message.author
             quote = reaction.message.content
+            id = str(quotee.id)
 
-            if quotee.id not in self.quotes:
-                self.quotes[quotee.id] = []
+            if id not in self.quotes:
+                self.quotes[id] = []
 
-            self.quotes[quotee.id].append({'quote': quote,
-                                           'savedBy': user.id})
+            self.quotes[id].append({'quote': quote,
+                                    'savedBy': user.id})
             await self.quotes.save()
             await reaction.message.add_reaction('👌')
 
     @commands.group(invoke_without_command=True)
     @permissionNode('quote')
-    async def quote(self, ctx, member=None, _index: int=None):
+    async def quote(self, ctx, member: discord.Member=None, _index: int=None):
         """User Quote operations.
 
         Without a subcommand, this returns a list
@@ -46,46 +47,38 @@ class Quotator:
         quote repository.
         """
 
-        if member:
-            try:
-                log.info('Got this far!')
-                member = await commands.MemberConverter().convert(ctx, member)
-            except commands.BadArgument:
-                await sendMarkdown(ctx, 'Given member could not be resolved, sorry!')
-                return
-            if member.id in self.quotes:
-                if _index is None:
-                    log.info('Random quote!')
-                    _index = randrange(len(self.quotes[member.id]))
-                    q = self.quotes[member.id][_index]['quote']
-                else:
-                    try:
-                        log.info('Specific quote!')
-                        q = self.quotes[member.id][_index]['quote']
-                    except (KeyError, IndexError):
-                        log.info('No quote with that index!')
-                        await ctx.send('Sorry sir, there is no quote under that number!')
-                        return
-                if member.nick:
-                    name = member.nick
-                else:
-                    name = member.name
-                await ctx.send(f'{q}\n\n_{name}; Quote #{_index}_')
-                return
+        if member and str(member.id) in self.quotes:
+            id = str(member.id)
+            if _index is None:
+                log.info('Random quote!')
+                _index = randrange(len(self.quotes[id]))
+                q = self.quotes[id][_index]['quote']
             else:
-                log.warning('Whoa nelly!')
-
-        converter = commands.MemberConverter()
-
-        async def getName(id):
-            member = await converter.convert(ctx, id)
+                try:
+                    log.info('Specific quote!')
+                    q = self.quotes[id][_index]['quote']
+                except (KeyError, IndexError):
+                    log.info('No quote with that index!')
+                    await ctx.send('Sorry sir, there is no quote under that number!')
+                    return
             if member.nick:
-                return member.nick
+                name = member.nick
             else:
-                return member.name
+                name = member.name
+            await ctx.send(f'{q}\n\n_{name}; Quote #{_index}_')
+        else:
 
-        members = '\n'.join([await getName(id) for id in self.quotes.keys()])
-        await ctx.send(f'I have quotes from these members:\n ```\n{members}\n```')
+            converter = commands.MemberConverter()
+
+            async def getName(id):
+                member = await converter.convert(ctx, id)
+                if member.nick:
+                    return member.nick
+                else:
+                    return member.name
+
+            members = '\n'.join([await getName(id) for id in self.quotes.keys()])
+            await ctx.send(f'I have quotes from these members:\n ```\n{members}\n```')
 
     @quote.command(aliases=['delete', 'unquote'])
     async def remove(self, ctx, member: discord.Member, *, _index: int):
@@ -100,12 +93,13 @@ class Quotator:
         and the quoted user can do this.
         """
 
-        if member.id in self.quotes:
+        if str(member.id) in self.quotes:
+            id = str(member.id)
             log.info('Removing a quote!')
             try:
                 if ctx.author.id == member.id or \
-                        ctx.author.id == self.quotes[member.id][_index]['savedBy']:
-                    del self.quotes[member.id][_index]
+                        ctx.author.id == self.quotes[id][_index]['savedBy']:
+                    del self.quotes[id][_index]
                     await ctx.send('We shall never speak of it again, sir!')
                     await self.quotes.save()
                 else:
