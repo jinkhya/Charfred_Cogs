@@ -1,4 +1,5 @@
 import logging
+import discord
 from random import randrange
 from discord.ext import commands
 from utils.config import Config
@@ -27,20 +28,17 @@ class Quotator:
             quotee = reaction.message.author
             quote = reaction.message.content
 
-            # TODO: Usernames are not unique, find a better solution
-            # that won't make getting quotes too annoying.
-            if quotee.name not in self.quotes:
-                self.quotes[quotee.name] = []
+            if quotee.id not in self.quotes:
+                self.quotes[quotee.id] = []
 
-            self.quotes[quotee.name].append({'quote': quote,
-                                             'quotee': quotee.id,
-                                             'savedBy': user.id})
+            self.quotes[quotee.id].append({'quote': quote,
+                                           'savedBy': user.id})
             await self.quotes.save()
             await reaction.message.add_reaction('👌')
 
     @commands.group(invoke_without_command=True)
     @permissionNode('quote')
-    async def quote(self, ctx, user: str=None, _index: int=None):
+    async def quote(self, ctx, member: discord.Member=None, _index: int=None):
         """User Quote operations.
 
         Without a subcommand, this returns a list
@@ -48,26 +46,38 @@ class Quotator:
         quote repository.
         """
 
-        if user and user in self.quotes:
+        if member and member.id in self.quotes:
             if _index is None:
                 log.info('Random quote!')
-                _index = randrange(len(self.quotes[user]))
-                q = self.quotes[user][_index]['quote']
+                _index = randrange(len(self.quotes[member.id]))
+                q = self.quotes[member.id][_index]['quote']
             else:
                 try:
                     log.info('Specific quote!')
-                    q = self.quotes[user][_index]['quote']
+                    q = self.quotes[member.id][_index]['quote']
                 except (KeyError, IndexError):
                     log.info('No quote with that index!')
                     await ctx.send('Sorry sir, there is no quote under that number!')
                     return
-            await ctx.send(f'{q}\n\n_{user}; Quote #{_index}_')
+            if member.nick:
+                name = member.nick
+            else:
+                name = member.name
+            await ctx.send(f'{q}\n\n_{name}; Quote #{_index}_')
         else:
-            users = '\n'.join(self.quotes.keys())
-            await ctx.send(f'I have quotes from these users:\n ```\n{users}\n```')
+
+            async def getName(id):
+                member = await commands.MemberConverter.convert(ctx, id)
+                if member.nick:
+                    return member.nick
+                else:
+                    return member.name
+
+            members = [await getName(id) for id in self.quotes.keys()]
+            await ctx.send(f'I have quotes from these members:\n ```\n{members}\n```')
 
     @quote.command(aliases=['delete', 'unquote'])
-    async def remove(self, ctx, user: str, *, _index: int):
+    async def remove(self, ctx, member: discord.Member, *, _index: int):
         """Remove a specific quote.
 
         Takes the user who was quoted, and
@@ -79,12 +89,12 @@ class Quotator:
         and the quoted user can do this.
         """
 
-        if user in self.quotes:
+        if member.id in self.quotes:
             log.info('Removing a quote!')
             try:
-                if ctx.author.id == self.quotes[user][_index]['quotee'] or \
-                        ctx.author.id == self.quotes[user][_index]['savedBy']:
-                    del self.quotes[user][_index]
+                if ctx.author.id == member.id or \
+                        ctx.author.id == self.quotes[member.id][_index]['savedBy']:
+                    del self.quotes[member.id][_index]
                     await ctx.send('We shall never speak of it again, sir!')
                     await self.quotes.save()
                 else:
