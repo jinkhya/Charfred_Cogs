@@ -66,8 +66,10 @@ class Quotator:
             await ctx.send(f'{q}\n\n_{name}; Quote #{_index}_')
         else:
 
+            converter = commands.MemberConverter()
+
             async def getName(id):
-                member = await commands.MemberConverter.convert(ctx, id)
+                member = await converter.convert(ctx, id)
                 if member.nick:
                     return member.nick
                 else:
