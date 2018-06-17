@@ -14,7 +14,7 @@ class NewbiePromoter:
         self.promotees = Config(f'{self.bot.dir}/data/promotees_persist.json',
                                 load=True, loop=self.bot.loop)
         self.memberRoleName = bot.cfg['nodes']['spec:memberRole'][0]
-        if not self.promotees['awaiting']:
+        if not self.promotees:
             self.promotees['awaiting'] = []
 
     async def on_member_join(self, member):
