@@ -3,6 +3,7 @@ import discord
 from random import randrange
 from discord.ext import commands
 from utils.config import Config
+from utils.flipbooks import Flipbook
 from utils.discoutils import permissionNode
 
 log = logging.getLogger('charfred')
@@ -108,6 +109,39 @@ class Quotator:
             except:
                 log.info('Unknown quote, cannot remove!')
                 await ctx.send('Sorry sir, I don\'t seem to have a record of this quote.')
+        else:
+            log.info('Unknown member!')
+            await ctx.send('Sorry lass, I don\'t seem to have heard of this person before.')
+
+    @quote.command(name='list')
+    async def _list(self, ctx, member: discord.Member):
+        """List all quotes from a specific user.
+
+        Quotes are presented as a nice flipbook, for
+        easy and non-spammy perusal!
+        """
+
+        if str(member.id) in self.quotes:
+            id = str(member.id)
+            log.info('Showing quotes!')
+
+            quotelist = []
+            for index, quotemeta in enumerate(self.quotes[id]):
+                quote = quotemeta['quote']
+                quotelist.append(f'#{index}: {quote:.50}')
+
+            if member.nick:
+                name = member.nick
+            else:
+                name = member.name
+            quoteFlip = Flipbook(ctx, quotelist, entries_per_page=12,
+                                 title=f'Shit {name} says!',
+                                 color=discord.Color.blurple())
+            await quoteFlip.flip()
+
+        else:
+            log.info('Unknown member!')
+            await ctx.send('Sorry lass, I don\'t seem to have heard of this person before.')
 
 
 def setup(bot):
