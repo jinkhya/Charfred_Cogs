@@ -14,11 +14,12 @@ class NewbiePromoter:
         self.promotees = Config(f'{self.bot.dir}/data/promotees_persist.json',
                                 load=True, loop=self.bot.loop)
         self.memberRoleName = bot.cfg['nodes']['spec:memberRole'][0]
-        if not self.promotees:
+        if 'awaiting' not in self.promotees:
             self.promotees['awaiting'] = []
 
     async def on_member_join(self, member):
         if member.id in self.promotees['awaiting']:
+            log.info(f'Promotee {member.name} has joined, promoting now.')
             memberRole = find(lambda r: r.name == self.memberRoleName, member.guild.roles)
             await member.add_roles(memberRole)
             self.promotees['awaiting'].remove(member.id)
@@ -36,11 +37,15 @@ class NewbiePromoter:
         """
         member = ctx.guild.get_member(user.id)
         if member:
+            log.info('User is already a member, promoting immediately.')
             memberRole = find(lambda r: r.name == self.memberRoleName, member.guild.roles)
             await member.add_roles(memberRole)
+            await ctx.send('User is already a member, promoting immediately.')
         else:
+            log.info('User hasn\'t joined yet, adding to waitlist.')
             self.promotees['awaiting'].append(user.id)
             await self.promotees.save()
+            await ctx.send('User hasn\'t joined yet, adding to waitlist.')
 
 
 def setup(bot):
