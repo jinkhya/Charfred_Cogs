@@ -35,8 +35,10 @@ class Jokes:
         Uses the icanhazdadjoke.com api, go check it out!
         """
         log.info('Retrieving dadjoke.')
+        ua = self.bot.cfg['nodes']['spec:joke'][0]
+        log.info(f'User-Agent header: {ua}')
         headers = {'Accept': 'application/json',
-                   'User-Agent': self.bot.cfg['nodes']['spec:joke'][0]}
+                   'User-Agent': ua}
         async with self.session.get('https://icanhazdadjoke.com/', headers=headers) as r:
             dadjoke = await r.json()
             await ctx.send(f"{dadjoke['joke']}")
