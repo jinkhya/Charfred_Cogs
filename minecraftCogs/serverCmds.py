@@ -1,16 +1,9 @@
 from discord.ext import commands
-import discord
 import asyncio
-import os
-import re
 import logging
-import functools
-from time import strftime
-from threading import Event
 from utils.config import Config
 from utils.discoutils import permissionNode, sendMarkdown
-from utils.flipbooks import EmbedFlipbook
-from .utils.mcservutils import isUp, termProc, sendCmd, sendCmds, getProc, serverStart, \
+from .utils.mcservutils import isUp, sendCmd, sendCmds, serverStart, \
     serverStop, serverTerminate, serverStatus, buildCountdownSteps
 
 log = logging.getLogger('charfred')
@@ -21,12 +14,6 @@ class ServerCmds:
         self.bot = bot
         self.loop = bot.loop
         self.servercfg = bot.servercfg
-        self.watchdogs = {}
-
-    def __unload(self):
-        if self.watchdogs:
-            for fut, event in self.watchdogs.values():
-                event.set()
 
     @commands.group()
     @commands.guild_only()
@@ -51,7 +38,7 @@ class ServerCmds:
         else:
             log.info(f'Starting {server}')
             await sendMarkdown(ctx, f'> Starting {server}...')
-            await serverStart(ctx, server, self.servercfg, self.loop)
+            await serverStart(server, self.servercfg, self.loop)
             await asyncio.sleep(5, loop=self.loop)
             if isUp(server):
                 log.info(f'{server} is now running!')
@@ -76,7 +63,7 @@ class ServerCmds:
         if isUp(server):
             log.info(f'Stopping {server}...')
             await sendMarkdown(ctx, f'> Stopping {server}...')
-            await serverStop(ctx, server, self.servercfg, self.loop)
+            await serverStop(server, self.servercfg, self.loop)
             await asyncio.sleep(20, loop=self.loop)
             if isUp(server):
                 log.warning(f'{server} does not appear to have stopped!')
@@ -90,7 +77,7 @@ class ServerCmds:
 
                     return str(reaction.emoji) == '❌' and user == ctx.author
 
-                log.info(f'Awaiting confirm on {server} termination... 60 seconds')
+                log.info(f'Awaiting confirm on {server} termination... 60 seconds.')
                 try:
                     await self.bot.wait_for('reaction_add', timeout=60, check=termcheck)
                 except asyncio.TimeoutError:
@@ -103,8 +90,7 @@ class ServerCmds:
                     await msg.clear_reactions()
                     await msg.edit(content='```markdown\n> Attempting termination!\n'
                                    '> Please hold, this may take a couple of seconds.```')
-                    _termProc = functools.partial(termProc, server)
-                    killed = await self.loop.run_in_executor(None, _termProc)
+                    killed = await serverTerminate(server, self.loop)
                     if killed:
                         log.info(f'{server} terminated.')
                         await msg.edit(content=f'```markdown\n# {server} terminated.\n'
@@ -148,7 +134,7 @@ class ServerCmds:
                     availableSteps2 = ', '.join(countdownSteps[5:])
                     await sendMarkdown(ctx, f'< {countdown} is an undefined step, aborting! >\n'
                                        '> Available countdown steps are:\n'
-                                       f'> {availableSteps1}\n'
+                                       f'> {availableSteps1},\n'
                                        f'> {availableSteps2}')
                     return
                 log.info(f'Restarting {server} with {countdown}-countdown.')
@@ -160,7 +146,7 @@ class ServerCmds:
                 announcement = await sendMarkdown(ctx, f'> Restarting {server} with default 10min countdown.')
                 cntd = countdownSteps[2:]
             await asyncio.sleep(1, loop=self.loop)  # Tiny delay to allow message to be edited!
-            steps = await buildCountdownSteps(ctx, cntd)
+            steps = await buildCountdownSteps(cntd)
             for step in steps:
                 await sendCmds(
                     self.loop,
@@ -245,17 +231,9 @@ class ServerCmds:
             else:
                 log.info(f'Restart in progress, {server} was stopped.')
                 await sendMarkdown(ctx, f'# Restart in progress, {server} was stopped.')
-                cwd = os.getcwd()
                 log.info(f'Starting {server}')
                 await sendMarkdown(ctx, f'> Starting {server}.')
-                os.chdir(self.servercfg['serverspath'] + f'/{server}')
-                proc = await asyncio.create_subprocess_exec(
-                    'screen', '-h', '5000', '-dmS', server,
-                    *(self.servercfg['servers'][server]['invocation']).split(), 'nogui',
-                    loop=self.loop
-                )
-                await proc.wait()
-                os.chdir(cwd)
+                await serverStart(server, self.servercfg, self.loop)
                 await asyncio.sleep(5, loop=self.loop)
                 if isUp(server):
                     log.info(f'Restart successful, {server} is now running!')
@@ -283,7 +261,7 @@ class ServerCmds:
             return
         else:
             servers = [server]
-        statuses = await serverStatus(ctx, servers, self.loop)
+        statuses = await serverStatus(servers, self.loop)
         await sendMarkdown(ctx, f'{statuses}')
 
     @server.command()
@@ -310,236 +288,6 @@ class ServerCmds:
             log.info(f'Could not terminate {server}!')
             await sendMarkdown(ctx, f'< Well this is awkward... {server} is still up! >')
 
-    @server.group(invoke_without_command=True)
-    @permissionNode('watchdog')
-    async def watchdog(self, ctx):
-        """Server process watchdog operations.
-
-        Without a subcommand this returns a list of all
-        active watchdogs.
-        """
-
-        for server, wd in self.watchdogs.items():
-            if wd[0].done():
-                await sendMarkdown(ctx, f'< {server} watchdog inactive! >')
-            else:
-                await sendMarkdown(ctx, f'# {server} watchdog active!')
-
-    @watchdog.command(name='activate', aliases=['start', 'watch'])
-    async def wdstart(self, ctx, server: str):
-        """Start the process watchdog for a server."""
-
-        if server in self.watchdogs and not self.watchdogs[server][0].done():
-            log.info(f'{server} watchdog active.')
-            await sendMarkdown(ctx, '# Watchdog already active!')
-        else:
-            if server not in self.servercfg['servers']:
-                log.warning(f'{server} has been misspelled or not configured!')
-                await sendMarkdown(ctx, f'< {server} has been misspelled or not configured! >')
-                return
-
-            if isUp(server):
-                log.info(f'Starting watchdog on online server.')
-                await sendMarkdown(ctx, f'# {server} is up and running.')
-            else:
-                log.info(f'Starting watchdog on offline server.')
-                await sendMarkdown(ctx, f'< {server} is not running. >')
-
-            async def serverGone():
-                await sendMarkdown(ctx, '< ' + strftime("%H:%M") + f' {server} is gone! >\n'
-                                   '> Watching for it to return...')
-
-            async def serverBack():
-                await sendMarkdown(ctx, '# ' + strftime("%H:%M") + f' {server} is back online!\n'
-                                   '> Continuing watch!')
-
-            async def watchGone():
-                await sendMarkdown(ctx, f'> Ended watch on {server}!')
-
-            def watchDone(future):
-                log.info(f'WD: Ending watch on {server}.')
-                if future.exception():
-                    log.warning(f'WD: Exception in watchdog for {server}!')
-                asyncio.run_coroutine_threadsafe(watchGone(), self.loop)
-
-            def watch(event):
-                log.info(f'WD: Starting watch on {server}.')
-                serverProc = getProc(server)
-                if serverProc and serverProc.is_running():
-                    lastState = True
-                else:
-                    lastState = False
-                while not event.is_set():
-                    if lastState:
-                        if not serverProc.is_running():
-                            log.info(f'WD: {server} is gone!')
-                            lastState = False
-                            asyncio.run_coroutine_threadsafe(serverGone(), self.loop)
-                        event.wait(timeout=20)
-                    else:
-                        serverProc = getProc(server)
-                        if serverProc and serverProc.is_running():
-                            log.info(f'WD: {server} is back online!')
-                            lastState = True
-                            asyncio.run_coroutine_threadsafe(serverBack(), self.loop)
-                            event.wait(timeout=20)
-                        else:
-                            event.wait(timeout=60)
-                else:
-                    return
-
-            event = Event()
-            watchFuture = self.loop.run_in_executor(None, watch, event)
-            watchFuture.add_done_callback(watchDone)
-            self.watchdogs[server] = (watchFuture, event)
-            await sendMarkdown(ctx, '# Watchdog activated!')
-
-    @watchdog.command(name='deactivate', aliases=['stop', 'unwatch'])
-    async def wdstop(self, ctx, server: str):
-        """Stop the process watchdog for a server."""
-
-        if server in self.watchdogs and not self.watchdogs[server][0].done():
-            watcher = self.watchdogs[server]
-            watcher[1].set()
-            await sendMarkdown(ctx, f'> Terminating {server} watchdog...')
-        else:
-            if server not in self.servercfg['servers']:
-                log.warning(f'{server} has been misspelled or not configured!')
-                await sendMarkdown(ctx, f'< {server} has been misspelled or not configured! >')
-            else:
-                await sendMarkdown(ctx, '# Watchdog already inactive!')
-
-    @server.group()
-    @permissionNode('management')
-    async def config(self, ctx):
-        if ctx.invoked_subcommand is None:
-            pass
-
-    @config.command()
-    async def add(self, ctx, server: str):
-        """Interactively add a server configuration."""
-
-        if server in self.servercfg['servers']:
-            await ctx.send(f'{server} is already listed!')
-            return
-
-        def check(m):
-            return m.author.id == ctx.author.id and m.channel.id == ctx.channel.id
-
-        self.servercfg['servers'][server] = {}
-        await ctx.send(f'```Beginning configuration for {server}!'
-                       f'\nPlease enter the invocation for {server}:```')
-        r1 = await self.bot.wait_for('message', check=check, timeout=120)
-        self.servercfg['servers'][server]['invocation'] = r1.content
-        await ctx.send(f'```Do you want to run backups on {server}? [y/n]```')
-        r2 = await self.bot.wait_for('message', check=check, timeout=120)
-        if re.match('(y|yes)', r2.content, flags=re.I):
-            self.servercfg['servers'][server]['backup'] = True
-        else:
-            self.servercfg['servers'][server]['backup'] = False
-        await ctx.send(f'```Please enter the name of the main world folder for {server}:```')
-        r3 = await self.bot.wait_for('message', check=check, timeout=120)
-        self.servercfg['servers'][server]['worldname'] = r3.content
-        await sendMarkdown(ctx, f'You have entered the following for {server}:\n' +
-                           f'Invocation: {r1.content}\n' +
-                           f'Backup: {r2.content}\n' +
-                           f'Worldname: {r3.content}\n' +
-                           '# Please confirm! [y/n]')
-        r4 = await self.bot.wait_for('message', check=check, timeout=120)
-        if re.match('(y|yes)', r4.content, flags=re.I):
-            await self.servercfg.save()
-            await sendMarkdown(ctx, f'# Serverconfigurations for {server} have been saved!')
-        else:
-            del self.servercfg['servers'][server]
-            await sendMarkdown(ctx, f'< Serverconfigurations for {server} have been discarded. >')
-
-    @config.command(name='list')
-    async def _list(self, ctx, server: str):
-        """Lists all configurations for a given server."""
-
-        if server not in self.servercfg['servers']:
-            await sendMarkdown(ctx, f'< No configurations for {server} listed! >')
-            return
-        await sendMarkdown(ctx, f'# Configuration entries for {server}:\n')
-        for k, v in self.servercfg['servers'][server].items():
-            await sendMarkdown(ctx, f'{k}: {v}\n')
-
-    def buildEmbeds(self):
-        embeds = []
-        for name, cfgs in self.servercfg['servers'].items():
-            embed = discord.Embed(color=discord.Color.dark_gold())
-            embed.description = f'Configurations for {name}:'
-            for k, v in cfgs.items():
-                embed.add_field(name=k, value=f'``` {v}```', inline=False)
-            embeds.append(embed)
-        return embeds
-
-    @config.command()
-    async def listAll(self, ctx):
-        """Lists all known server configurations,
-        via Flipbook."""
-
-        embeds = await self.loop.run_in_executor(None, self.buildEmbeds)
-        cfgFlip = EmbedFlipbook(ctx, embeds, entries_per_page=1,
-                                title='Server Configurations')
-        await cfgFlip.flip()
-
-    @config.command()
-    async def edit(self, ctx, server: str):
-        """Interactively edit the configurations for a given server."""
-
-        if server not in self.servercfg['servers']:
-            await sendMarkdown(ctx, f'< No configurations for {server} listed! >')
-            return
-
-        def check(m):
-            return m.author.id == ctx.author.id and m.channel.id == ctx.channel.id
-
-        await sendMarkdown(ctx, f'Available options for {server}: ' +
-                           ' '.join(self.servercfg['servers'][server].keys()))
-        await sendMarkdown(ctx, f'# Please enter the configuration option for {server}, that you want to edit:')
-        r = await self.bot.wait_for('message', check=check, timeout=120)
-        r = r.content.lower()
-        if r not in self.servercfg['servers'][server]:
-            await sendMarkdown(ctx, f'< {r.content.lower()} is not a valid entry! >')
-            return
-        await sendMarkdown(ctx, f'Please enter the new value for {r}:')
-        r2 = await self.bot.wait_for('message', check=check, timeout=120)
-        await sendMarkdown(ctx, f'You have entered the following for {server}:\n' +
-                           f'{r}: {r2.content}\n' +
-                           '# Please confirm! [y/n]')
-        r3 = await self.bot.wait_for('message', check=check, timeout=120)
-        if re.match('(y|yes)', r3.content, flags=re.I):
-            self.servercfg['servers'][server][r] = r2.content
-            await self.servercfg.save()
-            await sendMarkdown(ctx, f'# Edit to {server} has been saved!')
-        else:
-            await sendMarkdown(ctx, f'< Edit to {server} has been discarded! >')
-
-    @config.command()
-    async def delete(self, ctx, server: str):
-        """Delete the configuration of a given server."""
-
-        if server not in self.servercfg['servers']:
-            await sendMarkdown(ctx, f'< Nothing to delete for {server}! >')
-            return
-
-        def check(m):
-            return m.author.id == ctx.author.id and m.channel.id == ctx.channel.id
-
-        await sendMarkdown(ctx, '< You are about to delete all configuration options ' +
-                           f'for {server}. >\n' +
-                           '# Please confirm! [y/n]')
-        r = await self.bot.wait_for('message', check=check, timeout=120)
-        if re.match('(y|yes)', r.content, flags=re.I):
-            del self.servercfg['servers'][server]
-            await self.servercfg.save()
-            await sendMarkdown(ctx, f'# Configurations for {server} have been deleted!')
-        else:
-            await sendMarkdown(ctx, f'< Deletion of configurations aborted! >')
-
-# TODO: Ability to change other settings in serverCfg.json, either here or charwizard
-
 
 def setup(bot):
     if not hasattr(bot, 'servercfg'):
@@ -549,4 +297,4 @@ def setup(bot):
     bot.add_cog(ServerCmds(bot))
 
 
-permissionNodes = ['start', 'stop', 'status', 'restart', 'terminate', 'management', 'watchdog']
+permissionNodes = ['start', 'stop', 'status', 'restart', 'terminate']

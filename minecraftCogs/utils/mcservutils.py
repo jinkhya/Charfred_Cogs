@@ -110,7 +110,7 @@ async def exec_cmd_reply(loop, ctx, *args):
         await sendReply_codeblocked(ctx, msg)
 
 
-async def serverStart(ctx, server, servercfg, loop):
+async def serverStart(server, servercfg, loop):
     """Start a given Minecraft server."""
 
     cwd = os.getcwd()
@@ -124,7 +124,7 @@ async def serverStart(ctx, server, servercfg, loop):
     os.chdir(cwd)
 
 
-async def serverStop(ctx, server, servercfg, loop):
+async def serverStop(server, loop):
     """Stop a given Minecraft server."""
 
     await sendCmds(
@@ -154,7 +154,7 @@ async def serverTerminate(server, loop):
     return killed
 
 
-async def serverStatus(ctx, servers, loop):
+async def serverStatus(servers, loop):
     """Queries the status of one or all known Minecraft servers.
 
     Returns a list of status messages for all queried servers.
@@ -175,7 +175,7 @@ async def serverStatus(ctx, servers, loop):
     return statuses
 
 
-async def buildCountdownSteps(ctx, cntd):
+async def buildCountdownSteps(cntd):
     """Builds and returns a list of countdown step triples,
     consisting of 'time to announce', 'time in seconds to wait',
     and 'the timeunit to announce'.
