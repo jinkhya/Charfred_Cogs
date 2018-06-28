@@ -10,7 +10,8 @@ from threading import Event
 from utils.config import Config
 from utils.discoutils import permissionNode, sendMarkdown
 from utils.flipbooks import EmbedFlipbook
-from .utils.mcservutils import isUp, termProc, sendCmd, sendCmds, getProc
+from .utils.mcservutils import isUp, termProc, sendCmd, sendCmds, getProc, serverStart, \
+    serverStop, serverTerminate, serverStatus, buildCountdownSteps
 
 log = logging.getLogger('charfred')
 
@@ -21,9 +22,6 @@ class ServerCmds:
         self.loop = bot.loop
         self.servercfg = bot.servercfg
         self.watchdogs = {}
-        self.countpat = re.compile(
-            '(?P<time>\d+)((?P<minutes>[m].*)|(?P<seconds>[s].*))', flags=re.I
-        )
 
     def __unload(self):
         if self.watchdogs:
@@ -51,17 +49,9 @@ class ServerCmds:
             log.info(f'{server} appears to be running already!')
             await sendMarkdown(ctx, f'< {server} appears to be running already! >')
         else:
-            cwd = os.getcwd()
             log.info(f'Starting {server}')
             await sendMarkdown(ctx, f'> Starting {server}...')
-            os.chdir(self.servercfg['serverspath'] + f'/{server}')
-            proc = await asyncio.create_subprocess_exec(
-                'screen', '-h', '5000', '-dmS', server,
-                *(self.servercfg['servers'][server]['invocation']).split(), 'nogui',
-                loop=self.loop
-            )
-            await proc.wait()
-            os.chdir(cwd)
+            await serverStart(ctx, server, self.servercfg, self.loop)
             await asyncio.sleep(5, loop=self.loop)
             if isUp(server):
                 log.info(f'{server} is now running!')
@@ -86,20 +76,7 @@ class ServerCmds:
         if isUp(server):
             log.info(f'Stopping {server}...')
             await sendMarkdown(ctx, f'> Stopping {server}...')
-            await sendCmds(
-                self.loop,
-                server,
-                'title @a times 20 40 20',
-                'title @a title {\"text\":\"STOPPING SERVER NOW\", \"bold\":true, \"italic\":true}',
-                'broadcast Stopping now!',
-                'save-all',
-            )
-            await asyncio.sleep(5, loop=self.loop)
-            await sendCmd(
-                self.loop,
-                server,
-                'stop'
-            )
+            await serverStop(ctx, server, self.servercfg, self.loop)
             await asyncio.sleep(20, loop=self.loop)
             if isUp(server):
                 log.warning(f'{server} does not appear to have stopped!')
@@ -167,7 +144,12 @@ class ServerCmds:
             if countdown:
                 if countdown not in countdownSteps:
                     log.error(f'{countdown} is an undefined step, aborting!')
-                    await sendMarkdown(ctx, f'< {countdown} is an undefined step, aborting! >')
+                    availableSteps1 = ', '.join(countdownSteps[:5])
+                    availableSteps2 = ', '.join(countdownSteps[5:])
+                    await sendMarkdown(ctx, f'< {countdown} is an undefined step, aborting! >\n'
+                                       '> Available countdown steps are:\n'
+                                       f'> {availableSteps1}\n'
+                                       f'> {availableSteps2}')
                     return
                 log.info(f'Restarting {server} with {countdown}-countdown.')
                 announcement = await sendMarkdown(ctx, f'> Restarting {server} with {countdown}-countdown.')
@@ -178,26 +160,7 @@ class ServerCmds:
                 announcement = await sendMarkdown(ctx, f'> Restarting {server} with default 10min countdown.')
                 cntd = countdownSteps[2:]
             await asyncio.sleep(1, loop=self.loop)  # Tiny delay to allow message to be edited!
-            steps = []
-            for i, step in enumerate(cntd):
-                s = self.countpat.search(step)
-                if s.group('minutes'):
-                    time = int(s.group('time'))
-                    secs = time * 60
-                    unit = 'minutes'
-                else:
-                    time = int(s.group('time'))
-                    secs = time
-                    unit = 'seconds'
-                if i + 1 > len(cntd) - 1:
-                    steps.append((time, secs, unit))
-                else:
-                    st = self.countpat.search(cntd[i + 1])
-                    if st.group('minutes'):
-                        t = int(st.group('time')) * 60
-                    else:
-                        t = int(st.group('time'))
-                    steps.append((time, secs - t, unit))
+            steps = await buildCountdownSteps(ctx, cntd)
             for step in steps:
                 await sendCmds(
                     self.loop,
@@ -270,8 +233,7 @@ class ServerCmds:
                     await announcement.clear_reactions()
                     await announcement.edit(content='```markdown\n> Attempting termination!\n'
                                             '> Please hold, this may take a couple of seconds.```')
-                    _termProc = functools.partial(termProc, server)
-                    killed = await self.loop.run_in_executor(None, _termProc)
+                    killed = await serverTerminate(server, self.loop)
                     if killed:
                         log.info(f'{server} terminated.')
                         await announcement.edit(content=f'```markdown\n# {server} terminated.\n'
@@ -321,20 +283,7 @@ class ServerCmds:
             return
         else:
             servers = [server]
-
-        def getStatus():
-            statuses = []
-            for s in servers:
-                if isUp(s):
-                    log.info(f'{s} is running.')
-                    statuses.append(f'# {s} is running.')
-                else:
-                    log.info(f'{s} is not running.')
-                    statuses.append(f'< {s} is not running! >')
-            statuses = '\n'.join(statuses)
-            return statuses
-
-        statuses = await self.loop.run_in_executor(None, getStatus)
+        statuses = await serverStatus(ctx, servers, self.loop)
         await sendMarkdown(ctx, f'{statuses}')
 
     @server.command()
@@ -346,15 +295,14 @@ class ServerCmds:
             log.warning(f'{server} has been misspelled or not configured!')
             await sendMarkdown(ctx, f'< {server} has been misspelled or not configured! >')
             return
-        log.info(f'Attempting termination of {server}...')
         if not isUp(server):
             log.info(f'{server} is not running!')
             await sendMarkdown(ctx, f'< {server} is not running! >')
             return
+        log.info(f'Attempting termination of {server}...')
         await sendMarkdown(ctx, f'> Attempting termination of {server}\n'
                            '> Please hold, this may take a couple of seconds.')
-        _termProc = functools.partial(termProc, server)
-        killed = await self.loop.run_in_executor(None, _termProc)
+        killed = await serverTerminate(server, self.loop)
         if killed:
             log.info(f'{server} terminated.')
             await sendMarkdown(ctx, f'# {server} terminated.')
