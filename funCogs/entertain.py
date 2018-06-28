@@ -67,7 +67,7 @@ class Entertain:
             await step.edit(content=move)
             await asyncio.sleep(2, loop=self.loop)
         else:
-            await move.add_reaction('👍')
+            await step.add_reaction('👍')
 
     @commands.command(aliases=['youspinmerightroundbabyrightround'])
     async def spin(self, ctx):
@@ -78,7 +78,7 @@ class Entertain:
             await step.edit(content=turn)
             await asyncio.sleep(2, loop=self.loop)
         else:
-            await turn.add_reaction('👍')
+            await step.add_reaction('👍')
 
     @commands.command(aliases=['*shrug*'])
     async def shrug(self, ctx):
