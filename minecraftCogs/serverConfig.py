@@ -144,8 +144,6 @@ class ServerConfig:
         else:
             await sendMarkdown(ctx, f'< Deletion of configurations aborted! >')
 
-# TODO: Ability to change other settings in serverCfg.json, either here or charwizard
-
 
 def setup(bot):
     if not hasattr(bot, 'servercfg'):
