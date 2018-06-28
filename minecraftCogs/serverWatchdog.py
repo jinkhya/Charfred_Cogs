@@ -88,10 +88,14 @@ class Watchdog:
                     await startPrompt.edit(content=f'```markdown\n> Prompt to start {server}'
                                            ' timed out!\n```')
                 else:
-                    log.info(f'Starting {server}')
                     await startPrompt.clear_reactions()
-                    await startPrompt.edit(content=f'```markdown\n> Starting {server}...\n```')
-                    await serverStart(server, self.servercfg, self.loop)
+                    if isUp(server):
+                        log.info(f'{server} is already back!')
+                        await startPrompt.edit(content=f'```markdown\n> {server} is already back!\n```')
+                    else:
+                        log.info(f'Starting {server}')
+                        await startPrompt.edit(content=f'```markdown\n> Starting {server}...\n```')
+                        await serverStart(server, self.servercfg, self.loop)
 
             def watchDone(future):
                 log.info(f'WD: Ending watch on {server}.')
