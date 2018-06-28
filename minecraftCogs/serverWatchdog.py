@@ -117,6 +117,7 @@ class Watchdog:
                             lastState = False
                             asyncio.run_coroutine_threadsafe(serverGone(), self.loop)
                             asyncio.run_coroutine_threadsafe(startServer(), self.loop)
+                            event.wait(timeout=40)
                         event.wait(timeout=20)
                     else:
                         serverProc = getProc(server)
