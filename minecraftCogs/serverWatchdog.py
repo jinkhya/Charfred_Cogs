@@ -77,7 +77,7 @@ class Watchdog:
                     if reaction.message.id != startPrompt.id:
                         return False
 
-                    return str(reaction.emoji) == '✅'
+                    return str(reaction.emoji) == '✅' and not user.bot
 
                 log.info(f'Prompting {server} start... 60 seconds.')
                 try:
