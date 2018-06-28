@@ -45,7 +45,7 @@ shocks = [
 ]
 
 spins = [
-    [u"(　・ω)", u"(　・)", u"(　)", u"(・　)", u"(ω・　)", u"(・ω・)"],
+    [u"(・ω・)", u"(　・ω)", u"(　・)", u"(　)", u"(・　)", u"(ω・　)", u"(・ω・)"],
     [u"(´･ω･`)", u"( ´･ω･)", u"( 　´･ω)", u"( 　　)", u"( 　　)", u"(ω･´　)", u"(･ω･´)", u"(｀･ω･´)"],
     [u"(･▽･)", u"( ･▽)", u"(　･)", u"(　　)", u"(･　)", u"(▽･ )", u"(･▽･)"],
     [u"(･＿･)", u"( ･_)", u"(　･)", u"(　　)", u"(･　)", u"(_･ )", u"(･＿･)"],
@@ -66,6 +66,8 @@ class Entertain:
         for move in dance[1:]:
             await step.edit(content=move)
             await asyncio.sleep(2, loop=self.loop)
+        else:
+            await move.add_reaction('👍')
 
     @commands.command(aliases=['youspinmerightroundbabyrightround'])
     async def spin(self, ctx):
@@ -75,12 +77,14 @@ class Entertain:
         for turn in spin[1:]:
             await step.edit(content=turn)
             await asyncio.sleep(2, loop=self.loop)
+        else:
+            await turn.add_reaction('👍')
 
     @commands.command(aliases=['*shrug*'])
     async def shrug(self, ctx):
         await ctx.send(random.choice(shrugs))
 
-    @commands.command(aliases=['jikes', 'oh dear'])
+    @commands.command(aliases=['jikes'])
     async def shock(self, ctx):
         await ctx.send(random.choice(shocks))
 
