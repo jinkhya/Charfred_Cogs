@@ -78,5 +78,5 @@ def setup(bot):
 
 permissionNodes = {
     'spec:spyHook': ['Please enter the webhook url for the LargeSibling spy functionality\n',
-                     None]
+                     '']
 }
