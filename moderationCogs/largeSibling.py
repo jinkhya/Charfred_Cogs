@@ -10,7 +10,7 @@ class LargeSibling:
         self.cfg = bot.cfg
         try:
             toSpyOn = self.cfg['nodes']['spec:spyOnChannels'][0]
-            self.toSpyOn = toSpyOn.split()
+            self.toSpyOn = [int(chan) for chan in toSpyOn.split()]
         except:
             self.toSpyOn = []
         try:
