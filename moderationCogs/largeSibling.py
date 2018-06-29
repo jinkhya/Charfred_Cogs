@@ -13,7 +13,7 @@ class LargeSibling:
         """Join spy."""
         log.info('Member joined!')
         try:
-            hook_url = self.cfg['spyHook']
+            hook_url = self.cfg['nodes']['spec:spyHook'][0]
         except:
             pass
         else:
@@ -31,7 +31,7 @@ class LargeSibling:
         """Leave spy."""
         log.info('Member left!')
         try:
-            hook_url = self.cfg['spyHook']
+            hook_url = self.cfg['nodes']['spec:spyHook'][0]
         except:
             pass
         else:
@@ -57,7 +57,7 @@ class LargeSibling:
             roles = list(set(after.roles) - set(before.roles))
             verb = 'gained'
         try:
-            hook_url = self.cfg['spyHook']
+            hook_url = self.cfg['nodes']['spec:spyHook'][0]
         except:
             pass
         else:
@@ -76,4 +76,7 @@ def setup(bot):
     bot.add_cog(LargeSibling(bot))
 
 
-permissionNodes = {}
+permissionNodes = {
+    'spec:spyHook': ['Please enter the webhook url for the LargeSibling spy functionality\n',
+                     None]
+}
