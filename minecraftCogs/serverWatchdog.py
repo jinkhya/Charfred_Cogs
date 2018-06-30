@@ -79,14 +79,16 @@ class Watchdog:
 
                     return str(reaction.emoji) == '✅' and not user.bot
 
-                log.info(f'Prompting {server} start... 60 seconds.')
+                log.info(f'Prompting {server} start... 120 seconds.')
                 try:
-                    await self.bot.wait_for('reaction_add', timeout=60, check=startcheck)
+                    await self.bot.wait_for('reaction_add', timeout=120, check=startcheck)
                 except asyncio.TimeoutError:
                     log.info('Prompt timed out.')
                     await startPrompt.clear_reactions()
                     await startPrompt.edit(content=f'```markdown\n> Prompt to start {server}'
                                            ' timed out!\n```')
+                    await asyncio.sleep(5, loop=self.loop)
+                    await startPrompt.delete()
                 else:
                     await startPrompt.clear_reactions()
                     if isUp(server):
