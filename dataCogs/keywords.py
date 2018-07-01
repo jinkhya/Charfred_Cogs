@@ -94,8 +94,8 @@ class Keywords:
             return
 
         if category in self.phrases:
-            r = await promptConfirm(ctx, f'You are about to delete {category},'
-                                    '\nare you certain? [y|N]')
+            r, _ = await promptConfirm(ctx, f'You are about to delete {category},'
+                                       '\nare you certain? [y|N]')
             if r:
                 del self.phrases[category]
                 await self.phrases.save()
