@@ -8,28 +8,29 @@ class LargeSibling:
         self.bot = bot
         self.session = bot.session
         self.cfg = bot.cfg
-        try:
-            toSpyOn = self.cfg['nodes']['spec:spyOnChannels'][0]
-            self.toSpyOn = [int(chan) for chan in toSpyOn.split()]
-        except:
-            self.toSpyOn = []
+        # try:
+        #     toSpyOn = self.cfg['nodes']['spec:spyOnChannels'][0]
+        #     self.toSpyOn = [int(chan) for chan in toSpyOn.split()]
+        # except:
+        #     self.toSpyOn = []
         try:
             self.hook_url = self.cfg['nodes']['spec:spyHook'][0]
         except:
             self.hook_url = None
 
-    async def on_message(self, message):
-        """Channel spy."""
-        if message.author.bot or (message.guild.id is None):
-            return
-        if self.hook_url and (message.channel.id in self.toSpyOn):
-            log.info('Spying on channel!')
-            hook_this = {
-                'username': f'{message.author.name} in {message.channel.name} via CharSpy',
-                'avatar_url': f'{message.author.avatar_url}',
-                'content': f'{message.content}'
-            }
-            await self.session.post(self.hook_url, json=hook_this)
+    # NOTE: Webhook rate limits kinda bugger this up!
+    # async def on_message(self, message):
+    #     """Channel spy."""
+    #     if message.author.bot or (message.guild.id is None):
+    #         return
+    #     if self.hook_url and (message.channel.id in self.toSpyOn):
+    #         log.info('Spying on channel!')
+    #         hook_this = {
+    #             'username': f'{message.author.name} in {message.channel.name} via CharSpy',
+    #             'avatar_url': f'{message.author.avatar_url}',
+    #             'content': f'{message.content}'
+    #         }
+    #         await self.session.post(self.hook_url, json=hook_this)
 
     async def on_member_join(self, member):
         """Join spy."""
@@ -84,6 +85,6 @@ def setup(bot):
 permissionNodes = {
     'spec:spyHook': ['Please enter the webhook url for the LargeSibling spy functionality\n',
                      ''],
-    'spec:spyOnChannels': ['Please enter all the channel\'s IDs that you wish to spy on!\n'
-                           'Seperated by spaces only!', '']
+    # 'spec:spyOnChannels': ['Please enter all the channel\'s IDs that you wish to spy on!\n'
+    #                        'Seperated by spaces only!', '']
 }
