@@ -63,7 +63,7 @@ class ServerCmds:
         if isUp(server):
             log.info(f'Stopping {server}...')
             await sendMarkdown(ctx, f'> Stopping {server}...')
-            await serverStop(server, self.servercfg, self.loop)
+            await serverStop(server, self.loop)
             await asyncio.sleep(20, loop=self.loop)
             if isUp(server):
                 log.warning(f'{server} does not appear to have stopped!')
@@ -201,7 +201,7 @@ class ServerCmds:
 
                     return str(reaction.emoji) == '❌' and user == ctx.author
 
-                msg = (f'```markdown\n< Restart failed, {server} appears not to have stooped! >\n'
+                msg = (f'```markdown\n< Restart failed, {server} appears not to have stopped! >\n'
                        f'React with ❌ within 60 seconds to force stop {server}!\n```')
                 await announcement.edit(content=msg)
                 await announcement.add_reaction('❌')
