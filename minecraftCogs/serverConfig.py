@@ -151,6 +151,8 @@ class ServerConfig:
         def check(m):
             return m.author.id == ctx.author.id and m.channel.id == ctx.channel.id
 
+        if 'serverspath' not in self.servercfg:
+            self.servercfg['serverspath'] = 'NONE'
         await sendMarkdown(ctx, 'Current path for directory, where all minecraft servers'
                            'are located is:\n' + self.servercfg['serverspath'])
         r, _, _ = await promptConfirm(ctx, 'Would you like to change this path?')
@@ -160,9 +162,12 @@ class ServerConfig:
             if newpath:
                 self.servercfg['serverspath'] = newpath
                 await self.servercfg.save()
+                await sendMarkdown(ctx, 'Saved new path for minecraft servers directory!')
 
-        await sendMarkdown(ctx, 'Current path for directory, where backups are saved is:\n'
-                           + self.servercfg['backupspath'])
+        if 'backupspath' not in self.servercfg:
+            self.servercfg['backupspath'] = 'NONE'
+        await sendMarkdown(ctx, 'Current path for directory, where backups are saved is:\n' +
+                           self.servercfg['backupspath'])
         r, _, _ = await promptConfirm(ctx, 'Would you like to change this path?')
         if r:
             newpath, _, _ = await promptInput(ctx, 'Please enter the new path now!\n'
@@ -170,6 +175,7 @@ class ServerConfig:
             if newpath:
                 self.servercfg['backupspath'] = newpath
                 await self.servercfg.save()
+                await sendMarkdown(ctx, 'Saved new path for minecraft backups directory!')
 
 
 def setup(bot):
