@@ -175,7 +175,7 @@ async def serverStatus(servers, loop):
     return statuses
 
 
-async def buildCountdownSteps(cntd):
+def buildCountdownSteps(cntd):
     """Builds and returns a list of countdown step triples,
     consisting of 'time to announce', 'time in seconds to wait',
     and 'the timeunit to announce'.

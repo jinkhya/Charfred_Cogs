@@ -146,7 +146,7 @@ class ServerCmds:
                 announcement = await sendMarkdown(ctx, f'> Restarting {server} with default 10min countdown.')
                 cntd = countdownSteps[2:]
             await asyncio.sleep(1, loop=self.loop)  # Tiny delay to allow message to be edited!
-            steps = await buildCountdownSteps(cntd)
+            steps = buildCountdownSteps(cntd)
             for step in steps:
                 await sendCmds(
                     self.loop,

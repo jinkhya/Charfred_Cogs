@@ -96,7 +96,7 @@ class Customs:
         _cmd = self.customcmds[cmd]['cmd']
         minRole = self.customcmds[cmd]['role']
         minRole = find(lambda r: r.name == minRole, ctx.guild.roles)
-        if ctx.author.top_role < minRole:
+        if ctx.author.top_role < minRole:  # TODO: Don't even allow ranks that don't exist!
             log.warning(f'User is missing permissions for {cmd}!')
             await sendMarkdown(ctx, f'< You are not permitted to run {cmd}! >\n'
                                f'< Minimum required role is {str(minRole)}. >')
