@@ -3,7 +3,7 @@ import discord
 import re
 import logging
 from utils.config import Config
-from utils.discoutils import permissionNode, sendMarkdown
+from utils.discoutils import permissionNode, sendMarkdown, promptInput, promptConfirm
 from utils.flipbooks import EmbedFlipbook
 
 log = logging.getLogger('charfred')
@@ -143,6 +143,33 @@ class ServerConfig:
             await sendMarkdown(ctx, f'# Configurations for {server} have been deleted!')
         else:
             await sendMarkdown(ctx, f'< Deletion of configurations aborted! >')
+
+    @config.command()
+    async def editPaths(self, ctx):
+        """Give the option of editing the various server path configurations!"""
+
+        def check(m):
+            return m.author.id == ctx.author.id and m.channel.id == ctx.channel.id
+
+        await sendMarkdown(ctx, 'Current path for directory, where all minecraft servers'
+                           'are located is:\n' + self.servercfg['serverspath'])
+        r, _, _ = await promptConfirm(ctx, 'Would you like to change this path?')
+        if r:
+            newpath, _, _ = await promptInput(ctx, 'Please enter the new path now!\n'
+                                              '(it needs to be the full path)')
+            if newpath:
+                self.servercfg['serverspath'] = newpath
+                await self.servercfg.save()
+
+        await sendMarkdown(ctx, 'Current path for directory, where backups are saved is:\n'
+                           + self.servercfg['backupspath'])
+        r, _, _ = await promptConfirm(ctx, 'Would you like to change this path?')
+        if r:
+            newpath, _, _ = await promptInput(ctx, 'Please enter the new path now!\n'
+                                              '(it needs to be the full path)')
+            if newpath:
+                self.servercfg['backupspath'] = newpath
+                await self.servercfg.save()
 
 
 def setup(bot):
