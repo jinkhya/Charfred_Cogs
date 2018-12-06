@@ -153,6 +153,7 @@ class ServerConfig:
 
         if 'serverspath' not in self.servercfg:
             self.servercfg['serverspath'] = 'NONE'
+            await self.servercfg.save()
         await sendMarkdown(ctx, 'Current path for directory, where all minecraft servers'
                            'are located is:\n' + self.servercfg['serverspath'])
         r, _, _ = await promptConfirm(ctx, 'Would you like to change this path?')
@@ -176,6 +177,30 @@ class ServerConfig:
                 self.servercfg['backupspath'] = newpath
                 await self.servercfg.save()
                 await sendMarkdown(ctx, 'Saved new path for minecraft backups directory!')
+
+    @config.command(aliases=['editOldTimer', 'editbackuptimer'])
+    async def editmaxbackupage(self, ctx):
+        """Give the option of changing the maximum age for backups!
+
+        Maximum age is defined in minutes.
+        """
+
+        def check(m):
+            return m.author.id == ctx.author.id and m.channel.id == ctx.channel.id
+
+        if 'oldTimer' not in self.servercfg:
+            self.servercfg['oldTimer'] = 1440
+            await self.servercfg.save()
+        await sendMarkdown(ctx, 'Current maximum age for backups is:\n' +
+                           self.servercfg['oldTimer'])
+        r, _, _ = await promptConfirm(ctx, 'Would you like to change it?')
+        if r:
+            newage, _, _ = await promptInput(ctx, 'Please enter the new maximum backup age now!'
+                                             '\n(Age needs to be in minutes)')
+            if newage:
+                self.servercfg['oldTimer'] = newage
+                await self.servercfg.save()
+                await sendMarkdown(ctx, 'Saved new maximum backup age!')
 
 
 def setup(bot):
