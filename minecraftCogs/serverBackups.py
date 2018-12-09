@@ -41,3 +41,14 @@ class ServerBackups:
         backupsbook = Flipbook(ctx, availablebackups, entries_per_page=8,
                                title=f'Backups for {server}', color=Color.blurple())
         await backupsbook.flip()
+
+
+def setup(bot):
+    if not hasattr(bot, 'servercfg'):
+        bot.servercfg = Config(f'{bot.dir}/configs/serverCfgs.json',
+                               default=f'{bot.dir}/configs/serverCfgs.json_default',
+                               load=True, loop=bot.loop)
+    bot.add_cog(ServerBackups(bot))
+
+
+permissionNodes = ['backup']
