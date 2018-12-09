@@ -38,7 +38,7 @@ class ServerBackups:
         availablebackups = [archive for archive in os.listdir(f'{bpath}/{server}')
                             if os.path.isfile(f'{bpath}/{server}/{archive}') and
                             archive.endswith('.tar.gz')]
-        backupsbook = Flipbook(ctx, availablebackups, entries_per_page=8,
+        backupsbook = Flipbook(ctx, availablebackups.sort(), entries_per_page=8,
                                title=f'Backups for {server}', color=Color.blurple())
         await backupsbook.flip()
 
