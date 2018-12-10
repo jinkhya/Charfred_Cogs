@@ -179,7 +179,7 @@ class ServerBackups:
             def extracthelper():
                 with tarfile.open(backupfile, 'r:gz') as tf:
                     for r in regions:
-                        tf.extract('world/region/{r}', path=f'{serverpath}/{server}')
+                        tf.extract(f'world/region/{r}', path=f'{serverpath}/{server}')
 
             await self.loop.run_in_executor(None, extracthelper)
             log.info('Regions extracted from backup and placed!')
