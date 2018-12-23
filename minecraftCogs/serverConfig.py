@@ -16,6 +16,7 @@ class ServerConfig:
         self.servercfg = bot.servercfg
 
     @commands.group(name='serverConfig')
+    @commands.guild_only()
     @permissionNode('management')
     async def config(self, ctx):
         if ctx.invoked_subcommand is None:
