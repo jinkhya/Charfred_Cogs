@@ -53,25 +53,26 @@ class Watchdog:
 
             if isUp(server):
                 log.info(f'Starting watchdog on online server.')
-                await sendMarkdown(ctx, f'# {server} is up and running.')
+                await sendMarkdown(ctx, f'# {server} is up and running.', deletable=False)
             else:
                 log.info(f'Starting watchdog on offline server.')
-                await sendMarkdown(ctx, f'< {server} is not running. >')
+                await sendMarkdown(ctx, f'< {server} is not running. >', deletable=False)
 
             async def serverGone():
                 await sendMarkdown(ctx, '< ' + strftime("%H:%M") + f' {server} is gone! >\n'
-                                   '> Watching for it to return...')
+                                   '> Watching for it to return...', deletable=False)
 
             async def serverBack():
                 await sendMarkdown(ctx, '# ' + strftime("%H:%M") + f' {server} is back online!\n'
-                                   '> Continuing watch!')
+                                   '> Continuing watch!', deletable=False)
 
             async def watchGone():
-                await sendMarkdown(ctx, f'> Ended watch on {server}!')
+                await sendMarkdown(ctx, f'> Ended watch on {server}!', deletable=False)
 
             async def startServer():
                 startPrompt = await sendMarkdown(ctx, f'> If you wish to attempt starting {server},\n'
-                                                 '> back up again, please react with ✅ to this message!')
+                                                 '> back up again, please react with ✅ to this message!',
+                                                 deletable=False)
                 await startPrompt.add_reaction('✅')
 
                 def startcheck(reaction, user):
@@ -138,7 +139,7 @@ class Watchdog:
             watchFuture = self.loop.run_in_executor(None, watch, event)
             watchFuture.add_done_callback(watchDone)
             self.watchdogs[server] = (watchFuture, event)
-            await sendMarkdown(ctx, '# Watchdog activated!')
+            await sendMarkdown(ctx, '# Watchdog activated!', deletable=False)
 
     @watchdog.command(name='deactivate', aliases=['stop', 'unwatch'])
     async def wdstop(self, ctx, server: str):
@@ -147,13 +148,13 @@ class Watchdog:
         if server in self.watchdogs and not self.watchdogs[server][0].done():
             watcher = self.watchdogs[server]
             watcher[1].set()
-            await sendMarkdown(ctx, f'> Terminating {server} watchdog...')
+            await sendMarkdown(ctx, f'> Terminating {server} watchdog...', deletable=False)
         else:
             if server not in self.servercfg['servers']:
                 log.warning(f'{server} has been misspelled or not configured!')
                 await sendMarkdown(ctx, f'< {server} has been misspelled or not configured! >')
             else:
-                await sendMarkdown(ctx, '# Watchdog already inactive!')
+                await sendMarkdown(ctx, '# Watchdog already inactive!', deletable=False)
 
 
 def setup(bot):
