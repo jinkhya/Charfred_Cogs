@@ -68,7 +68,8 @@ class ServerCmds:
             if isUp(server):
                 log.warning(f'{server} does not appear to have stopped!')
                 msg = await sendMarkdown(ctx, f'< {server} does not appear to have stopped! >'
-                                         f'React with ❌ within 60 seconds to force stop {server}!')
+                                         f'React with ❌ within 60 seconds to force stop {server}!',
+                                         deletable=False)
                 await msg.add_reaction('❌')
 
                 def termcheck(reaction, user):
@@ -143,7 +144,7 @@ class ServerCmds:
                 cntd = countdownSteps[indx:]
             else:
                 log.info(f'Restarting {server} with default 10min countdown.')
-                announcement = await sendMarkdown(ctx, f'> Restarting {server} with default 10min countdown.')
+                announcement = await sendMarkdown(ctx, f'> Restarting {server} with default 10min countdown.', deletable=False)
                 cntd = countdownSteps[2:]
             await asyncio.sleep(1, loop=self.loop)  # Tiny delay to allow message to be edited!
             steps = buildCountdownSteps(cntd)

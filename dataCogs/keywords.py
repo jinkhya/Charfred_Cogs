@@ -90,7 +90,7 @@ class Keywords:
         if category in ['nacks', 'errormsgs', 'replies']:
             log.info('Tried to delete important categories!')
             await send(ctx, f'{category} cannot be deleted, '
-                           'it is vital to my character!')
+                       'it is vital to my character!')
             return
 
         if category in self.phrases:
