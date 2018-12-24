@@ -1,7 +1,7 @@
 import logging
 import random
 from discord.ext import commands
-from utils.discoutils import permissionNode, promptConfirm
+from utils.discoutils import permissionNode, promptConfirm, send
 
 log = logging.getLogger('charfred')
 
@@ -23,7 +23,7 @@ class Keywords:
 
         if ctx.invoked_subcommand is None:
             categories = '\n '.join(self.phrases.keys())
-            await ctx.send(f'I know these categories:\n ```\n{categories}\n```')
+            await send(ctx, f'I know these categories:\n ```\n{categories}\n```')
 
     @vocab.command()
     @permissionNode('vocabAdd')
@@ -34,10 +34,10 @@ class Keywords:
             log.info('Learning something!')
             self.phrases[category].append(phrase)
             await self.phrases.save()
-            await ctx.send(phrase)
+            await send(ctx, phrase)
         else:
             log.info('Invalid category!')
-            await ctx.send('I don\'t know that category!')
+            await send(ctx, 'I don\'t know that category!')
 
     @vocab.command()
     @permissionNode('vocabRemove')
@@ -50,13 +50,13 @@ class Keywords:
                 self.phrases[category].remove(phrase)
             except:
                 log.info('Cannot remove, phrase unknown!')
-                await ctx.send('Can\'t forget this, because I never even knew that!')
+                await send(ctx, 'Can\'t forget this, because I never even knew that!')
             else:
                 await self.phrases.save()
-                await ctx.send('Oh man, I think I forgot something...')
+                await send(ctx, 'Oh man, I think I forgot something...')
         else:
             log.info('Invalid category!')
-            await ctx.send('I don\'t know that category!')
+            await send(ctx, 'I don\'t know that category!')
 
     @vocab.group()
     @permissionNode('categoryAdd')
@@ -73,12 +73,12 @@ class Keywords:
 
         if category in self.phrases:
             log.info('Category already exists!')
-            await ctx.send('Category already exists!')
+            await send(ctx, 'Category already exists!')
         else:
             log.info(f'Adding {category} as new category.')
             self.phrases[category] = []
             await self.phrases.save()
-            await ctx.send(f'Added {category}!')
+            await send(ctx, f'Added {category}!')
 
     @category.command(name='remove')
     @permissionNode('categoryRemove')
@@ -89,7 +89,7 @@ class Keywords:
         """
         if category in ['nacks', 'errormsgs', 'replies']:
             log.info('Tried to delete important categories!')
-            await ctx.send(f'{category} cannot be deleted, '
+            await send(ctx, f'{category} cannot be deleted, '
                            'it is vital to my character!')
             return
 
@@ -100,10 +100,10 @@ class Keywords:
                 del self.phrases[category]
                 await self.phrases.save()
                 log.info(f'{category} deleted!')
-                await ctx.send(f'{category} deleted!')
+                await send(ctx, f'{category} deleted!')
         else:
             log.info(f'{category} doesn\'t exist!')
-            await ctx.send(f'{category} doesn\'t exist!')
+            await send(ctx, f'{category} doesn\'t exist!')
 
     @commands.command(aliases=['talktome', 'speak', 'recite'])
     async def talk(self, ctx, category: str=None):
@@ -113,13 +113,13 @@ class Keywords:
         """
         if category is None:
             log.info('Random gibberish!')
-            await ctx.send(f'{random.choice(random.choice(list(self.phrases.values())))}')
+            await send(ctx, f'{random.choice(random.choice(list(self.phrases.values())))}')
         elif category in self.phrases:
             log.info(f'Random gibberish from {category}!')
-            await ctx.send(f'{random.choice(self.phrases[category])}')
+            await send(ctx, f'{random.choice(self.phrases[category])}')
         else:
             log.info('Invalid category!')
-            await ctx.send(f'Category: {category} does not exist or has been misspelled!')
+            await send(ctx, f'Category: {category} does not exist or has been misspelled!')
 
 
 def setup(bot):

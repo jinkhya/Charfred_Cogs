@@ -3,7 +3,7 @@ import discord
 import re
 import logging
 from utils.config import Config
-from utils.discoutils import permissionNode, sendMarkdown, promptInput, promptConfirm
+from utils.discoutils import permissionNode, sendMarkdown, promptInput, promptConfirm, send
 from utils.flipbooks import EmbedFlipbook
 
 log = logging.getLogger('charfred')
@@ -27,24 +27,24 @@ class ServerConfig:
         """Interactively add a server configuration."""
 
         if server in self.servercfg['servers']:
-            await ctx.send(f'{server} is already listed!')
+            await send(ctx, f'{server} is already listed!')
             return
 
         def check(m):
             return m.author.id == ctx.author.id and m.channel.id == ctx.channel.id
 
         self.servercfg['servers'][server] = {}
-        await ctx.send(f'```Beginning configuration for {server}!'
+        await send(ctx, f'```Beginning configuration for {server}!'
                        f'\nPlease enter the invocation for {server}:```')
         r1 = await self.bot.wait_for('message', check=check, timeout=120)
         self.servercfg['servers'][server]['invocation'] = r1.content
-        await ctx.send(f'```Do you want to run backups on {server}? [y/n]```')
+        await send(ctx, f'```Do you want to run backups on {server}? [y/n]```')
         r2 = await self.bot.wait_for('message', check=check, timeout=120)
         if re.match('(y|yes)', r2.content, flags=re.I):
             self.servercfg['servers'][server]['backup'] = True
         else:
             self.servercfg['servers'][server]['backup'] = False
-        await ctx.send(f'```Please enter the name of the main world folder for {server}:```')
+        await send(ctx, f'```Please enter the name of the main world folder for {server}:```')
         r3 = await self.bot.wait_for('message', check=check, timeout=120)
         self.servercfg['servers'][server]['worldname'] = r3.content
         await sendMarkdown(ctx, f'You have entered the following for {server}:\n' +

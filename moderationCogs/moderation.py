@@ -1,6 +1,7 @@
 import logging
 import discord
 from discord.ext import commands
+from utils.discoutils import send
 
 log = logging.getLogger('charfred')
 
@@ -39,7 +40,7 @@ class Moderation:
         Or at least most of it...
         """
 
-        await ctx.send('Right away, sir!')
+        await send(ctx, 'Right away, sir!')
         async with ctx.typing():
             to_wipe = []
             async for msg in ctx.history(limit=50):
@@ -49,7 +50,7 @@ class Moderation:
                             to_wipe.append(msg)
             for msg in to_wipe:
                 await msg.remove_reaction('\N{PILE OF POO}', self.bot.user)
-            await ctx.send('All done, sir!\nI shall go and dispose of this mop now...')
+            await send(ctx, 'All done, sir!\nI shall go and dispose of this mop now...')
 
 
 def setup(bot):

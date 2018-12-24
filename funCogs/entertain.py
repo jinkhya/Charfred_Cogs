@@ -2,6 +2,7 @@ import logging
 import random
 import asyncio
 from discord.ext import commands
+from utils.discoutils import send
 
 log = logging.getLogger('charfred')
 
@@ -61,7 +62,7 @@ class Entertain:
     @commands.command(aliases=['partytime'])
     async def dance(self, ctx):
         dance = random.choice(dances)
-        step = await ctx.send(dance[0])
+        step = await send(ctx, dance[0])
         await asyncio.sleep(2, loop=self.loop)
         for move in dance[1:]:
             await step.edit(content=move)
@@ -72,7 +73,7 @@ class Entertain:
     @commands.command(aliases=['youspinmerightroundbabyrightround'])
     async def spin(self, ctx):
         spin = random.choice(spins)
-        step = await ctx.send(spin[0])
+        step = await send(ctx, spin[0])
         await asyncio.sleep(2, loop=self.loop)
         for turn in spin[1:]:
             await step.edit(content=turn)
@@ -82,26 +83,26 @@ class Entertain:
 
     @commands.command(aliases=['*shrug*'])
     async def shrug(self, ctx):
-        await ctx.send(random.choice(shrugs))
+        await send(ctx, random.choice(shrugs))
 
     @commands.command(aliases=['jikes'])
     async def shock(self, ctx):
-        await ctx.send(random.choice(shocks))
+        await send(ctx, random.choice(shocks))
 
     @commands.command(aliases=['flip', 'table'])
     async def tableflip(self, ctx):
-        unflipped = await ctx.send(u"(ಠ_ಠ) ┳━┳")
+        unflipped = await send(ctx, u"(ಠ_ಠ) ┳━┳")
         await asyncio.sleep(2, loop=self.loop)
         await unflipped.edit(content=u"(╯ಠ_ಠ)╯︵┻━┻")
 
     @commands.command(aliases=['thank'])
     async def thanks(self, ctx):
-        await ctx.send(random.choice(pleasures) + ' ' +
+        await send(ctx, random.choice(pleasures) + ' ' +
                        random.choice(faces))
 
     @commands.command(aliases=['gn9', 'gn8', 'goodnight', 'nn'])
     async def gn(self, ctx):
-        await ctx.send(random.choice(gn9s) + ' ' +
+        await send(ctx, random.choice(gn9s) + ' ' +
                        random.choice(loves))
 
 
