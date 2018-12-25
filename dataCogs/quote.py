@@ -77,6 +77,7 @@ class Quotator:
                 except commands.errors.BadArgument:
                     log.warning(f'{id} could not be resolved; removed from quotes!')
                     del self.quotes[id]
+                    await self.quotes.save()
                     return None
                 if member.nick:
                     return member.nick
