@@ -80,7 +80,7 @@ class Quotator:
                 else:
                     return member.name
 
-            members = '\n'.join([await getName(id) for id in self.quotes.keys()])
+            members = '\n'.join([getName(id) async for id in self.quotes.keys()])
             log.info('Break 2')
             await send(ctx, f'I have quotes from these members:\n ```\n{members}\n```')
 
