@@ -73,14 +73,15 @@ class Quotator:
             converter = commands.MemberConverter()
 
             async def getName(id):
-                log.info('Converting...')
+                log.info(f'Converting {id}')
                 member = await converter.convert(ctx, id)
+                log.info(f'Converted to: {member}')
                 if member.nick:
                     return member.nick
                 else:
                     return member.name
 
-            members = '\n'.join([getName(id) async for id in self.quotes.keys()])
+            members = '\n'.join([getName(id) for id in self.quotes.keys()])
             log.info('Break 2')
             await send(ctx, f'I have quotes from these members:\n ```\n{members}\n```')
 
