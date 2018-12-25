@@ -69,9 +69,11 @@ class Quotator:
             await send(ctx, f'{q}\n\n_{name}; Quote #{_index}_')
         else:
 
+            log.info('Break 1')
             converter = commands.MemberConverter()
 
             async def getName(id):
+                log.info('Converting...')
                 member = await converter.convert(ctx, id)
                 if member.nick:
                     return member.nick
@@ -79,6 +81,7 @@ class Quotator:
                     return member.name
 
             members = '\n'.join([await getName(id) for id in self.quotes.keys()])
+            log.info('Break 2')
             await send(ctx, f'I have quotes from these members:\n ```\n{members}\n```')
 
     @quote.command(aliases=['delete', 'unquote'])
@@ -105,7 +108,7 @@ class Quotator:
                     await self.quotes.save()
                 else:
                     await send(ctx, 'I am sorry, sir, but you are neither the quotee, '
-                                   'nor the person who requested this quote to be saved.')
+                               'nor the person who requested this quote to be saved.')
             except:
                 log.info('Unknown quote, cannot remove!')
                 await send(ctx, 'Sorry sir, I don\'t seem to have a record of this quote.')
