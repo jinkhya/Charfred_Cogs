@@ -2,7 +2,7 @@ from discord.ext import commands
 import re
 import asyncio
 import logging
-from utils.discoutils import permissionNode
+from utils.discoutils import permissionNode, sendMarkdown
 from utils.flipbooks import Flipbook
 
 log = logging.getLogger('charfred')
@@ -31,7 +31,7 @@ class CronReader:
                                                                               'min', 'hour',
                                                                               'day', 'cmd',
                                                                               'server', 'args')
-            state = 'Disabled: ' if disabled else ''
+            state = '> ' if disabled else '# '
             if reboot:
                 condition = 'Runs at reboot:'
                 output = f'{state}{condition} {cmd} {server}'
@@ -66,6 +66,8 @@ class CronReader:
                     output += f' {args}'
                 parsedlines.append(output)
 
+        parsedlines.append('< Please note that greyed out lines indicate\n'
+                           'disabled cron jobs! Blue lines are enabled. >')
         return parsedlines
 
     @commands.group(invoke_without_command=True)
@@ -95,8 +97,11 @@ class CronReader:
         crontab = stdout.decode().strip().split('\n')
         log.info('Parsing crontab...')
         spiffycron = await self.loop.run_in_executor(None, self._parseCron, crontab)
-        cronFlip = Flipbook(ctx, spiffycron, entries_per_page=8, title='Spiffy Cronjobs')
-        await cronFlip.flip()
+        # cronFlip = Flipbook(ctx, spiffycron, entries_per_page=8, title='Spiffy Cronjobs')
+        # await cronFlip.flip()
+        for i in range(0, len(spiffycron), 12):
+            out = '\n'.join(spiffycron[i:i + 12])
+            await sendMarkdown(ctx, out)
 
 
 def setup(bot):
