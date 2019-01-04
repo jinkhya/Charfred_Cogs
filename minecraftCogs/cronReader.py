@@ -7,9 +7,9 @@ from utils.flipbooks import Flipbook
 
 log = logging.getLogger('charfred')
 
-cronpat = re.compile('^(?P<disabled>#)*((?P<reboot>@reboot)|(?P<min>(\*/\d+|\*|\d+))\s(?P<hour>(\*/\d+|\*|\d+))\s(?P<day>(\*/\d+|\*|(\d+,?)+)))\s.*spiffy\s(?P<cmd>\w+)\s(?P<server>\w+)\s(?P<args>.*)>>')
-every = '\/'
-always = '\*'
+cronpat = re.compile('^(?P<disabled>#)*((?P<reboot>@reboot)|(?P<min>(\*/\d+|\*|(\d+,?)+))\s(?P<hour>(\*/\d+|\*|(\d+,?)+))\s(?P<day>(\*/\d+|\*|(\d+,?)+)))\s.*spiffy\s(?P<cmd>\w+)\s(?P<server>\w+)\s(?P<args>.*)>>')
+every = '*/'
+always = '*'
 
 
 class CronReader:
@@ -23,7 +23,7 @@ class CronReader:
         for l in crontab:
             if 'spiffy' not in l:
                 continue
-            match = cronpat.fullmatch(l)
+            match = cronpat.match(l)
             if not match:
                 continue
             disabled, reboot, min, hour, day, cmd, server, args = match.group('disabled',
