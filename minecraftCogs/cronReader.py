@@ -66,6 +66,8 @@ class CronReader:
                     output += f' {args}'
                 parsedlines.append(output)
 
+        return parsedlines
+
     @commands.group(invoke_without_command=True)
     @commands.guild_only()
     @permissionNode('cronread')
