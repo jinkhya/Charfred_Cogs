@@ -52,7 +52,7 @@ class CrashReporter:
             log.warning('Failed to retrieve report!')
             return
         report = stdout.decode().strip().split('\n\n')
-        for paragraph in report:
+        for paragraph in report[:8]:
             if len(paragraph) >= 1800:
                 await send(ctx, f'```{paragraph[:1800]}\n'
                                'Additional lines have been cut off, because they suck!```')
