@@ -55,7 +55,7 @@ class CrashReporter:
         for paragraph in report:
             if len(paragraph) >= 1800:
                 await send(ctx, f'```{paragraph[:1800]}\n'
-                               'Additional lines have been cut off, because they suck!```')
+                           'Additional lines have been cut off, because they suck!```')
             else:
                 await send(ctx, f'```{paragraph}```')
             await asyncio.sleep(1, loop=self.bot.loop)

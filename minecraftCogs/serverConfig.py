@@ -35,7 +35,7 @@ class ServerConfig:
 
         self.servercfg['servers'][server] = {}
         await send(ctx, f'```Beginning configuration for {server}!'
-                       f'\nPlease enter the invocation for {server}:```')
+                   f'\nPlease enter the invocation for {server}:```')
         r1 = await self.bot.wait_for('message', check=check, timeout=120)
         self.servercfg['servers'][server]['invocation'] = r1.content
         await send(ctx, f'```Do you want to run backups on {server}? [y/n]```')
