@@ -53,4 +53,5 @@ ENV/
 !/funCogs
 !/minecraftCogs
 !/moderationCogs
+!/auxAdminCogs
 .flake8
