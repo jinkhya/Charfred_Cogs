@@ -52,7 +52,7 @@ class CronReader:
                 elif always in hour:
                     h = 'every hour'
                 else:
-                    h = f'at {hour}00 hours'
+                    h = f'at {hour} hours'
 
                 if every in day:
                     d = f'every {day[2:]} days'
