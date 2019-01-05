@@ -29,7 +29,7 @@ class LogReader:
         """Continously reads from the log file of a given server for a little while.
 
         Takes a servername and an optional timeout argument,
-        if no timeout is specified, it will default to 2 minutes,
+        if no timeout is specified, it will default to 3 minutes,
         if timeout is set to either 0 or higher than 1800 seconds,
         it will default to 1800 seconds (30 minutes).
         """
