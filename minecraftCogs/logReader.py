@@ -59,7 +59,7 @@ class LogReader:
                     if timeout and time() > stopwhen:
                         coro = sendMarkdown(ctx, '< Timeout reached! >')
                         asyncio.run_coroutine_threadsafe(coro, self.loop)
-                        break
+                        return
                     line = mclog.readline()
                     if line:
                         try:
@@ -68,8 +68,6 @@ class LogReader:
                             pass
                     else:
                         sleep(0.5)
-            log.info(f'LW: Log reader for {server} stopped.')
-            return
 
         def _relaylog(event):
             lines = []
@@ -82,7 +80,6 @@ class LogReader:
                     out = '\n'.join(lines)
                     coro = sendMarkdown(ctx, out)
                     asyncio.run_coroutine_threadsafe(coro, self.loop)
-            log.info(f'LW: Log relay for {server} stopped.')
             return
 
         def _watchDone(future):
@@ -97,12 +94,7 @@ class LogReader:
             asyncio.run_coroutine_threadsafe(coro, self.loop)
 
         event = Event()
-        if timeout:
-            msg = f'# Starting log reader for {server} with {timeout} seconds timeout...'
-        else:
-            msg = f'# Starting log reader for {server}, no timeout!\n' + \
-                  f'< Please run \'log endwatch {server}\' when you are done! >'
-        await sendMarkdown(ctx, msg)
+        await sendMarkdown(ctx, f'# Starting log reader for {server}...')
         logreaderfuture = self.loop.run_in_executor(None, _readlog, event, timeout)
         logrelayfuture = self.loop.run_in_executor(None, _relaylog, event)
         logreaderfuture.add_done_callback(_watchDone)
