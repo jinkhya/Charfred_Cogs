@@ -54,22 +54,27 @@ class LogReader:
                 while not event.is_set() and time() < stopwhen:
                     line = mclog.readline()
                     if line:
-                        coro = sendMarkdown(ctx, '# ' + line, deletable=False)
+                        coro = sendMarkdown(ctx, '# ' + line)
                         asyncio.run_coroutine_threadsafe(coro, self.loop)
                     else:
                         sleep(0.5)
                 else:
+                    coro = sendMarkdown(ctx, '< Timeout reached! >')
                     return
 
         def _watchDone(future):
             log.info(f'LW: Done reading log for {server}!')
             if future.exception():
-                log.warning(f'LW: Exception in reader for {server}\'s log!')
+                log.warning(f'LW: Exception in log reader for {server}!')
                 log.warning(future.exception())
-            coro = sendMarkdown(ctx, f'> Stopped reading log for {server}.', deletable=False)
+                coro = sendMarkdown(ctx, f'< An exception caused the log reader for {server}\n'
+                                    'to terminate immaturely! >')
+            else:
+                coro = sendMarkdown(ctx, f'> Stopped reading log for {server}.')
             asyncio.run_coroutine_threadsafe(coro, self.loop)
 
         event = Event()
+        await sendMarkdown(ctx, f'# Starting log reader for {server}...')
         logfuture = self.loop.run_in_executor(None, _watchlog, event)
         logfuture.add_done_callback(_watchDone)
         self.logfutures[server] = (logfuture, event)
@@ -81,14 +86,13 @@ class LogReader:
         if server in self.logfutures and not self.logfutures[server][0].done():
             reader = self.logfutures[server]
             reader[1].set()
-            await sendMarkdown(ctx, f'> Stopped reading {server}\'s log!', deletable=False)
+            await sendMarkdown(ctx, f'> Stopped reading {server}\'s log!')
         else:
             if server not in self.servercfg['servers']:
                 log.warning(f'{server} has been misspelled or not configured!')
                 await sendMarkdown(ctx, f'< {server} has been misspelled or not configured! >')
             else:
-                await sendMarkdown(ctx, f'# No currently active reader for {server}\'s log found.',
-                                   deletable=False)
+                await sendMarkdown(ctx, f'# No currently active reader for {server}\'s log found.')
 
 
 def setup(bot):
