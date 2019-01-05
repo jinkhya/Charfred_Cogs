@@ -62,9 +62,10 @@ class LogReader:
                         if len(outlines) == 5:
                             out = '\n'.join(outlines)
                             if len(out) > 1800:
-                                out = '\n'.join([s[:360] for s in outlines])
+                                out = '\n'.join([s[:360] + '[...]' if len(s) > 360 else s for s in outlines])
                             coro = sendMarkdown(ctx, out)
                             asyncio.run_coroutine_threadsafe(coro, self.loop)
+                            outlines = []
                     else:
                         sleep(0.5)
                 return
