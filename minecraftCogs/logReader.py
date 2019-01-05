@@ -65,6 +65,7 @@ class LogReader:
             log.info(f'LW: Done reading log for {server}!')
             if future.exception():
                 log.warning(f'LW: Exception in reader for {server}\'s log!')
+                log.warning(future.exception())
             coro = sendMarkdown(ctx, f'> Stopped reading log for {server}.', deletable=False)
             asyncio.run_coroutine_threadsafe(coro, self.loop)
 
