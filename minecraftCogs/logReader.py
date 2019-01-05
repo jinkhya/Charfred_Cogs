@@ -73,15 +73,13 @@ class LogReader:
 
         def _relaylog(event):
             lines = []
-            log.info(f'LW: Relaying log for {server}...')
             while not event.is_set():
+                log.info(f'LW: Relaying log for {server}...')
                 while len(lines) < 5:
                     line = '# ' + outqueue.get()
                     lines.append(line)
                 else:
                     out = '\n'.join(lines)
-                    if len(out) >= 1800:
-                        out = out[:1800] + '\n...\n< Additional lines have been cut off! >'
                     coro = sendMarkdown(ctx, out)
                     asyncio.run_coroutine_threadsafe(coro, self.loop)
             log.info(f'LW: Log relay for {server} stopped.')
