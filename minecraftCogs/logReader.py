@@ -53,6 +53,10 @@ class LogReader:
             else:
                 stopwhen = timestamp + 1800
             with open(self.servercfg['serverspath'] + f'/{server}/logs/latest.log', 'r') as mclog:
+                coro = sendMarkdown(ctx, '# Reading log for {server} for ' +
+                                    (timeout if timeout < 1800 else '1800') +
+                                    'seconds...')
+                asyncio.run_coroutine_threadsafe(coro, self.loop)
                 log.info(f'LW: Reading log for {server} for {timeout} seconds...')
                 mclog.seek(0, 2)
                 outlines = []
@@ -68,7 +72,7 @@ class LogReader:
                             timestamp = time()
                             sleep(1)
                     else:
-                        sleep(0.5)
+                        sleep(0.2)
                 return
 
         def _watchDone(future):
@@ -83,7 +87,6 @@ class LogReader:
             asyncio.run_coroutine_threadsafe(coro, self.loop)
 
         event = Event()
-        await sendMarkdown(ctx, f'# Starting log reader for {server}...')
         logfuture = self.loop.run_in_executor(None, _watchlog, event)
         logfuture.add_done_callback(_watchDone)
         self.logfutures[server] = (logfuture, event)
