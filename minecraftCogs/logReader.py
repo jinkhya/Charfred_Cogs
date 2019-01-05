@@ -25,7 +25,7 @@ class LogReader:
         pass
 
     @log.command(aliases=['observe'])
-    async def watch(self, ctx, server: str):
+    async def watch(self, ctx, server: str, timeout: int=180):
         """Continously reads from the log file of a given server.
 
         This will keep reading any new lines that are added to the
@@ -47,20 +47,27 @@ class LogReader:
             return
 
         def _watchlog(event):
-            stopwhen = time() + 120
+            if timeout and timeout < 1800:
+                stopwhen = time() + timeout
+            else:
+                stopwhen = time() + 1800
             with open(self.servercfg['serverspath'] + f'/{server}/logs/latest.log', 'r') as mclog:
-                log.info(f'LW: Reading log for {server}...')
+                log.info(f'LW: Reading log for {server} for {timeout} seconds...')
                 mclog.seek(0, 2)
+                outlines = []
                 while not event.is_set() and time() < stopwhen:
                     line = mclog.readline()
                     if line:
-                        coro = sendMarkdown(ctx, '# ' + line)
-                        asyncio.run_coroutine_threadsafe(coro, self.loop)
+                        outlines.append('# ' + line)
+                        if len(outlines) == 5:
+                            out = '\n'.join(outlines)
+                            if len(out) > 1800:
+                                out = '\n'.join([s[:360] for s in outlines])
+                            coro = sendMarkdown(ctx, out)
+                            asyncio.run_coroutine_threadsafe(coro, self.loop)
                     else:
                         sleep(0.5)
-                else:
-                    coro = sendMarkdown(ctx, '< Timeout reached! >')
-                    return
+                return
 
         def _watchDone(future):
             log.info(f'LW: Done reading log for {server}!')
