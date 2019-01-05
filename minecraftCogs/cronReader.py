@@ -3,7 +3,6 @@ import re
 import asyncio
 import logging
 from utils.discoutils import permissionNode, sendMarkdown
-from utils.flipbooks import Flipbook
 
 log = logging.getLogger('charfred')
 
