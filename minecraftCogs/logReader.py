@@ -26,11 +26,12 @@ class LogReader:
 
     @log.command(aliases=['observe'])
     async def watch(self, ctx, server: str, timeout: int=180):
-        """Continously reads from the log file of a given server.
+        """Continously reads from the log file of a given server for a little while.
 
-        This will keep reading any new lines that are added to the
-        log file of the given server for about two minutes, unless
-        cancelled.
+        Takes a servername and an optional timeout argument,
+        if no timeout is specified, it will default to 2 minutes,
+        if timeout is set to either 0 or higher than 1800 seconds,
+        it will default to 1800 seconds (30 minutes).
         """
 
         if server in self.logfutures and not self.logfutures[server][0].done():
@@ -50,14 +51,14 @@ class LogReader:
             timestamp = time()
             if timeout and timeout < 1800:
                 stopwhen = timestamp + timeout
-                coro = sendMarkdown(ctx, '# Reading log for {server} for {timeout} seconds...\n'
-                                    '< Please run \'log endwatch {server}\' if you\'re >\n'
-                                    '< not actively following the log! >')
+                coro = sendMarkdown(ctx, f'# Reading log for {server} for {timeout} seconds...\n'
+                                    f'< Please run \'log endwatch {server}\' if you\'re\n'
+                                    'not actively following the log! >')
             else:
                 stopwhen = timestamp + 1800
-                coro = sendMarkdown(ctx, '# Reading log for {server} for 1800 seconds...\n'
-                                    '< Please run \'log endwatch {server}\' if you\'re >\n'
-                                    '< not actively following the log! >')
+                coro = sendMarkdown(ctx, f'# Reading log for {server} for 1800 seconds...\n'
+                                    f'< Please run \'log endwatch {server}\' if you\'re\n'
+                                    'not actively following the log! >')
             asyncio.run_coroutine_threadsafe(coro, self.loop)
             with open(self.servercfg['serverspath'] + f'/{server}/logs/latest.log', 'r') as mclog:
                 log.info(f'LW: Reading log for {server} for {timeout} seconds...')
