@@ -48,11 +48,11 @@ class LogReader:
 
         def _watchlog(event):
             stopwhen = time() + 60
-            with open(self.servercfg['serverspath'] + f'/{server}/logs/latest.log', 'r') as log:
+            with open(self.servercfg['serverspath'] + f'/{server}/logs/latest.log', 'r') as mclog:
                 log.info(f'LW: Reading log for {server}...')
-                log.seek(0, 2)
+                mclog.seek(0, 2)
                 while not event.is_set() and time() < stopwhen:
-                    line = log.readline()
+                    line = mclog.readline()
                     if line:
                         coro = sendMarkdown(ctx, '# ' + line, deletable=False)
                         asyncio.run_coroutine_threadsafe(coro, self.loop)
