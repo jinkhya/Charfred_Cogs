@@ -54,7 +54,7 @@ class LogReader:
                 stopwhen = timestamp + 1800
             with open(self.servercfg['serverspath'] + f'/{server}/logs/latest.log', 'r') as mclog:
                 coro = sendMarkdown(ctx, '# Reading log for {server} for ' +
-                                    (timeout if timeout < 1800 else '1800') +
+                                    (str(timeout) if timeout < 1800 else '1800') +
                                     'seconds...')
                 asyncio.run_coroutine_threadsafe(coro, self.loop)
                 log.info(f'LW: Reading log for {server} for {timeout} seconds...')
