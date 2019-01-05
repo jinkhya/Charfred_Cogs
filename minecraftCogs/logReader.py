@@ -50,13 +50,16 @@ class LogReader:
             timestamp = time()
             if timeout and timeout < 1800:
                 stopwhen = timestamp + timeout
+                coro = sendMarkdown(ctx, '# Reading log for {server} for {timeout} seconds...\n'
+                                    '< Please run \'log endwatch {server}\' if you\'re >\n'
+                                    '< not actively following the log! >')
             else:
                 stopwhen = timestamp + 1800
+                coro = sendMarkdown(ctx, '# Reading log for {server} for 1800 seconds...\n'
+                                    '< Please run \'log endwatch {server}\' if you\'re >\n'
+                                    '< not actively following the log! >')
+            asyncio.run_coroutine_threadsafe(coro, self.loop)
             with open(self.servercfg['serverspath'] + f'/{server}/logs/latest.log', 'r') as mclog:
-                coro = sendMarkdown(ctx, '# Reading log for {server} for ' +
-                                    (str(timeout) if timeout < 1800 else '1800') +
-                                    'seconds...')
-                asyncio.run_coroutine_threadsafe(coro, self.loop)
                 log.info(f'LW: Reading log for {server} for {timeout} seconds...')
                 mclog.seek(0, 2)
                 outlines = []
