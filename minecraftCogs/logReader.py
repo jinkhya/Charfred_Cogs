@@ -47,25 +47,26 @@ class LogReader:
             return
 
         def _watchlog(event):
+            timestamp = time()
             if timeout and timeout < 1800:
-                stopwhen = time() + timeout
+                stopwhen = timestamp + timeout
             else:
-                stopwhen = time() + 1800
+                stopwhen = timestamp + 1800
             with open(self.servercfg['serverspath'] + f'/{server}/logs/latest.log', 'r') as mclog:
                 log.info(f'LW: Reading log for {server} for {timeout} seconds...')
                 mclog.seek(0, 2)
                 outlines = []
                 while not event.is_set() and time() < stopwhen:
                     line = mclog.readline()
-                    if line:
-                        outlines.append('# ' + line)
-                        if len(outlines) == 5:
+                    if line and line.startswith('['):
+                        outlines.append('# ' + line if len(line) < 225 else (line[:225] + ' [...]'))
+                        if len(outlines) == 8 or (time() - timestamp) > 5:
                             out = '\n'.join(outlines)
-                            if len(out) > 1800:
-                                out = '\n'.join([s[:360] + '[...]' if len(s) > 360 else s for s in outlines])
                             coro = sendMarkdown(ctx, out)
                             asyncio.run_coroutine_threadsafe(coro, self.loop)
                             outlines = []
+                            timestamp = time()
+                            sleep(1)
                     else:
                         sleep(0.5)
                 return
