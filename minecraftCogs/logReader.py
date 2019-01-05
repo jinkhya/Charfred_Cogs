@@ -29,11 +29,11 @@ class LogReader:
         """Continously reads from the log file of a given server.
 
         This will keep reading any new lines that are added to the
-        log file of the given server for about a minute, unless
+        log file of the given server for about two minutes, unless
         cancelled.
         """
 
-        if server in self.logfutures:
+        if server in self.logfutures and not self.logfutures[server][0].done():
             log.info(f'There\'s already a reader open for {server}\'s log!')
             await sendMarkdown(ctx, '# Reader already active!')
             return
@@ -47,7 +47,7 @@ class LogReader:
             return
 
         def _watchlog(event):
-            stopwhen = time() + 60
+            stopwhen = time() + 120
             with open(self.servercfg['serverspath'] + f'/{server}/logs/latest.log', 'r') as mclog:
                 log.info(f'LW: Reading log for {server}...')
                 mclog.seek(0, 2)
