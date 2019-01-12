@@ -14,7 +14,7 @@ class Porter:
         self.promotees = Config(f'{self.bot.dir}/data/promotees_persist.json',
                                 load=True, loop=self.bot.loop)
         self.memberRoleName = bot.cfg['nodes']['spec:memberRole'][0]
-        self.floodmode = False
+        self.flood = False
         if 'awaiting' not in self.promotees:
             self.promotees['awaiting'] = []
 
@@ -27,21 +27,22 @@ class Porter:
             await self.promotees.save()
             return
 
-        if self.floodmode:
+        if self.flood:
             if member.top_role.name == '@everyone':
                 log.info(f'Floodmode: {member.name} has no pending membership!')
                 try:
-                    await member.kick(reason="No pending membership!")
-                except Forbidden:
-                    log.warning('No permission to kick members!')
-                else:
-                    log.info(f'Floodmode: {member.name} was kicked!')
                     await member.send(f'Hey there {member.name},\nsorry for kicking you from '
                                       f'{member.guild.name}, but we are currently in floodmode.'
                                       '\nIf you have a pending application please wait for it '
                                       'to be approved and then try joining our Discord again!\n'
                                       'Good day!\n\n - This is a machine generated message, '
                                       'replies are futile!')
+                    await member.kick(reason="No pending membership!")
+                except Forbidden:
+                    log.warning('No permission to kick members!')
+                    log.warning('They still got the kick DM and are probably very confused now!')
+                else:
+                    log.info(f'Floodmode: {member.name} was kicked!')
 
     @commands.group(invoke_without_command=True)
     @commands.guild_only()
@@ -50,7 +51,7 @@ class Porter:
 
         Without a subcommand, this returns the current floodmode status.
         """
-        if self.floodmode:
+        if self.flood:
             log.info('Floodmode active!')
             await sendMarkdown(ctx, '# Floodmode is currently active!')
         else:
@@ -68,7 +69,8 @@ class Porter:
         """
 
         log.info('Activated floodmode!')
-        self.floodmode = True
+        self.flood = True
+        await sendMarkdown(ctx, 'Floodmode activated!')
 
     @floodmode.command(aliases=['stop', 'off'])
     @commands.guild_only()
@@ -77,7 +79,8 @@ class Porter:
         """Deactivates floodmode."""
 
         log.info('Deactivated floodmode!')
-        self.floodmode = False
+        self.flood = False
+        await sendMarkdown(ctx, 'Floodmode deactivated!')
 
     @commands.command()
     @commands.guild_only()
