@@ -3,7 +3,7 @@ import logging
 log = logging.getLogger('charfred')
 
 
-class LargeSibling:
+class Guildspy:
     def __init__(self, bot):
         self.bot = bot
         self.session = bot.session
@@ -79,7 +79,7 @@ class LargeSibling:
 
 
 def setup(bot):
-    bot.add_cog(LargeSibling(bot))
+    bot.add_cog(Guildspy(bot))
 
 
 permissionNodes = {
