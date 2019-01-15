@@ -14,11 +14,10 @@ class Echo:
     @commands.group(invoke_without_command=True, hidden=True)
     @commands.is_owner()
     async def echo(self, ctx):
-        """Echo operations.
+        """Echo commands.
 
-        Without a subcommand this shows
-        which channels are registered to
-        be echoed to.
+        This shows which channels are registered to be echoed to,
+        if no subcommand was given.
         """
 
         pass

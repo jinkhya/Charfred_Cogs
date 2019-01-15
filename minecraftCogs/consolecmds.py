@@ -17,7 +17,7 @@ class ConsoleCmds:
     @commands.guild_only()
     @permissionNode('whitelist')
     async def player(self, ctx):
-        """Minecraft player management operations."""
+        """Minecraft player management commands."""
 
         if ctx.invoked_subcommand is None:
             pass
@@ -25,7 +25,7 @@ class ConsoleCmds:
     @player.group()
     @permissionNode('whitelist')
     async def whitelist(self, ctx):
-        """Minecraft player whitelisting operations."""
+        """Minecraft player whitelisting commands."""
 
         if ctx.invoked_subcommand is None:
             pass

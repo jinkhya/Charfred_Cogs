@@ -22,7 +22,7 @@ class ServerBackups:
     @commands.guild_only()
     @permissionNode('backup')
     async def backup(self, ctx):
-        """Minecraft server backup operations."""
+        """Minecraft server backup commands."""
 
         if ctx.invoked_subcommand is None:
             pass
@@ -47,7 +47,7 @@ class ServerBackups:
     @backup.group()
     @permissionNode('applyBackup')
     async def apply(self, ctx):
-        """Backup application operations."""
+        """Backup application commands."""
 
         if ctx.invoked_subcommand is None:
             pass

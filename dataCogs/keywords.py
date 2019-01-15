@@ -13,12 +13,12 @@ class Keywords:
 
     @commands.group(invoke_without_command=True)
     async def vocab(self, ctx):
-        """Charfred vocabulary operations.
+        """Charfred vocabulary commands.
 
         Add and remove words or phrases from
         Charfred\'s vocabulary.
-        Without a subcommand, this returns the list
-        of all vocab categories.
+        This returns the list of all vocab categories,
+        if no subcommand was given.
         """
 
         if ctx.invoked_subcommand is None:
@@ -61,7 +61,7 @@ class Keywords:
     @vocab.group()
     @permissionNode('categoryAdd')
     async def category(self, ctx):
-        """Vocab category operations."""
+        """Vocab category commands."""
 
         if ctx.invoked_subcommand is None:
             pass

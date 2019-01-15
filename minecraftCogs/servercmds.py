@@ -19,7 +19,7 @@ class ServerCmds:
     @commands.guild_only()
     @permissionNode('status')
     async def server(self, ctx):
-        """Minecraft server operations."""
+        """Minecraft server commands."""
         if ctx.invoked_subcommand is None:
             pass
 

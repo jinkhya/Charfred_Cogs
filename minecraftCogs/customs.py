@@ -24,11 +24,10 @@ class Customs:
     @commands.guild_only()
     @permissionNode('custom')
     async def custom(self, ctx):
-        """Custom Minecraft server commands operations.
+        """Custom Minecraft server commands commands.
 
-        Without a subcommand, this returns a list
-        of all currently registered custom console
-        commands.
+        This returns a list of all currently registered custom console
+        commands, if no subcommand was given.
         """
 
         if ctx.invoked_subcommand is None:

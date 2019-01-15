@@ -16,7 +16,7 @@ class Chuck:
     async def norris(self, ctx):
         """Interactions with ChuckNorrisJokes API.
 
-        Without a subcommand, this gets a random joke.
+        This gets a random joke, if no subcommand was given.
         """
 
         if ctx.invoked_subcommand is None:

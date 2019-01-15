@@ -21,7 +21,7 @@ class LogReader:
     @commands.guild_only()
     @permissionNode('logread')
     async def log(self, ctx):
-        """Minecraft log operations."""
+        """Minecraft log commands."""
         pass
 
     @log.command(aliases=['observe'])

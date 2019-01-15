@@ -26,10 +26,10 @@ class Watchdog:
     @commands.guild_only()
     @permissionNode('watchdog')
     async def watchdog(self, ctx):
-        """Server process watchdog operations.
+        """Server process watchdog commands.
 
-        Without a subcommand this returns a list of all
-        active watchdogs.
+        This returns a list of all active watchdogs,
+        if no subcommand was given.
         """
 
         for server, wd in self.watchdogs.items():

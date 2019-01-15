@@ -41,11 +41,10 @@ class Quotator:
     @commands.group(invoke_without_command=True)
     @permissionNode('quote')
     async def quote(self, ctx, member: discord.Member=None, _index: int=None):
-        """User Quote operations.
+        """User Quote commands.
 
-        Without a subcommand, this returns a list
-        of all users that are registered in the
-        quote repository.
+        This returns a list of all users that are registered in the
+        quote repository, if no subcommand was given.
         """
 
         if member and str(member.id) in self.quotes:

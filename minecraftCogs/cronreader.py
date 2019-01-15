@@ -73,11 +73,10 @@ class CronReader:
     @commands.guild_only()
     @permissionNode('cronread')
     async def cron(self, ctx):
-        """Crontab operations.
+        """Crontab commands.
 
-        Without a subcommand, this returns an overview
-        of cronjobs that apply to any known minecraft
-        servers, configured with Charfred.
+        This returns an overview of cronjobs that apply to any known minecraft
+        servers managed by Charfreds \'spiffy\' script, if no subcommand was given.
         """
 
         log.info('Fetching current crontab...')

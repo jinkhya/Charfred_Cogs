@@ -47,9 +47,10 @@ class Porter:
     @commands.group(invoke_without_command=True)
     @commands.guild_only()
     async def floodmode(self, ctx):
-        """Floodmode operations.
+        """Floodmode commands.
 
-        Without a subcommand, this returns the current floodmode status.
+        This returns the current floodmode status,
+        if no subcommand was given.
         """
         if self.flood:
             log.info('Floodmode active!')
