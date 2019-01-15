@@ -32,50 +32,50 @@ class Guildspy:
     #         }
     #         await self.session.post(self.hook_url, json=hook_this)
 
+    async def _hookit(self, member, content):
+        log.info('Sending spy report!')
+        hook_this = {
+            'username': f'{member.name} via CharSpy',
+            'avatar_url': f'{member.avatar_url}',
+            'content': content
+        }
+        await self.session.post(self.hook_url, json=hook_this)
+
+    async def on_member_ban(self, guild, user):
+        """Ban spy."""
+        log.info('Member got banned, ouch!')
+        if self.hook_url:
+            content = f'{user.name} got banned!'
+            await self._hookit(user, content)
+
     async def on_member_join(self, member):
         """Join spy."""
         log.info('Member joined!')
         if self.hook_url:
-            log.info('Sending spy report!')
-            hook_this = {
-                'username': f'{member.name} via CharSpy',
-                'avatar_url': f'{member.avatar_url}',
-                'content': f'{member.name}#{member.discriminator} has joined!\n'
-                           f'ID: {member.id}'
-            }
-            await self.session.post(self.hook_url, json=hook_this)
+            content = f'{member.name}#{member.discriminator} has joined!\nID: {member.id}'
+            await self._hookit(member, content)
 
     async def on_member_remove(self, member):
         """Leave spy."""
         log.info('Member left!')
         if self.hook_url:
-            log.info('Sending spy report!')
-            hook_this = {
-                'username': f'{member.name} via CharSpy',
-                'avatar_url': f'{member.avatar_url}',
-                'content': f'{member.name}#{member.discriminator} has left!'
-            }
-            await self.session.post(self.hook_url, json=hook_this)
+            content = f'{member.name}#{member.discriminator} has left!'
+            await self._hookit(member, content)
 
     async def on_member_update(self, before, after):
         """Member role-update spy."""
         if len(before.roles) == len(after.roles):
             return
         log.info('Member has updated roles.')
-        if len(before.roles) > len(after.roles):
-            roles = list(set(before.roles) - set(after.roles))
-            verb = 'lost'
-        else:
-            roles = list(set(after.roles) - set(before.roles))
-            verb = 'gained'
         if self.hook_url:
-            log.info('Sending spy report!')
-            hook_this = {
-                'username': f'{after.name} via CharSpy',
-                'avatar_url': f'{after.avatar_url}',
-                'content': f'I have {verb} the {roles[0]} role!'
-            }
-            await self.session.post(self.hook_url, json=hook_this)
+            if len(before.roles) > len(after.roles):
+                roles = list(set(before.roles) - set(after.roles))
+                verb = 'lost'
+            else:
+                roles = list(set(after.roles) - set(before.roles))
+                verb = 'gained'
+            content = f'I have {verb} the {roles[0]} role!'
+            await self._hookit(after, content)
 
 
 def setup(bot):
