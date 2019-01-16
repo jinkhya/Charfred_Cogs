@@ -48,7 +48,7 @@ class ConsoleCmds:
         await sendMarkdown(ctx, '\n'.join(msg))
 
     @whitelist.command()
-    async def add(self, ctx, player: str):
+    async def add(self, ctx):
         """[DEPRECATED]"""
 
         await sendMarkdown(ctx, '< \"add\" is being deprecated, please use '
