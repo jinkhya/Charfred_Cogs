@@ -84,7 +84,7 @@ class FunkyText:
             log.warning('Couldn\'t find font!')
             await send(ctx, f'Sorry, but {fnt} isn\'t known to pyfiglet!')
             await send(ctx, 'Please see http://www.figlet.org/fontdb.cgi\n'
-                           'for a list of all available fonts, with examples!')
+                       'for a list of all available fonts, with examples!')
         else:
             figText = fig.renderText(text)
 

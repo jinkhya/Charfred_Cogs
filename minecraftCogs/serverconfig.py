@@ -15,12 +15,13 @@ class ServerConfig:
         self.loop = bot.loop
         self.servercfg = bot.servercfg
 
-    @commands.group(name='serverConfig')
+    @commands.group(name='serverconfig', invoke_without_command=True)
     @commands.guild_only()
     @permissionNode('management')
     async def config(self, ctx):
-        if ctx.invoked_subcommand is None:
-            pass
+        """Minecraft server configuration commands."""
+
+        pass
 
     @config.command()
     async def add(self, ctx, server: str):
@@ -82,7 +83,7 @@ class ServerConfig:
         return embeds
 
     @config.command()
-    async def listAll(self, ctx):
+    async def flip(self, ctx):
         """Lists all known server configurations,
         via Flipbook."""
 
@@ -146,7 +147,7 @@ class ServerConfig:
             await sendMarkdown(ctx, f'< Deletion of configurations aborted! >')
 
     @config.command()
-    async def editPaths(self, ctx):
+    async def editpaths(self, ctx):
         """Give the option of editing the various server path configurations!"""
 
         def check(m):
@@ -179,7 +180,7 @@ class ServerConfig:
                 await self.servercfg.save()
                 await sendMarkdown(ctx, 'Saved new path for minecraft backups directory!')
 
-    @config.command(aliases=['editOldTimer', 'editbackuptimer'])
+    @config.command(aliases=['editbackuptimer'])
     async def editmaxbackupage(self, ctx):
         """Give the option of changing the maximum age for backups!
 

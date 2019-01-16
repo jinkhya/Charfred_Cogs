@@ -30,15 +30,14 @@ class Customs:
         commands, if no subcommand was given.
         """
 
-        if ctx.invoked_subcommand is None:
-            msg = ['Custom Console Commands Library',
-                   '===============================']
-            for name, cmd in self.customcmds.items():
-                msg.append(name)
-                msg.append(f"\t{cmd['role']}")
-                msg.append(f"\t{cmd['cmd']}\n")
-            msg = '\n'.join(msg)
-            await sendMarkdown(ctx, msg)
+        msg = ['Custom Console Commands Library',
+               '===============================']
+        for name, cmd in self.customcmds.items():
+            msg.append(name)
+            msg.append(f"\t{cmd['role']}")
+            msg.append(f"\t{cmd['cmd']}\n")
+        msg = '\n'.join(msg)
+        await sendMarkdown(ctx, msg)
 
     @custom.command(aliases=['edit', 'modify'])
     @permissionNode('customEdit')

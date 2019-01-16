@@ -15,13 +15,13 @@ class ServerCmds:
         self.loop = bot.loop
         self.servercfg = bot.servercfg
 
-    @commands.group()
+    @commands.group(invoke_without_command=True)
     @commands.guild_only()
     @permissionNode('status')
     async def server(self, ctx):
         """Minecraft server commands."""
-        if ctx.invoked_subcommand is None:
-            pass
+
+        pass
 
     @server.command(aliases=['failsafe'])
     @permissionNode('start')

@@ -23,7 +23,7 @@ class Echo:
         pass
 
     @echo.commands(aliases=['add'])
-    async def register(self, ctx, ):
+    async def register(self, ctx):
         """Registers a channel to the echoable list of channels.
 
         Takes

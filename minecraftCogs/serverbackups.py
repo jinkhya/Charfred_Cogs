@@ -18,14 +18,13 @@ class ServerBackups:
         self.loop = bot.loop
         self.servercfg = bot.servercfg
 
-    @commands.group()
+    @commands.group(invoke_without_command=True)
     @commands.guild_only()
     @permissionNode('backup')
     async def backup(self, ctx):
         """Minecraft server backup commands."""
 
-        if ctx.invoked_subcommand is None:
-            pass
+        pass
 
     @backup.command(aliases=['listAll'])
     async def list(self, ctx, server: str):
@@ -44,13 +43,12 @@ class ServerBackups:
                                title=f'Backups for {server}', color=Color.blurple())
         await backupsbook.flip()
 
-    @backup.group()
+    @backup.group(invoke_without_command=True)
     @permissionNode('applyBackup')
     async def apply(self, ctx):
         """Backup application commands."""
 
-        if ctx.invoked_subcommand is None:
-            pass
+        pass
 
     def getbackupfile(self, server, part):
         bpath = self.servercfg['backupspath']

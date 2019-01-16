@@ -21,9 +21,8 @@ class Keywords:
         if no subcommand was given.
         """
 
-        if ctx.invoked_subcommand is None:
-            categories = '\n '.join(self.phrases.keys())
-            await send(ctx, f'I know these categories:\n ```\n{categories}\n```')
+        categories = '\n '.join(self.phrases.keys())
+        await send(ctx, f'I know these categories:\n ```\n{categories}\n```')
 
     @vocab.command()
     @permissionNode('vocabAdd')
@@ -58,13 +57,12 @@ class Keywords:
             log.info('Invalid category!')
             await send(ctx, 'I don\'t know that category!')
 
-    @vocab.group()
+    @vocab.group(invoke_without_command=True)
     @permissionNode('categoryAdd')
     async def category(self, ctx):
         """Vocab category commands."""
 
-        if ctx.invoked_subcommand is None:
-            pass
+        pass
 
     @category.command(name='add')
     @permissionNode('categoryAdd')
