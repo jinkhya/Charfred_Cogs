@@ -13,25 +13,27 @@ class ConsoleCmds:
         self.loop = bot.loop
         self.servercfg = bot.servercfg
 
-    @commands.group()
+    @commands.command()
     @commands.guild_only()
     @permissionNode('whitelist')
     async def player(self, ctx):
-        """Minecraft player management commands."""
+        """[DEPRECATED]"""
 
-        if ctx.invoked_subcommand is None:
-            pass
+        await sendMarkdown(ctx, '< \"player\" is being deprecated, please use \"minecraft\" '
+                           'or \"mc\" instead! >\n> This message will be removed in future '
+                           'versions.')
 
-    @player.group()
+    @commands.group(aliases=['mc'], invoke_without_command=True)
+    @commands.guild_only()
     @permissionNode('whitelist')
-    async def whitelist(self, ctx):
-        """Minecraft player whitelisting commands."""
+    async def minecraft(self, ctx):
+        """Minecraft server console commands."""
 
-        if ctx.invoked_subcommand is None:
-            pass
+        pass
 
-    @whitelist.command()
-    async def add(self, ctx, player: str):
+    @minecraft.group(invoke_without_command=True)
+    @permissionNode('whitelist')
+    async def whitelist(self, ctx, player: str):
         """Add a player to the whitelist."""
 
         msg = ['Command Log', '==========']
@@ -44,6 +46,14 @@ class ConsoleCmds:
                 log.warning(f'Could not whitelist {player} on {server}.')
                 msg.append(f'< Unable to whitelist {player}, {server} is offline! >')
         await sendMarkdown(ctx, '\n'.join(msg))
+
+    @whitelist.command()
+    async def add(self, ctx, player: str):
+        """[DEPRECATED]"""
+
+        await sendMarkdown(ctx, '< \"add\" is being deprecated, please use '
+                           'just \"whitelist\" instead! >\n> This message will be removed '
+                           'in future versions.')
 
     @whitelist.command()
     async def remove(self, ctx, player: str):
@@ -75,7 +85,7 @@ class ConsoleCmds:
                     msg.append(f'< {player} is NOT whitelisted on {server}. >')
         await sendMarkdown(ctx, '\n'.join(msg))
 
-    @player.command()
+    @minecraft.command()
     @permissionNode('kick')
     async def kick(self, ctx, server: str, player: str):
         """Kick a player from a specified server.
@@ -92,7 +102,7 @@ class ConsoleCmds:
             msg.append(f'< {server} is not online! >')
         await sendMarkdown(ctx, '\n'.join(msg))
 
-    @player.command()
+    @minecraft.command()
     @permissionNode('ban')
     async def ban(self, ctx, player: str):
         """Bans a player, and unwhitelists just to be safe."""
@@ -110,7 +120,7 @@ class ConsoleCmds:
                 msg.append(f'< Unable to ban {player}, {server} is offline! >')
         await sendMarkdown(ctx, '\n'.join(msg))
 
-    @commands.command(aliases=['pass'])
+    @minecraft.command(aliases=['pass'])
     @commands.guild_only()
     @permissionNode('relay')
     async def relay(self, ctx, server: str, *, command: str):
