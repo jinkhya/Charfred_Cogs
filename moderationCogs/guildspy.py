@@ -26,8 +26,21 @@ class Guildspy:
         """Ban spy."""
         log.info('Member got banned, ouch!')
         if self.hook_url:
-            content = f'{user.name} got banned!'
-            await self._hookit(user, content)
+            hook_this = {
+                'username': f'{user.name} via CharSpy',
+                'avatar_url': f'{user.avatar_url}',
+                'embeds': [{
+                    'title': 'Ban Action:',
+                    'color': 0x008080,
+                    'image': 'https://cdn.discordapp.com/attachments/327174378527653889/535248231265992744/O3DHIA5.gif',
+                    'fields': [{
+                        'name': f'I, {user.name}',
+                        'value': 'was banned!'
+                    }]
+                }]
+            }
+            log.info('Sending spy report!')
+            await self.session.post(self.hook_url, json=hook_this)
 
     async def on_member_join(self, member):
         """Join spy."""
