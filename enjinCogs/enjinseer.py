@@ -99,6 +99,11 @@ class Enjinseer:
                 params = iter(params)
                 params = dict(list(zip(params, params)))
                 payload['params'] = params
+                payload['params']['session_id'] = self.enjinsession.session_id
+            else:
+                payload['params'] = {
+                    'session_id': self.enjinsession.session_id
+                }
 
             resp = await post(self.session, payload, self.enjinlogin.url)
             if resp:
