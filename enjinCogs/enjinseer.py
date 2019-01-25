@@ -22,7 +22,7 @@ class Enjinseer:
             bot.enjinlogin = None
         self.enjinlogin = bot.enjinlogin
 
-    @commands.group()
+    @commands.group(hidden=True)
     @commands.is_owner()
     async def enjin(self, ctx):
         """Enjin Management commands."""
@@ -30,12 +30,11 @@ class Enjinseer:
 
     @enjin.command()
     @commands.is_owner()
-    async def login(self, ctx):
+    async def login(self, ctx, email: str=None, password: str=None,
+                    url: str=None, site_id: str=None):
         """Enjin user login and session saving.
 
-        Interactively requests necessary login information
-        from the user via DM and establishes a session to be
-        used by other enjin related cogs.
+        Establishes a session to be used by other enjin related cogs.
         """
 
         log.info('Starting enjin login!')
@@ -47,11 +46,6 @@ class Enjinseer:
                 return
             else:
                 log.info('Current enjin session invalid!')
-        email, _, _ = await promptInput(ctx, '# Beginning Enjin login!\n'
-                                        '# Please enter your login email:')
-        password, _, _ = await promptInput(ctx, '# Please enter your login password:')
-        url, _, _ = await promptInput(ctx, '# Please enter the url for your enjin site:')
-        site_id, _, _ = await promptInput(ctx, '# Please enter the site id for that site:')
         self.enjinlogin = Enjinlogin(
             email=email,
             password=password,
