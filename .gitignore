@@ -54,4 +54,5 @@ ENV/
 !/minecraftCogs
 !/moderationCogs
 !/auxAdminCogs
+!/enjinCogs
 .flake8
