@@ -49,7 +49,7 @@ class Enjinseer:
         self.enjinlogin = Enjinlogin(
             email=email,
             password=password,
-            url=url,
+            url=url[:-1],
             site_id=site_id
         )
         async with ctx.typing():
