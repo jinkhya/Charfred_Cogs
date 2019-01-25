@@ -24,7 +24,7 @@ async def post(clientsession, payload, url):
 
 
 async def login(clientsession, enjinlogin):
-    if enjinlogin is None:
+    if enjinlogin:
         payload = {
             'method': 'User.login',
             'params': {
