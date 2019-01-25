@@ -3,7 +3,7 @@ import json
 from collections import namedtuple
 from discord import Forbidden
 from discord.ext import commands
-from utils.discoutils import send, sendMarkdown, promptInput
+from utils.discoutils import send, sendMarkdown
 from .utils.enjinutils import login, verifysession, post
 
 log = logging.getLogger('charfred')
@@ -109,7 +109,9 @@ class Enjinseer:
             if resp:
                 log.info('Request successful!')
                 resp = json.dumps(resp, indent=2)
-                await send(ctx, f'```json\n{resp[:1800]}```')
+                resp = [resp[i:i + 1800] for i in range(0, len(resp), 1800)]
+                for section in resp[:8]:
+                    await send(ctx, f'```json\n{section}```')
             else:
                 log.warning('Request failed!')
                 await sendMarkdown(ctx, '< Request failed for some reason! >')
