@@ -53,6 +53,41 @@ class ApplicationHelper:
             else:
                 await sendMarkdown(ctx, '< Current enjin session is invalid! >')
 
+    async def _getapp(self, appid):
+        payload = {
+            'method': 'Applications.getApplication',
+            'params': {
+                'session_id': self.enjinsession.session_id,
+                'application_id': appid
+            }
+        }
+        app = await post(self.session, payload, self.enjinsession.url)
+        if not app:
+            log.info('No application recieved!')
+            return None
+        app = app['result']
+        fields = app['user_data']
+        msg = ['# Retrieved Application contained the following entries:']
+        qhashes = list(fields.keys())
+        for i, key in enumerate(qhashes):
+            msg.append(f'[{i}]: {fields[key]}')
+        msg.append('\n> Please note that, unfortunately, the enjin api does '
+                   'not return the actual prompts or questions attached to '
+                   'each field, so you\'ll have to figure out which field '
+                   'is which... (they should be in the correct order at least).')
+        msg = '\n'.join(msg)
+        return msg
+
+    @apps.command(name='get')
+    async def getapp(self, ctx, appid):
+        """Retrieves the user entered info for a given application id."""
+
+        msg = await self._getapp(appid)
+        if not msg:
+            await sendMarkdown(ctx, '< Application could not be retrieved! >')
+            return
+        await sendMarkdown(ctx, msg)
+
     @apps.command(aliases=['configure'])
     @permissionNode('enjinedittemplate')
     async def settemplate(self, ctx, correctappid: int):
@@ -70,29 +105,10 @@ class ApplicationHelper:
             if not b:
                 await sendMarkdown(ctx, '> Configuration complete!')
                 return
-        payload = {
-            'method': 'Applications.getApplication',
-            'params': {
-                'session_id': self.enjinsession.session_id,
-                'application_id': correctappid
-            }
-        }
-        app = await post(self.session, payload, self.enjinsession.url)
-        if not app:
-            log.info('No application recieved!')
-            await sendMarkdown(ctx, '< Did not recieve an application! >')
+        msg = await self._getapp(correctappid)
+        if not msg:
+            await sendMarkdown(ctx, '< Application could not be retrieved! >')
             return
-        app = app['result']
-        fields = app['user_data']
-        msg = ['# Retrieved Application contained the following entries:']
-        qhashes = list(fields.keys())
-        for i, key in enumerate(qhashes):
-            msg.append(f'[{i}]: {fields[key]}')
-        msg.append('\n> Please note that, unfortunately, the enjin api does '
-                   'not return the actual prompts or questions attached to '
-                   'each field, so you\'ll have to figure out which field '
-                   'is which... (they should be in the correct order at least).')
-        msg = '\n'.join(msg)
         await sendMarkdown(ctx, msg)
         await sendMarkdown(ctx, '> The next bit is gonna be a bit tricky...')
         selection, _, _ = await promptInput(
