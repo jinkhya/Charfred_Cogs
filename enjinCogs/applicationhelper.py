@@ -113,7 +113,7 @@ class ApplicationHelper:
         selection = iter(selection)
         selection = dict(list(zip(selection, selection)))
         for k, v in selection.items():
-            self.apptemplate[qhashes[k]] = [v, fields[qhashes[k]]]
+            self.apptemplate[qhashes[int(k)]] = [v, fields[qhashes[int(k)]]]
         await self.apptemplate.save()
         await sendMarkdown(ctx, '# Template saved!\n> You may review the current '
                            'template via the viewtemplate command.')
