@@ -192,7 +192,7 @@ class ApplicationHelper:
                          v == self.apptemplate[k][1]}
         incorrectfields = {k: v for k, v in answers.items() if k not in freeformfields and
                            k not in correctfields}
-        msg = [f'# Application by: {user}']
+        msg = [f'# Application by: {user}\n']
         for k, v in correctfields.items():
             shortname = self.apptemplate[k][0]
             msg.append(f'# {shortname}: {v}')
@@ -202,7 +202,7 @@ class ApplicationHelper:
             msg.append(f'< {shortname}: {v} >')
         msg.append('\n\n> Correct fields are color coded in blue (#)\n'
                    '> Incorrect fields are color coded in yellow (<>)')
-        msg = '\n'.join(msg)
+        msg = '\n\n'.join(msg)
         await sendMarkdown(ctx, msg)
 
 
