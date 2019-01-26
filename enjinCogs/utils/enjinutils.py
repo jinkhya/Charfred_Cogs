@@ -4,7 +4,7 @@ from collections import namedtuple
 
 log = logging.getLogger('charfred')
 
-Enjinsession = namedtuple('Enjinsession', 'session_id user_id username')
+Enjinsession = namedtuple('Enjinsession', 'session_id user_id username url site_id')
 
 
 async def post(clientsession, payload, url):
@@ -39,7 +39,9 @@ async def login(clientsession, enjinlogin):
                 enjinsession = Enjinsession(
                     session_id=result['session_id'],
                     user_id=result['user_id'],
-                    username=result['username']
+                    username=result['username'],
+                    url=enjinlogin.url,
+                    site_id=enjinlogin.site_id
                 )
             except KeyError:
                 log.error('Enjin login failed, response content malformed!')
@@ -51,15 +53,15 @@ async def login(clientsession, enjinlogin):
         return None
 
 
-async def verifysession(clientsession, enjinlogin):
-    if enjinlogin:
+async def verifysession(clientsession, enjinsession):
+    if enjinsession:
         payload = {
             'method': 'User.checkSession',
             'params': {
-                'session_id': enjinlogin.session_id
+                'session_id': enjinsession.session_id
             }
         }
-        resp = await post(clientsession, payload, enjinlogin.url)
+        resp = await post(clientsession, payload, enjinsession.url)
         if resp:
             try:
                 valid = resp['result']['hasIdentity']

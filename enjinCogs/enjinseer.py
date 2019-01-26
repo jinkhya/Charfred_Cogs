@@ -38,14 +38,15 @@ class Enjinseer:
         """
 
         log.info('Starting enjin login!')
-        if self.enjinsession and self.enjinlogin:
-            valid = await verifysession(self.enjinlogin)
+        if self.enjinsession:
+            valid = await verifysession(self.session, self.enjinsession)
             if valid:
                 log.info('Current enjin session still valid!')
                 await sendMarkdown(ctx, "# Current enjin session is still valid!")
                 return
             else:
                 log.info('Current enjin session invalid!')
+                self.enjinsession = None
         self.enjinlogin = Enjinlogin(
             email=email,
             password=password,
@@ -81,8 +82,9 @@ class Enjinseer:
         seperated by spaces.
         """
 
-        if not self.enjinlogin:
+        if not self.enjinsession:
             await sendMarkdown(ctx, '< I am not logged in to enjin yet! >')
+            return
 
         async with ctx.typing():
             log.info('Running enjin post request...')
@@ -105,7 +107,7 @@ class Enjinseer:
                     'session_id': self.enjinsession.session_id
                 }
 
-            resp = await post(self.session, payload, self.enjinlogin.url)
+            resp = await post(self.session, payload, self.enjinsession.url)
             if resp:
                 log.info('Request successful!')
                 resp = json.dumps(resp, indent=2)
