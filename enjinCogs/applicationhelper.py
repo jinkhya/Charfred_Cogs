@@ -31,6 +31,15 @@ class ApplicationHelper:
         Gives some enjin login status information, when no subcommand is given.
         """
 
+        if hasattr(self.bot, 'enjinsession'):
+            self.enjinsession = self.bot.enjinsession
+        else:
+            self.enjinsession = None
+        if hasattr(self.bot, 'enjinlogin'):
+            self.enjinlogin = self.bot.enjinlogin
+        else:
+            self.enjinlogin = None
+
         if not self.apptemplate:
             await sendMarkdown(ctx, '< No application template available! >')
         if not self.enjinsession:
