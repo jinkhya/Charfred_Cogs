@@ -110,6 +110,7 @@ class ApplicationHelper:
         if not selection or not (len(selection) % 2 == 0):
             log.info('Prompt failed!')
             await sendMarkdown(ctx, '< Prompt failed, please try again! >')
+        selection = selection.split()
         selection = iter(selection)
         selection = dict(list(zip(selection, selection)))
         for k, v in selection.items():
