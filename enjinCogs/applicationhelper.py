@@ -85,7 +85,7 @@ class ApplicationHelper:
         app = app['result']
         fields = app['user_data']
         msg = ['# Retrieved Application contained the following entries:']
-        qhashes = fields.keys()
+        qhashes = list(fields.keys())
         for i, key in enumerate(qhashes):
             msg.append(f'[{i}]: {fields[key]}')
         msg.append('\n> Please note that, unfortunately, the enjin api does '
