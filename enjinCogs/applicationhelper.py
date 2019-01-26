@@ -76,13 +76,13 @@ class ApplicationHelper:
                    'each field, so you\'ll have to figure out which field '
                    'is which... (they should be in the correct order at least).')
         msg = '\n'.join(msg)
-        return msg
+        return (msg, fields, qhashes)
 
     @apps.command(name='get')
     async def getapp(self, ctx, appid):
         """Retrieves the user entered info for a given application id."""
 
-        msg = await self._getapp(appid)
+        msg, _, _ = await self._getapp(appid)
         if not msg:
             await sendMarkdown(ctx, '< Application could not be retrieved! >')
             return
@@ -105,7 +105,7 @@ class ApplicationHelper:
             if not b:
                 await sendMarkdown(ctx, '> Configuration complete!')
                 return
-        msg = await self._getapp(correctappid)
+        msg, fields, qhashes = await self._getapp(correctappid)
         if not msg:
             await sendMarkdown(ctx, '< Application could not be retrieved! >')
             return
