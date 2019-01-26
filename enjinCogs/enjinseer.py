@@ -58,7 +58,8 @@ class Enjinseer:
             await sendMarkdown(ctx, '> Logging in...')
             enjinsession = await login(self.session, self.enjinlogin)
             if enjinsession:
-                self.enjinsession = enjinsession
+                self.bot.enjinsession = enjinsession
+                self.enjinsession = self.bot.enjinsession
                 await sendMarkdown(ctx, '# Login successful!', deletable=False)
             else:
                 await sendMarkdown(ctx, '< Login failed! >', deletable=False)
