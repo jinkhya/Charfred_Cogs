@@ -57,7 +57,7 @@ class ApplicationHelper:
         if not self.enjinsession:
             await sendMarkdown(ctx, '< Not logged into enjin! >')
         else:
-            valid = await verifysession(self.session, self.enjinlogin)
+            valid = await verifysession(self.session, self.enjinsession)
             if valid:
                 await sendMarkdown(ctx, '# All is well!')
             else:

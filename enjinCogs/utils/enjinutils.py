@@ -54,26 +54,25 @@ async def login(clientsession, enjinlogin):
 
 
 async def verifysession(clientsession, enjinsession):
-    if enjinsession:
-        payload = {
-            'method': 'User.checkSession',
-            'params': {
-                'session_id': enjinsession.session_id
-            }
+    payload = {
+        'method': 'User.checkSession',
+        'params': {
+            'session_id': enjinsession.session_id
         }
-        resp = await post(clientsession, payload, enjinsession.url)
-        if resp:
-            try:
-                valid = resp['result']['hasIdentity']
-            except KeyError:
-                log.error('Enjin session verification failed, response content malformed!')
-            else:
-                if valid:
-                    log.info('Enjin session valid!')
-                    return True
-                else:
-                    log.info('Enjin session invalid!')
-                    return False
+    }
+    resp = await post(clientsession, payload, enjinsession.url)
+    if resp:
+        try:
+            valid = resp['result']['hasIdentity']
+        except KeyError:
+            log.error('Enjin session verification failed, response content malformed!')
         else:
-            log.warning('Enjin session verification failed!')
-        return False
+            if valid:
+                log.info('Enjin session valid!')
+                return True
+            else:
+                log.info('Enjin session invalid!')
+                return False
+    else:
+        log.warning('Enjin session verification failed!')
+    return False
