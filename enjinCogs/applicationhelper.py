@@ -200,13 +200,22 @@ class ApplicationHelper:
                            'template via the viewtemplate command.')
 
     @apps.command()
-    async def viewtemplate(self, ctx):
-        """Prints the raw json of the current template."""
+    async def viewtemplate(self, ctx, raw: bool=False):
+        """Prints the current template."""
 
         log.info('Printing enjin application template.')
-        template = json.dumps(self.enjinappcfg.cfgs, indent=2)
-        await sendMarkdown(ctx, '# Current enjin application template:')
-        await send(ctx, f'```json\n{template}```')
+
+        if raw:
+            template = json.dumps(self.enjinappcfg.cfgs, indent=2)
+            await sendMarkdown(ctx, '# Current enjin application template:')
+            await send(ctx, f'```json\n{template}```')
+        else:
+            msg = ['# Current enjin application template:\n']
+            for k, v in self.enjinappcfg['template'].items():
+                fieldname = self.enjinappcfg['fieldnames'][k]
+                msg.append(f'[{fieldname}]: {v}')
+            msg = '\n'.join(msg)
+            await sendMarkdown(ctx, msg)
 
     @apps.command(name='list')
     async def _list(self, ctx, type: str='open'):
@@ -297,7 +306,7 @@ class ApplicationHelper:
             fieldname = self.enjinappcfg['fieldnames'][k]
             msg.append(f'> {fieldname}: {v}')
 
-        msg = '\n\n'.join(msg)
+        msg = '\n'.join(msg)
         await sendMarkdown(ctx, msg)
 
 
