@@ -288,26 +288,40 @@ class ApplicationHelper:
         msg = [f'# Application by: {user}']
         msg.append('\n> Text input fields (not evaluated):\n')
         for k, v in freeformfields.items():
-            fieldname = self.enjinappcfg['fieldnames'][k]
+            try:
+                fieldname = self.enjinappcfg['fieldnames'][k]
+            except KeyError:
+                fieldname = k
             msg.append(f'> {fieldname}: {v}')
 
         msg.append('\n# Correct fields:\n')
         for k, v in correctfields.items():
-            fieldname = self.enjinappcfg['fieldnames'][k]
+            try:
+                fieldname = self.enjinappcfg['fieldnames'][k]
+            except KeyError:
+                fieldname = k
             msg.append(f'# {fieldname}: {v}')
 
         msg.append('\n< Incorrect fields: >\n')
         for k, v in incorrectfields.items():
-            fieldname = self.enjinappcfg['fieldnames'][k]
+            try:
+                fieldname = self.enjinappcfg['fieldnames'][k]
+            except KeyError:
+                fieldname = k
             msg.append(f'< {fieldname}: {v} >')
 
         msg.append('\n> Corrections for incorrect fields:\n')
         for k, v in corrections.items():
-            fieldname = self.enjinappcfg['fieldnames'][k]
+            try:
+                fieldname = self.enjinappcfg['fieldnames'][k]
+            except KeyError:
+                fieldname = k
             msg.append(f'> {fieldname}: {v}')
 
         msg = '\n'.join(msg)
         await sendMarkdown(ctx, msg)
+        await send(ctx, f'{self.enjinsession.url}/dashboard/applications'
+                   f'/application?app_id={applicationid}')
 
 
 def setup(bot):
