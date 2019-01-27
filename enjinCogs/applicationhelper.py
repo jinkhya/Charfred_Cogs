@@ -20,7 +20,7 @@ class ApplicationHelper:
             self.enjinlogin = bot.enjinlogin
         else:
             self.enjinlogin = None
-        self.apptemplate = Config(f'{bot.dir}/configs/applicationtemplate.json',
+        self.enjinappcfg = Config(f'{bot.dir}/configs/applicationcfg.json',
                                   load=True, loop=bot.loop)
 
     @commands.group(aliases=['enjinapps', 'app'], invoke_without_command=True)
@@ -40,12 +40,14 @@ class ApplicationHelper:
         else:
             self.enjinlogin = None
 
-        if not self.apptemplate:
-            await sendMarkdown(ctx, '< No application template available! >')
+        if not self.enjinappcfg:
+            await sendMarkdown(ctx, '< No application configuration available! >')
+        if not self.enjinappcfg['fieldnames']:
+            await sendMarkdown(ctx, '< No fieldnames set! >')
+        if not self.enjinappcfg['template']:
+            await sendMarkdown(ctx, '< No application template set! >')
         if not self.enjinsession:
             await sendMarkdown(ctx, '< Not logged into enjin! >')
-        elif not self.enjinlogin:
-            await sendMarkdown(ctx, '< No enjin login information available! >')
         else:
             valid = await verifysession(self.session, self.enjinlogin)
             if valid:
@@ -65,73 +67,127 @@ class ApplicationHelper:
         if not app:
             log.info('No application recieved!')
             return None
-        app = app['result']
-        fields = app['user_data']
-        msg = ['# Retrieved Application contained the following entries:']
+        fields = app['result']['user_data']
         qhashes = list(fields.keys())
-        for i, key in enumerate(qhashes):
-            msg.append(f'[{i}]: {fields[key]}')
-        msg.append('\n> Please note that, unfortunately, the enjin api does '
-                   'not return the actual prompts or questions attached to '
-                   'each field, so you\'ll have to figure out which field '
-                   'is which... (they should be in the correct order at least).')
+        return (fields, qhashes)
+
+    def _applyfieldnames(self, qhashes):
+        if not self.enjinappcfg['fieldnames']:
+            return qhashes
+        return [self.enjinappcfg['fieldnames'][qhash] for qhash in qhashes]
+
+    def _formatmsg(self, fields, qhashes, numbered=False):
+        msg = ['# Retrieved Application contained the following entries:']
+        fieldnames = self._applyfieldnames(qhashes)
+        if numbered:
+            for i, key in enumerate(qhashes):
+                msg.append(f'[{i}]-[{fieldnames[i]}]: {fields[key]}')
+        else:
+            for i, key in enumerate(qhashes):
+                msg.append(f'[{fieldnames[i]}]: {fields[key]}')
         msg = '\n'.join(msg)
-        return (msg, fields, qhashes)
+        return msg
 
     @apps.command(name='get')
     async def getapp(self, ctx, appid):
         """Retrieves the user entered info for a given application id."""
 
-        msg, _, _ = await self._getapp(appid)
-        if not msg:
+        fields, qhashes = await self._getapp(appid)
+        if not fields:
             await sendMarkdown(ctx, '< Application could not be retrieved! >')
             return
+        msg = self._formatmsg(fields, qhashes)
         await sendMarkdown(ctx, msg)
+
+    @apps.command()
+    @permissionNode('enjinedittemplate')
+    async def setfieldnames(self, ctx, anyappid: int):
+        """Save a set of short identifiers for all application entry fields.
+
+        Requires a valid application id to retrieve the necessary field name hashes,
+        as they are returned by the enjin api; Ideally this would be an application
+        that allows you to easily distinguish the fields from one another.
+        """
+
+        if self.enjinappcfg and self.enjinappcfg['fieldnames']:
+            log.info('Application field names already saved!')
+            b, _, _ = await promptConfirm(ctx, '> A set of field names is already '
+                                          'saved! Override?')
+            if not b:
+                await sendMarkdown(ctx, '> Override aborted.')
+                return
+
+        fields, qhashes = await self._getapp(anyappid)
+        if not fields:
+            await sendMarkdown(ctx, '< Application could not be retrieved! >')
+            return
+        msg = self._formatmsg(fields, qhashes, numbered=True)
+        await sendMarkdown(ctx, msg)
+
+        await sendMarkdown(ctx, '> This next bit is gonna be a bit tricky...')
+        fieldnames, _, _ = await promptInput(
+            ctx,
+            '# Please enter the field names for each field, in the order '
+            'as they appear in the above application listing, seperated by spaces.\n\n'
+            '< These names should be short and cannot contain spaces themselves! >\n\n'
+            '> You may use underscores in place of spaces for readability!\n\n'
+            '# Also hurry it up, this prompt will time out in 5 minutes!',
+            360
+        )
+        if not fieldnames:
+            log.info('Prompt failed!')
+            await sendMarkdown(ctx, '< Prompt failed, please try again! >')
+            return
+        fieldnames = fieldnames.split()
+        if not (len(fieldnames) == len(qhashes)):
+            log.info('Not enough names entered!')
+            await sendMarkdown(ctx, '< Not enough names entered, please try again! >')
+            return
+        self.enjinappcfg['fieldnames'] = {}
+        for i, name in enumerate(fieldnames):
+            self.enjinappcfg['fieldnames'][qhashes[i]] = name
+        await self.enjinappcfg.save()
+        await sendMarkdown(ctx, '# Field names saved!')
 
     @apps.command(aliases=['configure'])
     @permissionNode('enjinedittemplate')
     async def settemplate(self, ctx, correctappid: int):
-        """Save a template for comparison against those applications correctness.
+        """Save a template for validation of an application.
 
         You may specify an application id, for an \'ideal\' application,
         after which said application will be parsed and you will be prompted
         to select the fields that you wish your template to contain.
         """
 
-        if self.apptemplate:
+        if self.enjinappcfg:
             log.info('Application template already saved.')
             b, _, _ = await promptConfirm(ctx, 'An application template already '
                                           'exists, do you wish to override?')
             if not b:
                 await sendMarkdown(ctx, '> Configuration complete!')
                 return
-        msg, fields, qhashes = await self._getapp(correctappid)
-        if not msg:
+
+        fields, qhashes = await self._getapp(correctappid)
+        if not fields:
             await sendMarkdown(ctx, '< Application could not be retrieved! >')
             return
+        msg = self._formatmsg(fields, qhashes, numbered=True)
         await sendMarkdown(ctx, msg)
-        await sendMarkdown(ctx, '> The next bit is gonna be a bit tricky...')
         selection, _, _ = await promptInput(
             ctx,
             '# Please enter the numbers for all the fields you wish to include '
-            'in the template, together with a shortname for each field.\n\n'
-            'The shortname should later help you identify which field is which.\n'
-            '< it should be really short, and contain no spaces >\n'
-            '> you may use underscores in place of spaces however\n'
-            'In the end you should have a list like such:\n'
-            '1 rule_1 2 rule_2 5 rule_11\n\n'
-            '# Go on, type type! These prompts time out faster than you think...',
+            'in the template, seperated by spaces.\n\n'
+            '# Go on, type type! This prompt times out in 5 minutes!',
             360
         )
-        if not selection or not (len(selection) % 2 == 0):
+        if not selection:
             log.info('Prompt failed!')
             await sendMarkdown(ctx, '< Prompt failed, please try again! >')
         selection = selection.split()
-        selection = iter(selection)
-        selection = dict(list(zip(selection, selection)))
-        for k, v in selection.items():
-            self.apptemplate[qhashes[int(k)]] = [v, fields[qhashes[int(k)]]]
-        await self.apptemplate.save()
+        self.enjinappcfg['template'] = {}
+        for i in selection:
+            self.enjinappcfg['template'][qhashes[int(i)]] = fields[qhashes[int(i)]]
+        await self.enjinappcfg.save()
         await sendMarkdown(ctx, '# Template saved!\n> You may review the current '
                            'template via the viewtemplate command.')
 
@@ -140,7 +196,7 @@ class ApplicationHelper:
         """Prints the raw json of the current template."""
 
         log.info('Printing enjin application template.')
-        template = json.dumps(self.apptemplate, indent=2)
+        template = json.dumps(self.enjinappcfg.cfgs, indent=2)
         await sendMarkdown(ctx, '# Current enjin application template:')
         await send(ctx, f'```json\n{template}```')
 
@@ -168,8 +224,8 @@ class ApplicationHelper:
             return
         msg = [f'# The following applications are currently {type}:\n']
         for app in apps['result']['items']:
-            msg.append('Application by: ' + app['username'])
-            msg.append('Application ID: ' + app['application_id'] + '\n')
+            msg.append('# Application by: ' + app['username'])
+            msg.append('> Application ID: ' + app['application_id'] + '\n')
         msg = '\n'.join(msg)
         await sendMarkdown(ctx, msg)
         log.info('Applications retrieved and listed!')
@@ -184,11 +240,12 @@ class ApplicationHelper:
         """
 
         log.info('Validating application...')
-        if not self.apptemplate:
+        if not self.enjinappcfg:
             log.warning('No template found!')
             await sendMarkdown(ctx, '< No template found! Please configure'
                                'one before trying again! >')
             return
+
         payload = {
             'method': 'Applications.getApplication',
             'params': {
@@ -201,23 +258,37 @@ class ApplicationHelper:
             log.warning('App could not be retrieved!')
             await sendMarkdown(ctx, '< App could not be retrieved! >')
             return
+
         user = app['result']['username']
         answers = app['result']['user_data']
-        freeformfields = {k: v for k, v in answers.items() if k not in self.apptemplate}
-        correctfields = {k: v for k, v in answers.items() if k in self.apptemplate and
-                         v == self.apptemplate[k][1]}
+        freeformfields = {k: v for k, v in answers.items() if k not in self.enjinappcfg['template']}
+        correctfields = {k: v for k, v in answers.items() if k in self.enjinappcfg['template'] and
+                         v == self.enjinappcfg['template'][k]}
         incorrectfields = {k: v for k, v in answers.items() if k not in freeformfields and
                            k not in correctfields}
-        msg = [f'# Application by: {user}\n']
+        corrections = {k: v for k, v in self.enjinappcfg['template'].items() if k in incorrectfields}
+
+        msg = [f'# Application by: {user}']
+        msg.append('\n> Text input fields (not evaluated):\n')
+        for k, v in freeformfields.items():
+            fieldname = self.enjinappcfg['fieldnames'][k]
+            msg.append(f'> {fieldname}: {v}')
+
+        msg.append('\n# Correct fields:\n')
         for k, v in correctfields.items():
-            shortname = self.apptemplate[k][0]
-            msg.append(f'# {shortname}: {v}')
-        msg.append('\n\n')
+            fieldname = self.enjinappcfg['fieldnames'][k]
+            msg.append(f'# {fieldname}: {v}')
+
+        msg.append('\n< Incorrect fields: >\n')
         for k, v in incorrectfields.items():
-            shortname = self.apptemplate[k][0]
-            msg.append(f'< {shortname}: {v} >')
-        msg.append('\n\n> Correct fields are color coded in blue (#)\n'
-                   '> Incorrect fields are color coded in yellow (<>)')
+            fieldname = self.enjinappcfg['fieldnames'][k]
+            msg.append(f'< {fieldname}: {v} >')
+
+        msg.append('\n> Corrections for incorrect fields:\n')
+        for k, v in corrections.items():
+            fieldname = self.enjinappcfg['fieldnames'][k]
+            msg.append(f'> {fieldname}: {v}')
+
         msg = '\n\n'.join(msg)
         await sendMarkdown(ctx, msg)
 
