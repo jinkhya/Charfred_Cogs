@@ -22,6 +22,14 @@ class ApplicationHelper:
             self.enjinlogin = None
         self.enjinappcfg = Config(f'{bot.dir}/configs/applicationcfg.json',
                                   load=True, loop=bot.loop)
+        try:
+            self.enjinappcfg['template']
+        except KeyError:
+            self.enjinappcfg['template'] = {}
+        try:
+            self.enjinappcfg['fieldnames']
+        except KeyError:
+            self.enjinappcfg['fieldnames'] = {}
 
     @commands.group(aliases=['enjinapps', 'app'], invoke_without_command=True)
     @permissionNode('enjinapps')
