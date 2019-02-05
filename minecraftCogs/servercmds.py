@@ -16,7 +16,6 @@ class ServerCmds:
         self.servercfg = bot.servercfg
 
     @commands.group(invoke_without_command=True)
-    @commands.guild_only()
     @permissionNode('status')
     async def server(self, ctx):
         """Minecraft server commands."""

@@ -23,7 +23,6 @@ class Watchdog:
                 event.set()
 
     @commands.group(invoke_without_command=True)
-    @commands.guild_only()
     @permissionNode('watchdog')
     async def watchdog(self, ctx):
         """Server process watchdog commands.

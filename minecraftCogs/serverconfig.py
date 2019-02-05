@@ -16,7 +16,6 @@ class ServerConfig:
         self.servercfg = bot.servercfg
 
     @commands.group(name='serverconfig', invoke_without_command=True)
-    @commands.guild_only()
     @permissionNode('management')
     async def config(self, ctx):
         """Minecraft server configuration commands."""

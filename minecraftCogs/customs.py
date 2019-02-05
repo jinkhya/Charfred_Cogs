@@ -21,7 +21,6 @@ class Customs:
         )
 
     @commands.group(invoke_without_command=True, aliases=['cc'])
-    @commands.guild_only()
     @permissionNode('custom')
     async def custom(self, ctx):
         """Custom Minecraft server commands commands.

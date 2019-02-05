@@ -14,7 +14,6 @@ class ConsoleCmds:
         self.servercfg = bot.servercfg
 
     @commands.command()
-    @commands.guild_only()
     @permissionNode('whitelist')
     async def player(self, ctx):
         """[DEPRECATED]"""
@@ -24,7 +23,6 @@ class ConsoleCmds:
                            'versions.')
 
     @commands.group(aliases=['mc'], invoke_without_command=True)
-    @commands.guild_only()
     @permissionNode('whitelist')
     async def minecraft(self, ctx):
         """Minecraft server console commands."""
@@ -121,7 +119,6 @@ class ConsoleCmds:
         await sendMarkdown(ctx, '\n'.join(msg))
 
     @minecraft.command(aliases=['pass'])
-    @commands.guild_only()
     @permissionNode('relay')
     async def relay(self, ctx, server: str, *, command: str):
         """Relays a command to a servers\' console.

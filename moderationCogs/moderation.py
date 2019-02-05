@@ -32,7 +32,6 @@ class Moderation:
                 await message.add_reaction('\N{PILE OF POO}')
 
     @commands.command(aliases=['getthemop', 'cleanup'])
-    @commands.guild_only()
     @commands.cooldown(1, 60)
     async def wipe(self, ctx):
         """Wipes up all the poop!

@@ -19,7 +19,6 @@ class ServerBackups:
         self.servercfg = bot.servercfg
 
     @commands.group(invoke_without_command=True)
-    @commands.guild_only()
     @permissionNode('backup')
     async def backup(self, ctx):
         """Minecraft server backup commands."""

@@ -45,7 +45,6 @@ class Porter:
                     log.info(f'Floodmode: {member.name} was kicked!')
 
     @commands.group(invoke_without_command=True)
-    @commands.guild_only()
     async def floodmode(self, ctx):
         """Floodmode commands.
 
@@ -60,7 +59,6 @@ class Porter:
             await sendMarkdown(ctx, '> Floodmode is currently inactive!')
 
     @floodmode.command(aliases=['start', 'on'])
-    @commands.guild_only()
     @permissionNode('floodmode')
     async def activate(self, ctx):
         """Activates floodmode.
@@ -74,7 +72,6 @@ class Porter:
         await sendMarkdown(ctx, 'Floodmode activated!')
 
     @floodmode.command(aliases=['stop', 'off'])
-    @commands.guild_only()
     @permissionNode('floodmode')
     async def deactivate(self, ctx):
         """Deactivates floodmode."""
@@ -84,7 +81,6 @@ class Porter:
         await sendMarkdown(ctx, 'Floodmode deactivated!')
 
     @commands.command()
-    @commands.guild_only()
     @permissionNode('newbiepromote')
     async def promote(self, ctx, promotee: str):
         """Promote a user to the baseline member role.

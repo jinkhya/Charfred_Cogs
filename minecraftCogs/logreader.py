@@ -18,7 +18,6 @@ class LogReader:
         self.logfutures = {}
 
     @commands.group()
-    @commands.guild_only()
     @permissionNode('logread')
     async def log(self, ctx):
         """Minecraft log commands."""

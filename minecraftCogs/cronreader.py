@@ -70,7 +70,6 @@ class CronReader:
         return parsedlines
 
     @commands.group(invoke_without_command=True)
-    @commands.guild_only()
     @permissionNode('cronread')
     async def cron(self, ctx):
         """Crontab commands.
