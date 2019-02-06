@@ -53,7 +53,11 @@ class Guildspy:
         """Leave spy."""
         log.info('Member left!')
         if self.hook_url:
-            content = f'{member.name}#{member.discriminator} has left!'
+            if member.top_role.name == '@everyone':
+                role = 'nobody'
+            else:
+                role = member.top_role.name
+            content = f'{member.name}#{member.discriminator} has left, he was a {role}!'
             await self._hookit(member, content)
 
     async def on_member_update(self, before, after):
