@@ -56,8 +56,9 @@ class Customs:
         when the command is ran.
         """
         self.customcmds[name] = {'role': minRole, 'cmd': cmd}
-        log.info(f'Added \"{cmd}\" to your custom console commands library.')
-        await sendMarkdown(ctx, f'# Added \"{cmd}\" to your custom console commands library.')
+        log.info(f'Added \"{cmd}\" to custom console commands library as \"{name}\".')
+        await sendMarkdown(ctx, f'# Added \"{cmd}\" to your custom console commands'
+                           ' library as \"{name}\".')
         await self.customcmds.save()
 
     @custom.command(aliases=['delete'])
@@ -99,29 +100,28 @@ class Customs:
                                f'< Minimum required role is {str(minRole)}. >')
             return
         log.info(f'Required: {str(minRole)}; User has: {str(ctx.author.top_role)}')
+
+        if args:
+            _cmd = _cmd.format(*args)
+        msg.append(f'# Executing \"{_cmd}\"...')
+
         if re.match('^all$', server, flags=re.I):
             for server in self.servercfg['servers']:
                 if isUp(server):
                     log.info(f'Executing \"{cmd}\" on {server}.')
-                    if args:
-                        await sendCmd(self.loop, server, _cmd.format(*args))
-                    else:
-                        await sendCmd(self.loop, server, _cmd)
-                    msg.append(f'# Executed \"{cmd}\" on {server}.')
+                    await sendCmd(self.loop, server, _cmd)
+                    msg.append(f'# on {server};')
                 else:
                     log.warning(f'Could not execute \"{cmd}\", {server} is offline!')
-                    msg.append(f'< Unable to execute \"{cmd}\", {server}, is offline! >')
+                    msg.append(f'< {server} is offline! >')
         else:
             if isUp(server):
                 log.info(f'Executing \"{cmd}\" on {server}.')
-                if args:
-                    await sendCmd(self.loop, server, _cmd.format(*args))
-                else:
-                    await sendCmd(self.loop, server, _cmd)
-                msg.append(f'# Executed \"{cmd}\" on {server}.')
+                await sendCmd(self.loop, server, _cmd)
+                msg.append(f'# on {server};')
             else:
                 log.warning(f'Could not execute \"{cmd}\", {server} is offline!')
-                msg.append(f'< Unable to execute \"{cmd}\", {server}, is offline! >')
+                msg.append(f'< {server} is offline! >')
         await sendMarkdown(ctx, '\n'.join(msg))
 
 
