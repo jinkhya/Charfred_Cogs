@@ -32,7 +32,9 @@ class Guildspy:
                 'embeds': [{
                     'title': 'Ban Action:',
                     'color': 0x008080,
-                    'image': 'https://cdn.discordapp.com/attachments/327174378527653889/535248231265992744/O3DHIA5.gif',
+                    'image': {
+                        'url': 'https://cdn.discordapp.com/attachments/327174378527653889/535248231265992744/O3DHIA5.gif'
+                    },
                     'fields': [{
                         'name': f'I, {user.name}',
                         'value': 'was banned!'
