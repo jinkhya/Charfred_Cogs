@@ -1,13 +1,18 @@
 from discord.ext import commands
 import asyncio
 import logging
-from time import strftime
+import re
+from time import strftime, localtime
 from threading import Event
 from utils.config import Config
-from utils.discoutils import permissionNode, sendMarkdown
+from utils.discoutils import permissionNode, sendMarkdown, send
 from .utils.mcservutils import isUp, getProc, serverStart
 
 log = logging.getLogger('charfred')
+
+cronpat = re.compile('^(?P<disabled>#)*((?P<reboot>@reboot)|(?P<min>(\*/\d+|\*|(\d+,?)+))\s(?P<hour>(\*/\d+|\*|(\d+,?)+))\s(?P<day>(\*/\d+|\*|(\d+,?)+)))\s.*spiffy\s(?P<cmd>\w+)\s(?P<server>\w+)\s(?P<args>.*)>>')
+every = '*/'
+always = '*'
 
 
 class Watchdog:
@@ -16,6 +21,7 @@ class Watchdog:
         self.loop = bot.loop
         self.servercfg = bot.servercfg
         self.watchdogs = {}
+        self.crontab = None
 
     def __unload(self):
         if self.watchdogs:
@@ -36,6 +42,49 @@ class Watchdog:
                 await sendMarkdown(ctx, f'< {server} watchdog inactive! >')
             else:
                 await sendMarkdown(ctx, f'# {server} watchdog active!')
+
+    def _parseCron(self, crontab):
+        self.crontab = {}
+        for l in crontab:
+            if 'spiffy' not in l:
+                continue
+            if 'restart' not in l:
+                continue
+            if l.startswith('@') or l.startswith('#'):
+                continue
+            match = cronpat.match(l)
+            if not match:
+                continue
+            _, _, min, hour, day, cmd, server, _ = match.group('disabled',
+                                                               'reboot',
+                                                               'min', 'hour',
+                                                               'day', 'cmd',
+                                                               'server', 'args')
+            if server not in self.crontab:
+                self.crontab[server] = []
+            self.crontab[server].append((hour, min, day))
+
+    @watchdog.command(aliases=['readcron'])
+    async def parsecron(self, ctx):
+        """Parses current crontab for comparison with the watchdog."""
+
+        log.info('Fetching current crontab...')
+        proc = await asyncio.create_subprocess_exec(
+            'crontab',
+            '-l',
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE
+        )
+        stdout, stderr = await proc.communicate()
+        if proc.returncode == 0:
+            log.info('Crontab retrieved successfully.')
+        else:
+            log.warning('Failed to retrieve crontab!')
+            return
+        crontab = stdout.decode().strip().split('\n')
+        log.info('Parsing crontab...')
+        self._parseCron(crontab)
+        await sendMarkdown(ctx, '# Current crontab parsed!')
 
     @watchdog.command(name='activate', aliases=['start', 'watch'])
     async def wdstart(self, ctx, server: str):
@@ -58,8 +107,26 @@ class Watchdog:
                 await sendMarkdown(ctx, f'< {server} is not running. >', deletable=False)
 
             async def serverGone():
-                await sendMarkdown(ctx, '< ' + strftime("%H:%M") + f' {server} is gone! >\n'
+                now = localtime()
+                await sendMarkdown(ctx, f'< {now.tm_hour}:{now.tm_min} {server} is gone! >\n'
                                    '> Watching for it to return...', deletable=False)
+                if server in self.crontab:
+                    # This whole checking thing really only works if your cron is sensible...
+                    for hour, min, day in self.crontab[server]:
+                        if f'{now.tm_hour}' in hour or hour == always:
+                            if ',' not in min:
+                                if now.tm_min == (int(min) + 10):
+                                    await sendMarkdown(ctx, '> This looks like a scheduled restart.\n'
+                                                       '> No action required!')
+                                    return
+                            else:
+                                for _min in min.split(','):
+                                    if now.tm_min == (int(_min) + 10):
+                                        await sendMarkdown(ctx, '> This looks like a scheduled restart.\n'
+                                                           '> No action required!')
+                                        return
+                            await send(ctx, '@here\n```markdown\n< This looks like an unscheduled crash. >'
+                                       '\n< Someone might wanna investigate! >\n```')
 
             async def serverBack():
                 await sendMarkdown(ctx, '# ' + strftime("%H:%M") + f' {server} is back online!\n'
