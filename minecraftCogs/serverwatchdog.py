@@ -55,14 +55,14 @@ class Watchdog:
             match = cronpat.match(l)
             if not match:
                 continue
-            _, _, min, hour, day, cmd, server, _ = match.group('disabled',
+            _, _, min, hour, _, _, server, args = match.group('disabled',
                                                                'reboot',
                                                                'min', 'hour',
                                                                'day', 'cmd',
                                                                'server', 'args')
             if server not in self.crontab:
                 self.crontab[server] = []
-            self.crontab[server].append((hour, min, day))
+            self.crontab[server].append((hour, min, args[:-2]))
 
     @watchdog.command(aliases=['readcron'])
     async def parsecron(self, ctx):
@@ -112,19 +112,22 @@ class Watchdog:
                                    '> Watching for it to return...', deletable=False)
                 if server in self.crontab:
                     # This whole checking thing really only works if your cron is sensible...
-                    for hour, min, day in self.crontab[server]:
-                        if f'{now.tm_hour}' in hour or hour == always:
-                            if ',' not in min:
-                                if now.tm_min == (int(min) + 10):
-                                    await sendMarkdown(ctx, '> This looks like a scheduled restart.\n'
-                                                       '> No action required!')
-                                    return
-                            else:
-                                for _min in min.split(','):
-                                    if now.tm_min == (int(_min) + 10):
-                                        await sendMarkdown(ctx, '> This looks like a scheduled restart.\n'
-                                                           '> No action required!')
-                                        return
+                    # Stuff it doesn't consider atm:
+                    # - every n hours/min configurations
+                    # - days/months
+                    # - jobs that run more than once an hour
+                    for hour, min, delay in self.crontab[server]:
+                        delay = int(delay)
+                        min = int(min)
+                        if (min + delay) > 60:
+                            starthour = now.tm_hour - 1
+                        else:
+                            starthour = now.tm_hour
+                        if f'{starthour}' in hour or hour == always:
+                            if now.tm_min == ((min + delay) % 60):
+                                await sendMarkdown(ctx, '> This looks like a scheduled restart.\n'
+                                                   '> No action required!')
+                                return
                             await send(ctx, '@here\n```markdown\n< This looks like an unscheduled crash. >'
                                        '\n< Someone might wanna investigate! >\n```')
 
