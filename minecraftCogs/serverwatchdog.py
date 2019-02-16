@@ -56,10 +56,10 @@ class Watchdog:
             if not match:
                 continue
             _, _, min, hour, _, _, server, args = match.group('disabled',
-                                                               'reboot',
-                                                               'min', 'hour',
-                                                               'day', 'cmd',
-                                                               'server', 'args')
+                                                              'reboot',
+                                                              'min', 'hour',
+                                                              'day', 'cmd',
+                                                              'server', 'args')
             if server not in self.crontab:
                 self.crontab[server] = []
             self.crontab[server].append((hour, min, args[:-2]))
@@ -128,6 +128,7 @@ class Watchdog:
                                 await sendMarkdown(ctx, '> This looks like a scheduled restart.\n'
                                                    '> No action required!')
                                 return
+                        else:
                             await send(ctx, '@here\n```markdown\n< This looks like an unscheduled crash. >'
                                        '\n< Someone might wanna investigate! >\n```')
 
