@@ -128,9 +128,9 @@ class Watchdog:
                                 await sendMarkdown(ctx, '> This looks like a scheduled restart.\n'
                                                    '> No action required!')
                                 return
-                        else:
-                            await send(ctx, '@here\n```markdown\n< This looks like an unscheduled crash. >'
-                                       '\n< Someone might wanna investigate! >\n```')
+                    else:
+                        await send(ctx, '@here\n```markdown\n< This looks like an unscheduled crash. >'
+                                   '\n< Someone might wanna investigate! >\n```')
 
             async def serverBack():
                 await sendMarkdown(ctx, '# ' + strftime("%H:%M") + f' {server} is back online!\n'
