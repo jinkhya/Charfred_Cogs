@@ -14,6 +14,8 @@ class ServerCmds:
         self.bot = bot
         self.loop = bot.loop
         self.servercfg = bot.servercfg
+        if not hasattr(self.bot, 'serverstopspending'):
+            self.bot.serverstopspending = {}
 
     @commands.group(invoke_without_command=True)
     @permissionNode('status')
@@ -46,6 +48,17 @@ class ServerCmds:
                 log.warning(f'{server} does not appear to have started!')
                 await sendMarkdown(ctx, f'< {server} does not appear to have started! >')
 
+    def _setintent(self, server, intent):
+        self.bot.serverstopspending[server] = intent
+        log.info(f'Setting stop intent for {server}.')
+
+    def _clearintent(self, server):
+        try:
+            del self.bot.serverstopspending[server]
+            log.info(f'Clearing stop intent for {server}.')
+        except:
+            pass
+
     @server.command()
     @permissionNode('stop')
     async def stop(self, ctx, server: str):
@@ -61,6 +74,7 @@ class ServerCmds:
             return
         if isUp(server):
             log.info(f'Stopping {server}...')
+            self._setintent(server, 'stop')
             await sendMarkdown(ctx, f'> Stopping {server}...')
             await serverStop(server, self.loop)
             await asyncio.sleep(20, loop=self.loop)
@@ -101,6 +115,7 @@ class ServerCmds:
             else:
                 log.info(f'{server} was stopped.')
                 await sendMarkdown(ctx, f'# {server} was stopped.')
+            self._clearintent(server)
         else:
             log.info(f'{server} already is not running.')
             await sendMarkdown(ctx, f'< {server} already is not running. >')
@@ -184,6 +199,7 @@ class ServerCmds:
                 server,
                 'save-all'
             )
+            self._setintent(server, 'restart')
             await asyncio.sleep(5, loop=self.loop)
             await sendCmd(
                 self.loop,
@@ -241,6 +257,7 @@ class ServerCmds:
                 else:
                     log.warning(f'Restart failed, {server} does not appear to have started!')
                     await sendMarkdown(ctx, f'< Restart failed, {server} does not appear to have started! >')
+            self._clearintent(server)
         else:
             log.warning(f'Restart cancelled, {server} is offline!')
             await sendMarkdown(ctx, f'< Restart cancelled, {server} is offline! >')
@@ -278,6 +295,7 @@ class ServerCmds:
             await sendMarkdown(ctx, f'< {server} is not running! >')
             return
         log.info(f'Attempting termination of {server}...')
+        self._setintent(server, 'terminate')
         await sendMarkdown(ctx, f'> Attempting termination of {server}\n'
                            '> Please hold, this may take a couple of seconds.')
         killed = await serverTerminate(server, self.loop)
@@ -287,6 +305,7 @@ class ServerCmds:
         else:
             log.info(f'Could not terminate {server}!')
             await sendMarkdown(ctx, f'< Well this is awkward... {server} is still up! >')
+        self._clearintent(server)
 
 
 def setup(bot):

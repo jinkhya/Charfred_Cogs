@@ -106,10 +106,20 @@ class Watchdog:
                 log.info(f'Starting watchdog on offline server.')
                 await sendMarkdown(ctx, f'< {server} is not running. >', deletable=False)
 
+            if hasattr(self.bot, 'serverstopspending'):
+                checkintent = True
+            else:
+                checkintent = False
+
             async def serverGone():
                 now = localtime()
                 await sendMarkdown(ctx, f'< {now.tm_hour}:{now.tm_min} {server} is gone! >\n'
                                    '> Watching for it to return...', deletable=False)
+                if checkintent and server in self.bot.serverstopspending:
+                    await sendMarkdown(ctx, f'# A \'{self.bot.serverstopspending[server]}\''
+                                       ' command was issued for {server} and is still pending!\n'
+                                       '> No action required!')
+                    return
                 if server in self.crontab:
                     # This whole checking thing really only works if your cron is sensible...
                     # Stuff it doesn't consider atm:
