@@ -93,10 +93,10 @@ class Watchdog:
 
         log.info('Toggling @here notification.')
         if self.notify[0]:
-            self.notify = (True, ctx.author.name)
+            self.notify = (False, ctx.author.name)
             await sendMarkdown(ctx, '< Crash notification has been disabled! >')
         else:
-            self.notify = (False, ctx.author.name)
+            self.notify = (True, ctx.author.name)
             await sendMarkdown(ctx, '# Crash notification has been enabled!')
 
     @watchdog.command(name='activate', aliases=['start', 'watch'])
