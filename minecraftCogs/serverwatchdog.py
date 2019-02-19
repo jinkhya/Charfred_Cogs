@@ -22,6 +22,7 @@ class Watchdog:
         self.servercfg = bot.servercfg
         self.watchdogs = {}
         self.crontab = None
+        self.notify = (True, 'default')
 
     def __unload(self):
         if self.watchdogs:
@@ -86,6 +87,18 @@ class Watchdog:
         self._parseCron(crontab)
         await sendMarkdown(ctx, '# Current crontab parsed!')
 
+    @watchdog.command(aliases=['shutup'])
+    async def togglenotify(self, ctx):
+        """Toggles @here notifications on and off."""
+
+        log.info('Toggling @here notification.')
+        if self.notify[0]:
+            self.notify = (True, ctx.author.name)
+            await sendMarkdown(ctx, '< Crash notification has been disabled! >')
+        else:
+            self.notify = (False, ctx.author.name)
+            await sendMarkdown(ctx, '# Crash notification has been enabled!')
+
     @watchdog.command(name='activate', aliases=['start', 'watch'])
     async def wdstart(self, ctx, server: str):
         """Start the process watchdog for a server."""
@@ -139,8 +152,12 @@ class Watchdog:
                                                    '> No action required!')
                                 return
                     else:
-                        await send(ctx, '@here\n```markdown\n< This looks like an unscheduled crash. >'
-                                   '\n< Someone might wanna investigate! >\n```')
+                        if self.notify[0]:
+                            await send(ctx, '@here\n```markdown\n< This looks like an unscheduled crash. >'
+                                       '\n< Someone might wanna investigate! >\n```')
+                        else:
+                            await sendMarkdown(ctx, '< This looks like an unscheduled crash! >\n'
+                                               f'< @here notification was disabled by {self.notify[1]}. >')
 
             async def serverBack():
                 await sendMarkdown(ctx, '# ' + strftime("%H:%M") + f' {server} is back online!\n'
