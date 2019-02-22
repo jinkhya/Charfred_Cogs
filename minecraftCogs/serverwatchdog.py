@@ -21,8 +21,12 @@ class Watchdog:
         self.loop = bot.loop
         self.servercfg = bot.servercfg
         self.watchdogs = {}
-        self.crontab = None
-        self.notify = (True, 'default')
+        self.watchcfg = Config(f'{bot.dir}/configs/watchcfg.json',
+                               load=True, loop=self.loop)
+        if 'crontab' not in self.watchcfg:
+            self.watchcfg['crontab'] = {}
+        if 'notify' not in self.watchcfg:
+            self.watchcfg['notify'] = [True, 'default', 'here']
 
     def __unload(self):
         if self.watchdogs:
@@ -45,7 +49,7 @@ class Watchdog:
                 await sendMarkdown(ctx, f'# {server} watchdog active!')
 
     def _parseCron(self, crontab):
-        self.crontab = {}
+        self.watchcfg['crontab'] = {}
         for l in crontab:
             if 'spiffy' not in l:
                 continue
@@ -61,9 +65,9 @@ class Watchdog:
                                                               'min', 'hour',
                                                               'day', 'cmd',
                                                               'server', 'args')
-            if server not in self.crontab:
-                self.crontab[server] = []
-            self.crontab[server].append((hour, min, args[:-2]))
+            if server not in self.watchcfg['crontab']:
+                self.watchcfg['crontab'][server] = []
+            self.watchcfg['crontab'][server].append((hour, min, args[:-2]))
 
     @watchdog.command(aliases=['readcron'])
     async def parsecron(self, ctx):
@@ -86,18 +90,33 @@ class Watchdog:
         log.info('Parsing crontab...')
         self._parseCron(crontab)
         await sendMarkdown(ctx, '# Current crontab parsed!')
+        await self.watchcfg.save()
+        log.info('Watchdog cfg saved!')
 
     @watchdog.command(aliases=['shutup'])
-    async def togglenotify(self, ctx):
-        """Toggles @here notifications on and off."""
+    async def togglemention(self, ctx):
+        """Toggles mention on crash notifications on and off."""
 
-        log.info('Toggling @here notification.')
-        if self.notify[0]:
-            self.notify = (False, ctx.author.name)
-            await sendMarkdown(ctx, '< Crash notification has been disabled! >')
+        log.info('Toggling crash mention.')
+        if self.watchcfg['notify'][0]:
+            self.watchcfg['notify'][0] = False
+            self.watchcfg['notify'][1] = ctx.author.name
+            await sendMarkdown(ctx, '< Crash mentioning has been disabled! >')
         else:
-            self.notify = (True, ctx.author.name)
-            await sendMarkdown(ctx, '# Crash notification has been enabled!')
+            self.watchcfg['notify'][0] = True
+            self.watchcfg['notify'][1] = 'default'
+            await sendMarkdown(ctx, '# Crash mentioning has been enabled!')
+        await self.watchcfg.save()
+        log.info('Watchdog cfg saved!')
+
+    @watchdog.command(aliases=['blame'])
+    async def setmentionee(self, ctx, mentionee: str):
+        """Set who to mention for crash notification."""
+
+        log.info(f'Setting mentionee to {mentionee}.')
+        self.watchcfg['notify'][2] = mentionee
+        await self.watchcfg.save()
+        log.info('Watchdog cfg saved!')
 
     @watchdog.command(name='activate', aliases=['start', 'watch'])
     async def wdstart(self, ctx, server: str):
@@ -126,20 +145,19 @@ class Watchdog:
 
             async def serverGone():
                 now = localtime()
-                await sendMarkdown(ctx, f'< {now.tm_hour}:{now.tm_min} {server} is gone! >\n'
+                await sendMarkdown(ctx, f'< {strftime("%H:%M", now)} : {server} is gone! >\n'
                                    '> Watching for it to return...', deletable=False)
                 if checkintent and server in self.bot.serverstopspending:
                     await sendMarkdown(ctx, f'# A \'{self.bot.serverstopspending[server]}\''
                                        ' command was issued for {server} and is still pending!\n'
                                        '> No action required!')
                     return
-                if server in self.crontab:
+                if server in self.watchcfg['crontab']:
                     # This whole checking thing really only works if your cron is sensible...
                     # Stuff it doesn't consider atm:
                     # - every n hours/min configurations
                     # - days/months
-                    # - jobs that run more than once an hour
-                    for hour, min, delay in self.crontab[server]:
+                    for hour, min, delay in self.watchcfg['crontab'][server]:
                         delay = int(delay)
                         min = int(min)
                         if (min + delay) > 60:
@@ -152,12 +170,14 @@ class Watchdog:
                                                    '> No action required!')
                                 return
                     else:
-                        if self.notify[0]:
-                            await send(ctx, '@here\n```markdown\n< This looks like an unscheduled crash. >'
+                        if self.watchcfg['notify'][0]:
+                            await send(ctx, f'@{self.watchcfg["notify"][2]}\n```markdown\n<'
+                                       ' This looks like an unscheduled crash. >'
                                        '\n< Someone might wanna investigate! >\n```')
                         else:
                             await sendMarkdown(ctx, '< This looks like an unscheduled crash! >\n'
-                                               f'< @here notification was disabled by {self.notify[1]}. >')
+                                               f'< @{self.watchcfg["notify"][2]} notification was'
+                                               f' disabled by {self.watchcfg["notify"][1]}. >')
 
             async def serverBack():
                 await sendMarkdown(ctx, '# ' + strftime("%H:%M") + f' {server} is back online!\n'
