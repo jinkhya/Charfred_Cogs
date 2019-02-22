@@ -1,4 +1,5 @@
 from discord.ext import commands
+from discord.utils import find
 import asyncio
 import logging
 import re
@@ -110,13 +111,22 @@ class Watchdog:
         log.info('Watchdog cfg saved!')
 
     @watchdog.command(aliases=['blame'])
-    async def setmentionee(self, ctx, mentionee: str):
+    async def setroletomention(self, ctx, mentionee: str):
         """Set who to mention for crash notification."""
 
-        log.info(f'Setting mentionee to {mentionee}.')
-        self.watchcfg['notify'][2] = mentionee
-        await self.watchcfg.save()
-        log.info('Watchdog cfg saved!')
+        log.info(f'Setting role to mention to: {mentionee}.')
+
+        role = find(lambda r: r.name == mentionee, ctx.guild.roles)
+        if role:
+            self.watchcfg['notify'][2] = role.mention
+            await sendMarkdown(ctx, f'# Set role to mention to: {mentionee}!\n'
+                               '> They will be notified if a crash is suspected,\n'
+                               '> given that mentioning is enabled.')
+            await self.watchcfg.save()
+            log.info('Watchdog cfg saved!')
+        else:
+            await sendMarkdown(ctx, f'< {mentionee} is not a valid role! >')
+            log.warning('Role could not be found, role to mention unchanged.')
 
     @watchdog.command(name='activate', aliases=['start', 'watch'])
     async def wdstart(self, ctx, server: str):
@@ -171,12 +181,12 @@ class Watchdog:
                                 return
                     else:
                         if self.watchcfg['notify'][0]:
-                            await send(ctx, f'@{self.watchcfg["notify"][2]}\n```markdown\n<'
+                            await send(ctx, f'{self.watchcfg["notify"][2]}\n```markdown\n<'
                                        ' This looks like an unscheduled crash. >'
                                        '\n< Someone might wanna investigate! >\n```')
                         else:
                             await sendMarkdown(ctx, '< This looks like an unscheduled crash! >\n'
-                                               f'< @{self.watchcfg["notify"][2]} notification was'
+                                               '< Role notification was'
                                                f' disabled by {self.watchcfg["notify"][1]}. >')
 
             async def serverBack():
