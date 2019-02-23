@@ -181,7 +181,7 @@ class Watchdog:
                                 return
                     else:
                         if self.watchcfg['notify'][0]:
-                            await send(ctx, f'{self.watchcfg["notify"][2]}\n```markdown\n<'
+                            await send(ctx, f'@{self.watchcfg["notify"][2]}\n```markdown\n<'
                                        ' This looks like an unscheduled crash. >'
                                        '\n< Someone might wanna investigate! >\n```')
                         else:
