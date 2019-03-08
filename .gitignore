@@ -49,10 +49,10 @@ ENV/
 /*
 !/.gitignore
 !/requirements.txt
-!/dataCogs
-!/funCogs
-!/minecraftCogs
-!/moderationCogs
-!/auxAdminCogs
-!/enjinCogs
+!/datacogs
+!/funcogs
+!/minecraftcogs
+!/moderationcogs
+!/auxAdmincogs
+!/enjincogs
 .flake8
