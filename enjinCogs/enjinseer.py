@@ -11,7 +11,7 @@ log = logging.getLogger('charfred')
 Enjinlogin = namedtuple('Enjinlogin', 'email password url site_id')
 
 
-class Enjinseer:
+class Enjinseer(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.session = bot.session

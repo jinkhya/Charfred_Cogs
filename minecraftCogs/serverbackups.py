@@ -12,7 +12,7 @@ from .utils.mcservutils import isUp
 log = logging.getLogger('charfred')
 
 
-class ServerBackups:
+class ServerBackups(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.loop = bot.loop

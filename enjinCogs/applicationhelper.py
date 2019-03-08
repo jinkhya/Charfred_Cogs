@@ -8,7 +8,7 @@ from .utils.enjinutils import post, verifysession
 log = logging.getLogger('charfred')
 
 
-class ApplicationHelper:
+class ApplicationHelper(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.session = bot.session

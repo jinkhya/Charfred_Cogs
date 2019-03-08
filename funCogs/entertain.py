@@ -54,7 +54,7 @@ spins = [
 ]
 
 
-class Entertain:
+class Entertain(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.loop = bot.loop

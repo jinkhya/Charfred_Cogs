@@ -11,7 +11,7 @@ every = '*/'
 always = '*'
 
 
-class CronReader:
+class CronReader(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.loop = bot.loop

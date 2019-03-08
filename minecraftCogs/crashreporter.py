@@ -1,63 +1,56 @@
 from discord.ext import commands
 import os
-import glob
-import asyncio
 import logging
-from utils.discoutils import permissionNode, sendReply, send
+from utils.discoutils import permissionNode, sendMarkdown
+from .utils.mcservutils import getcrashreport, parsereport
 
 log = logging.getLogger('charfred')
 
 
-class CrashReporter:
+class CrashReporter(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
+        self.loop = bot.loop
         self.servercfg = bot.servercfg
 
     @commands.command(aliases=['report', 'crashreports'])
     @permissionNode('crashreport')
-    async def crashreport(self, ctx, server: str, age: int=None):
+    async def crashreport(self, ctx, server: str, nthlast: int=0):
         """Retrieves the last crashreport for the given server.
 
         Takes a servername and an optional relative age parameter,
         0 for the newest report, 1 for the one before, etc.
         """
         if server not in self.servercfg['servers']:
-            await sendReply(ctx, f'I have no knowledge of {server}!')
+            await sendMarkdown(ctx, f'< I have no knowledge of {server}! >')
             return
-        if age is None:
-            reportFile = sorted(
-                glob.iglob(self.servercfg['serverspath'] + f'/{server}/crash-reports/*'),
-                key=os.path.getmtime,
-                reverse=True
-            )[0]
-        else:
-            reportFile = sorted(
-                glob.iglob(self.servercfg['serverspath'] + f'/{server}/crash-reports/*'),
-                key=os.path.getmtime,
-                reverse=True
-            )[age]
-        proc = await asyncio.create_subprocess_exec(
-            'awk',
-            '/^Time: /{e=1}/^-- Head/{e=1}/^-- Block/{e=1}/^-- Affected/{e=1}/^-- System/{e=0}/^A detailed/{e=0}{if(e==1){print}}',
-            reportFile,
-            stdout=asyncio.subprocess.PIPE,
-            stderr=asyncio.subprocess.PIPE
-        )
+
         log.info(f'Getting report for {server}.')
-        stdout, stderr = await proc.communicate()
-        if proc.returncode == 0:
-            log.info(f'Report retrieved successfully.')
+        serverspath = self.servercfg['serverspath']
+        rpath, _ = await self.loop.run_in_executor(None, getcrashreport, server, serverspath, nthlast)
+        if rpath:
+            log.info(f'Report found.')
         else:
-            log.warning('Failed to retrieve report!')
+            log.warning('No crashreports found!')
             return
-        report = stdout.decode().strip().split('\n\n')
-        for paragraph in report[:8]:
-            if len(paragraph) >= 1800:
-                await send(ctx, f'```{paragraph[:1800]}\n'
-                           'Additional lines have been cut off, because they suck!```')
-            else:
-                await send(ctx, f'```{paragraph}```')
-            await asyncio.sleep(1, loop=self.bot.loop)
+
+        log.info('Parsing report...')
+        sections = await self.loop.run_in_executor(None, parsereport, rpath)
+
+        report = []
+        report.append('> ' + os.path.basename(rpath) + '\n')
+        report.append('# ' + sections['flavor'] + '\n')
+        report.append('# ' + sections['time'])
+        report.append('# ' + sections['desc'] + '\n')
+        report.append('# Shortened Stacktrace:')
+        report.extend(sections['trace'][:4])
+        if 'level' in sections:
+            report.append('\n# Affected level:')
+            report.extend(sections['level'][1:])
+
+        msg = '\n'.join(report)
+        await sendMarkdown(ctx, msg)
+        log.info('Report sent!')
 
 
 def setup(bot):

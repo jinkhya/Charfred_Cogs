@@ -7,7 +7,7 @@ from .utils.mcservutils import isUp, sendCmd
 log = logging.getLogger('charfred')
 
 
-class ConsoleCmds:
+class ConsoleCmds(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.loop = bot.loop

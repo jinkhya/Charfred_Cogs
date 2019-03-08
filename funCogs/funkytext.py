@@ -42,7 +42,7 @@ subscript = [
 zalgoScripts = [superscript, middlescript, subscript]
 
 
-class FunkyText:
+class FunkyText(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 

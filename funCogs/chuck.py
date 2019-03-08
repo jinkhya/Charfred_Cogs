@@ -5,7 +5,7 @@ from utils.discoutils import permissionNode, send
 log = logging.getLogger('charfred')
 
 
-class Chuck:
+class Chuck(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.session = bot.session

@@ -9,13 +9,14 @@ from utils.discoutils import permissionNode, send
 log = logging.getLogger('charfred')
 
 
-class Quotator:
+class Quotator(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.loop = bot.loop
         self.quotes = Config(f'{bot.dir}/data/quotes.json',
                              load=True, loop=self.loop)
 
+    @commands.Cog.listener()
     async def on_reaction_add(self, reaction, user):
         if str(reaction.emoji) == '💾' and reaction.count == 1:
             if user.bot or reaction.message.author.bot:

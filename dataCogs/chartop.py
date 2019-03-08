@@ -5,7 +5,7 @@ from discord.ext import commands
 from utils.discoutils import permissionNode, send
 
 
-class Chartop:
+class Chartop(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.loop = bot.loop

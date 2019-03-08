@@ -9,7 +9,7 @@ from .utils.mcservutils import isUp, sendCmd, sendCmds, serverStart, \
 log = logging.getLogger('charfred')
 
 
-class ServerCmds:
+class ServerCmds(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.loop = bot.loop
@@ -208,7 +208,7 @@ class ServerCmds:
             )
             await announcement.edit(content=f'```markdown\n> Stopping {server}\n```.')
             await asyncio.sleep(30, loop=self.loop)
-            if isUp(server):
+            if isUp(server):  # TODO: Fix all this terminating stuff
                 log.warning(f'Restart failed, {server} appears not to have stopped!')
 
                 def termcheck(reaction, user):

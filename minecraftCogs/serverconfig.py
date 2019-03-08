@@ -9,7 +9,7 @@ from utils.flipbooks import EmbedFlipbook
 log = logging.getLogger('charfred')
 
 
-class ServerConfig:
+class ServerConfig(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.loop = bot.loop

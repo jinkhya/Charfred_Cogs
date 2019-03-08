@@ -8,7 +8,7 @@ from .utils.mcuser import MCUser, mojException
 log = logging.getLogger('charfred')
 
 
-class StalkCmds:
+class StalkCmds(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.stalkdict = TTLOrderedDict(default_ttl=60)

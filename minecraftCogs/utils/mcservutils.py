@@ -3,6 +3,7 @@ import asyncio
 import logging
 import os
 import re
+import glob
 import functools
 from utils.discoutils import sendReply_codeblocked
 
@@ -205,3 +206,70 @@ def buildCountdownSteps(cntd):
                 t = int(st.group('time'))
             steps.append((time, secs - t, unit))
     return steps
+
+
+def getcrashreport(server, serverspath, nthlast: int=0):
+    """Retrieves the filename of the nth latest crashreport
+    for a given server, in addition to the date of last modification.
+    """
+
+    rpath = sorted(
+        glob.iglob(serverspath + f'/{server}/crash-reports/*'),
+        key=os.path.getmtime,
+        reverse=True
+    )[nthlast]
+    return rpath, os.path.getmtime(rpath)
+
+
+def parsereport(report):
+    """Retrieves and parses a crashreport given its path.
+    Returns a dictionary containing crashreport flavor text,
+    time, description, short stacktrace and affected level
+    section, if available.
+    """
+
+    sections = {}
+    with open(report, 'r') as r:
+        # Discard until flavortext is found.
+        while True:
+            l = r.readline()
+            if not l:
+                break
+            if l.startswith('// '):
+                flavor = l
+                break
+        # Read in Time and Description lines.
+        r.readline()
+        crashtime = r.readline()
+        desc = r.readline()
+        r.readline()
+        # Read in short stacktrace.
+        strace = []
+        while True:
+            l = r.readline()
+            if not l or l == '\n':
+                break
+            strace.append(l)
+        # Look for an "Affected level" section in remaining report.
+        level = []
+        for l in r:
+            if not l:
+                break
+            if '-- Affected' in l:
+                level.append(l)
+                break
+        # Read in "Affected level" section, if found.
+        if level:
+            while True:
+                l = r.readline()
+                if not l or l == '\n':
+                    break
+                level.append(l)
+
+    sections['flavor'] = flavor
+    sections['time'] = crashtime
+    sections['desc'] = desc
+    sections['trace'] = strace
+    if level:
+        sections['level'] = level
+    return sections

@@ -1,9 +1,10 @@
 import logging
+from discord.ext import commands
 
 log = logging.getLogger('charfred')
 
 
-class Guildspy:
+class Guildspy(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.session = bot.session
@@ -22,6 +23,7 @@ class Guildspy:
         }
         await self.session.post(self.hook_url, json=hook_this)
 
+    @commands.Cog.listener()
     async def on_member_ban(self, guild, user):
         """Ban spy."""
         log.info('Member got banned, ouch!')
@@ -44,6 +46,7 @@ class Guildspy:
             log.info('Sending spy report!')
             await self.session.post(self.hook_url, json=hook_this)
 
+    @commands.Cog.listener()
     async def on_member_join(self, member):
         """Join spy."""
         log.info('Member joined!')
@@ -51,6 +54,7 @@ class Guildspy:
             content = f'{member.name}#{member.discriminator} has joined!\nID: {member.id}'
             await self._hookit(member, content)
 
+    @commands.Cog.listener()
     async def on_member_remove(self, member):
         """Leave spy."""
         log.info('Member left!')
@@ -62,6 +66,7 @@ class Guildspy:
             content = f'{member.name}#{member.discriminator} has left, he was a {role}!'
             await self._hookit(member, content)
 
+    @commands.Cog.listener()
     async def on_member_update(self, before, after):
         """Member role-update spy."""
         if len(before.roles) == len(after.roles):

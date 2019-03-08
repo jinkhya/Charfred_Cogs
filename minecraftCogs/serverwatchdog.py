@@ -16,7 +16,7 @@ every = '*/'
 always = '*'
 
 
-class Watchdog:
+class Watchdog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.loop = bot.loop
@@ -27,9 +27,9 @@ class Watchdog:
         if 'crontab' not in self.watchcfg:
             self.watchcfg['crontab'] = {}
         if 'notify' not in self.watchcfg:
-            self.watchcfg['notify'] = [True, 'default', 'here']
+            self.watchcfg['notify'] = [True, 'default', '@here']
 
-    def __unload(self):
+    def cog_unload(self):
         if self.watchdogs:
             for fut, event in self.watchdogs.values():
                 event.set()

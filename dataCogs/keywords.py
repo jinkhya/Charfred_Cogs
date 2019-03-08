@@ -6,7 +6,7 @@ from utils.discoutils import permissionNode, promptConfirm, send
 log = logging.getLogger('charfred')
 
 
-class Keywords:
+class Keywords(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.phrases = bot.keywords

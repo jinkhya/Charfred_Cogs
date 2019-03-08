@@ -9,7 +9,7 @@ from .utils.mcservutils import isUp, sendCmd
 log = logging.getLogger('charfred')
 
 
-class Customs:
+class Customs(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.loop = bot.loop
