@@ -2,7 +2,7 @@ from discord.ext import commands
 import re
 import asyncio
 import logging
-from utils.discoutils import permissionNode, sendMarkdown
+from utils.discoutils import permission_node, sendMarkdown
 
 log = logging.getLogger('charfred')
 
@@ -70,7 +70,7 @@ class CronReader(commands.Cog):
         return parsedlines
 
     @commands.group(invoke_without_command=True)
-    @permissionNode('cronread')
+    @permission_node(f'{__name__}.read')
     async def cron(self, ctx):
         """Crontab commands.
 
@@ -102,7 +102,5 @@ class CronReader(commands.Cog):
 
 
 def setup(bot):
+    bot.register_nodes([f'{__name__}.read'])
     bot.add_cog(CronReader(bot))
-
-
-permissionNodes = ['cronread']

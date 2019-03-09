@@ -1,7 +1,7 @@
 import logging
 import random
 from discord.ext import commands
-from utils.discoutils import permissionNode, promptConfirm, send
+from utils.discoutils import permission_node, promptConfirm, send
 
 log = logging.getLogger('charfred')
 
@@ -25,7 +25,7 @@ class Keywords(commands.Cog):
         await send(ctx, f'I know these categories:\n ```\n{categories}\n```')
 
     @vocab.command()
-    @permissionNode('vocabAdd')
+    @permission_node(f'{__name__}.vocabAdd')
     async def add(self, ctx, category: str, *, phrase: str):
         """Add a new word or phrase to a category."""
 
@@ -39,7 +39,7 @@ class Keywords(commands.Cog):
             await send(ctx, 'I don\'t know that category!')
 
     @vocab.command()
-    @permissionNode('vocabRemove')
+    @permission_node(f'{__name__}.vocabRemove')
     async def remove(self, ctx, category: str, *, phrase: str):
         """Remove a word or phrase from a category."""
 
@@ -58,14 +58,14 @@ class Keywords(commands.Cog):
             await send(ctx, 'I don\'t know that category!')
 
     @vocab.group(invoke_without_command=True)
-    @permissionNode('categoryAdd')
+    @permission_node(f'{__name__}.categoryAdd')
     async def category(self, ctx):
         """Vocab category commands."""
 
         pass
 
     @category.command(name='add')
-    @permissionNode('categoryAdd')
+    @permission_node(f'{__name__}.categoryAdd')
     async def catAdd(self, ctx, category: str):
         """Add new vocab category."""
 
@@ -79,7 +79,7 @@ class Keywords(commands.Cog):
             await send(ctx, f'Added {category}!')
 
     @category.command(name='remove')
-    @permissionNode('categoryRemove')
+    @permission_node(f'{__name__}.categoryRemove')
     async def catRemove(self, ctx, category: str):
         """Remove a whole vocab category.
 
@@ -92,8 +92,10 @@ class Keywords(commands.Cog):
             return
 
         if category in self.phrases:
-            r, _, _ = await promptConfirm(ctx, f'You are about to delete {category},'
-                                          '\nare you certain? [y|N]')
+            r, _, timedout = await promptConfirm(ctx, f'You are about to delete {category},'
+                                                 '\nare you certain? [y|N]')
+            if timedout:
+                return
             if r:
                 del self.phrases[category]
                 await self.phrases.save()
@@ -121,7 +123,6 @@ class Keywords(commands.Cog):
 
 
 def setup(bot):
+    permission_nodes = ['vocabAdd', 'vocabRemove', 'categoryAdd', 'categoryRemove']
+    bot.register_nodes([f'{__name__}.{node}' for node in permission_nodes])
     bot.add_cog(Keywords(bot))
-
-
-permissionNodes = ['vocabAdd', 'vocabRemove', 'categoryAdd', 'categoryRemove']

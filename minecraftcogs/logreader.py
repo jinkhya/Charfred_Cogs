@@ -5,7 +5,7 @@ from time import sleep, time
 from threading import Event
 from discord.ext import commands
 from utils.config import Config
-from utils.discoutils import permissionNode, sendMarkdown
+from utils.discoutils import permission_node, sendMarkdown
 
 log = logging.getLogger('charfred')
 
@@ -18,7 +18,7 @@ class LogReader(commands.Cog):
         self.logfutures = {}
 
     @commands.group()
-    @permissionNode('logread')
+    @permission_node(f'{__name__}.read')
     async def log(self, ctx):
         """Minecraft log commands."""
         pass
@@ -115,7 +115,5 @@ def setup(bot):
         bot.servercfg = Config(f'{bot.dir}/configs/serverCfgs.json',
                                default=f'{bot.dir}/configs/serverCfgs.json_default',
                                load=True, loop=bot.loop)
+    bot.register_nodes([f'{__name__}.read'])
     bot.add_cog(LogReader(bot))
-
-
-permissionNodes = ['logread']

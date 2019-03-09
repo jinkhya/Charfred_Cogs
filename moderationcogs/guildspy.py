@@ -10,7 +10,7 @@ class Guildspy(commands.Cog):
         self.session = bot.session
         self.cfg = bot.cfg
         try:
-            self.hook_url = self.cfg['nodes']['spec:spyHook'][0]
+            self.hook_url = self.cfg['cogcfgs'][f'{__name__}.spyhook'][0]
         except:
             self.hook_url = None
 
@@ -84,9 +84,7 @@ class Guildspy(commands.Cog):
 
 
 def setup(bot):
+    bot.register_cfg(f'{__name__}.spyhook',
+                     'Please enter the webhook url for the Guildspy webhook functionality:\n',
+                     '')
     bot.add_cog(Guildspy(bot))
-
-
-permissionNodes = {
-    'spec:spyHook': ['Please enter the webhook url for the LargeSibling spy functionality\n', '']
-}

@@ -5,7 +5,6 @@ import os
 import re
 import glob
 import functools
-from utils.discoutils import sendReply_codeblocked
 
 log = logging.getLogger('charfred')
 
@@ -90,25 +89,6 @@ async def exec_cmd(loop, ctx, *args):
         else:
             print('Failed:', args)
         return stdout.decode().strip()
-
-
-async def exec_cmd_reply(loop, ctx, *args):
-    """Runs a given (shell) command and sends the output
-    as a codeblocked message to the appropriate commandchannel.
-    """
-    async with ctx.typing():
-        proc = await asyncio.create_subprocess_exec(
-            *args, stdout=asyncio.subprocess.PIPE,
-            loop=loop
-        )
-        print('Executing:', args)
-        stdout, stderr = await proc.communicate()
-        if proc.returncode == 0:
-            print('Finished:', args)
-        else:
-            print('Failed:', args)
-        msg = stdout.decode().strip()
-        await sendReply_codeblocked(ctx, msg)
 
 
 async def serverStart(server, servercfg, loop):

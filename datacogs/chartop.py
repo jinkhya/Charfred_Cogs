@@ -2,7 +2,7 @@ import os
 import functools
 import psutil
 from discord.ext import commands
-from utils.discoutils import permissionNode, send
+from utils.discoutils import permission_node, send
 
 
 class Chartop(commands.Cog):
@@ -30,7 +30,7 @@ class Chartop(commands.Cog):
         return "%sB" % n
 
     @commands.command(invoke_without_command=True, aliases=['chartop'])
-    @permissionNode('chartop')
+    @permission_node(f'{__name__}.chartop')
     async def top(self, ctx):
         """Get info on Charfred\'s process!"""
 
@@ -52,7 +52,5 @@ class Chartop(commands.Cog):
 
 
 def setup(bot):
+    bot.register_nodes([f'{__name__}.chartop'])
     bot.add_cog(Chartop(bot))
-
-
-permissionNodes = ['chartop']

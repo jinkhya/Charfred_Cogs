@@ -4,7 +4,7 @@ from random import randrange
 from discord.ext import commands
 from utils.config import Config
 from utils.flipbooks import Flipbook
-from utils.discoutils import permissionNode, send
+from utils.discoutils import permission_node, send
 
 log = logging.getLogger('charfred')
 
@@ -40,7 +40,7 @@ class Quotator(commands.Cog):
             await reaction.message.add_reaction('👌')
 
     @commands.group(invoke_without_command=True)
-    @permissionNode('quote')
+    @permission_node(f'{__name__}.quote')
     async def quote(self, ctx, member: discord.Member=None, _index: int=None):
         """User Quote commands.
 
@@ -151,7 +151,5 @@ class Quotator(commands.Cog):
 
 
 def setup(bot):
+    bot.register_nodes([f'{__name__}.quote'])
     bot.add_cog(Quotator(bot))
-
-
-permissionNodes = ['quote']

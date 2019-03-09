@@ -2,7 +2,7 @@ import discord
 import logging
 from ttldict import TTLOrderedDict
 from discord.ext import commands
-from utils.discoutils import permissionNode, sendEmbed
+from utils.discoutils import permission_node, send
 from .utils.mcuser import MCUser, mojException
 
 log = logging.getLogger('charfred')
@@ -15,7 +15,7 @@ class StalkCmds(commands.Cog):
 
     @commands.command(aliases=['backgroundcheck', 'check', 'creep'])
     @commands.cooldown(60, 60)
-    @permissionNode('stalk')
+    @permission_node(f'{__name__}.stalk')
     async def stalk(self, ctx, lookupName: str):
         """Fetch some incriminatory information on a player.
 
@@ -37,7 +37,7 @@ class StalkCmds(commands.Cog):
                     type="rich",
                     colour=discord.Colour.dark_red()
                 )
-                await sendEmbed(ctx, reportCard)
+                await send(ctx, embed=reportCard)
                 return
         reportCard = discord.Embed(
             title="__Subject: " + mcU.name + "__",
@@ -87,11 +87,9 @@ class StalkCmds(commands.Cog):
                                  value=pastNames)
         reportCard.set_footer(text="Report compiled by Agent Charfred")
         log.info('Sent Reportcard.')
-        await sendEmbed(ctx, reportCard)
+        await send(ctx, embed=reportCard)
 
 
 def setup(bot):
+    bot.register_nodes([f'{__name__}.stalk'])
     bot.add_cog(StalkCmds(bot))
-
-
-permissionNodes = ['stalk']

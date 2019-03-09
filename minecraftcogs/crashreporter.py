@@ -1,7 +1,7 @@
 from discord.ext import commands
 import os
 import logging
-from utils.discoutils import permissionNode, sendMarkdown
+from utils.discoutils import permission_node, sendMarkdown
 from .utils.mcservutils import getcrashreport, parsereport
 
 log = logging.getLogger('charfred')
@@ -14,7 +14,7 @@ class CrashReporter(commands.Cog):
         self.servercfg = bot.servercfg
 
     @commands.command(aliases=['report', 'crashreports'])
-    @permissionNode('crashreport')
+    @permission_node(f'{__name__}.report')
     async def crashreport(self, ctx, server: str, nthlast: int=0):
         """Retrieves the last crashreport for the given server.
 
@@ -54,7 +54,5 @@ class CrashReporter(commands.Cog):
 
 
 def setup(bot):
+    bot.register_nodes([f'{__name__}.report'])
     bot.add_cog(CrashReporter(bot))
-
-
-permissionNodes = ['crashreport']

@@ -6,7 +6,7 @@ import re
 from time import strftime, localtime
 from threading import Event
 from utils.config import Config
-from utils.discoutils import permissionNode, sendMarkdown, send
+from utils.discoutils import permission_node, sendMarkdown, send
 from .utils.mcservutils import isUp, getProc, serverStart
 
 log = logging.getLogger('charfred')
@@ -35,7 +35,7 @@ class Watchdog(commands.Cog):
                 event.set()
 
     @commands.group(invoke_without_command=True)
-    @permissionNode('watchdog')
+    @permission_node(f'{__name__}.watchdog')
     async def watchdog(self, ctx):
         """Server process watchdog commands.
 
@@ -289,7 +289,5 @@ def setup(bot):
         bot.servercfg = Config(f'{bot.dir}/configs/serverCfgs.json',
                                default=f'{bot.dir}/configs/serverCfgs.json_default',
                                load=True, loop=bot.loop)
+    bot.register_nodes([f'{__name__}.watchdog'])
     bot.add_cog(Watchdog(bot))
-
-
-permissionNodes = ['watchdog']

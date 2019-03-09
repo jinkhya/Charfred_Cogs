@@ -3,7 +3,7 @@ import discord
 import re
 import logging
 from utils.config import Config
-from utils.discoutils import permissionNode, sendMarkdown, promptInput, promptConfirm, send
+from utils.discoutils import permission_node, sendMarkdown, promptInput, promptConfirm, send
 from utils.flipbooks import EmbedFlipbook
 
 log = logging.getLogger('charfred')
@@ -16,7 +16,7 @@ class ServerConfig(commands.Cog):
         self.servercfg = bot.servercfg
 
     @commands.group(name='serverconfig', invoke_without_command=True)
-    @permissionNode('management')
+    @permission_node(f'{__name__}.manage')
     async def config(self, ctx):
         """Minecraft server configuration commands."""
 
@@ -157,10 +157,14 @@ class ServerConfig(commands.Cog):
             await self.servercfg.save()
         await sendMarkdown(ctx, 'Current path for directory, where all minecraft servers'
                            'are located is:\n' + self.servercfg['serverspath'])
-        r, _, _ = await promptConfirm(ctx, 'Would you like to change this path?')
+        r, _, timedout = await promptConfirm(ctx, 'Would you like to change this path?')
+        if timedout:
+            return
         if r:
-            newpath, _, _ = await promptInput(ctx, 'Please enter the new path now!\n'
-                                              '(it needs to be the full path)')
+            newpath, _, timedout = await promptInput(ctx, 'Please enter the new path now!\n'
+                                                     '(it needs to be the full path)')
+            if timedout:
+                return
             if newpath:
                 self.servercfg['serverspath'] = newpath
                 await self.servercfg.save()
@@ -170,10 +174,14 @@ class ServerConfig(commands.Cog):
             self.servercfg['backupspath'] = 'NONE'
         await sendMarkdown(ctx, 'Current path for directory, where backups are saved is:\n' +
                            self.servercfg['backupspath'])
-        r, _, _ = await promptConfirm(ctx, 'Would you like to change this path?')
+        r, _, timedout = await promptConfirm(ctx, 'Would you like to change this path?')
+        if timedout:
+            return
         if r:
-            newpath, _, _ = await promptInput(ctx, 'Please enter the new path now!\n'
-                                              '(it needs to be the full path)')
+            newpath, _, timedout = await promptInput(ctx, 'Please enter the new path now!\n'
+                                                     '(it needs to be the full path)')
+            if timedout:
+                return
             if newpath:
                 self.servercfg['backupspath'] = newpath
                 await self.servercfg.save()
@@ -194,10 +202,14 @@ class ServerConfig(commands.Cog):
             await self.servercfg.save()
         await sendMarkdown(ctx, 'Current maximum age for backups is:\n' +
                            self.servercfg['oldTimer'])
-        r, _, _ = await promptConfirm(ctx, 'Would you like to change it?')
+        r, _, timedout = await promptConfirm(ctx, 'Would you like to change it?')
+        if timedout:
+            return
         if r:
-            newage, _, _ = await promptInput(ctx, 'Please enter the new maximum backup age now!'
-                                             '\n(Age needs to be in minutes)')
+            newage, _, timedout = await promptInput(ctx, 'Please enter the new maximum backup age now!'
+                                                    '\n(Age needs to be in minutes)')
+            if timedout:
+                return
             if newage:
                 self.servercfg['oldTimer'] = newage
                 await self.servercfg.save()
@@ -209,7 +221,5 @@ def setup(bot):
         bot.servercfg = Config(f'{bot.dir}/configs/serverCfgs.json',
                                default=f'{bot.dir}/configs/serverCfgs.json_default',
                                load=True, loop=bot.loop)
+    bot.register_nodes([f'{__name__}.manage'])
     bot.add_cog(ServerConfig(bot))
-
-
-permissionNodes = ['management']

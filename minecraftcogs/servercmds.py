@@ -2,7 +2,7 @@ from discord.ext import commands
 import asyncio
 import logging
 from utils.config import Config
-from utils.discoutils import permissionNode, sendMarkdown
+from utils.discoutils import permission_node, sendMarkdown
 from .utils.mcservutils import isUp, sendCmd, sendCmds, serverStart, \
     serverStop, serverTerminate, serverStatus, buildCountdownSteps
 
@@ -18,14 +18,14 @@ class ServerCmds(commands.Cog):
             self.bot.serverstopspending = {}
 
     @commands.group(invoke_without_command=True)
-    @permissionNode('status')
+    @permission_node(f'{__name__}.status')
     async def server(self, ctx):
         """Minecraft server commands."""
 
         pass
 
     @server.command(aliases=['failsafe'])
-    @permissionNode('start')
+    @permission_node(f'{__name__}.start')
     async def start(self, ctx, server: str):
         """Start a server."""
 
@@ -60,7 +60,7 @@ class ServerCmds(commands.Cog):
             pass
 
     @server.command()
-    @permissionNode('stop')
+    @permission_node(f'{__name__}.stop')
     async def stop(self, ctx, server: str):
         """Stop a server.
 
@@ -121,7 +121,7 @@ class ServerCmds(commands.Cog):
             await sendMarkdown(ctx, f'< {server} already is not running. >')
 
     @server.command()
-    @permissionNode('restart')
+    @permission_node(f'{__name__}.restart')
     async def restart(self, ctx, server: str, countdown: str=None):
         """Restart a server with a countdown.
 
@@ -263,7 +263,7 @@ class ServerCmds(commands.Cog):
             await sendMarkdown(ctx, f'< Restart cancelled, {server} is offline! >')
 
     @server.command()
-    @permissionNode('status')
+    @permission_node(f'{__name__}.status')
     async def status(self, ctx, server: str=None):
         """Queries the status of servers.
 
@@ -282,7 +282,7 @@ class ServerCmds(commands.Cog):
         await sendMarkdown(ctx, f'{statuses}')
 
     @server.command()
-    @permissionNode('terminate')
+    @permission_node(f'{__name__}.terminate')
     async def terminate(self, ctx, server: str):
         """Terminates a serverprocess forcefully."""
 
@@ -313,7 +313,6 @@ def setup(bot):
         bot.servercfg = Config(f'{bot.dir}/configs/serverCfgs.json',
                                default=f'{bot.dir}/configs/serverCfgs.json_default',
                                load=True, loop=bot.loop)
+    permission_nodes = ['start', 'stop', 'status', 'restart', 'terminate']
+    bot.register_nodes([f'{__name__}.{node}' for node in permission_nodes])
     bot.add_cog(ServerCmds(bot))
-
-
-permissionNodes = ['start', 'stop', 'status', 'restart', 'terminate']

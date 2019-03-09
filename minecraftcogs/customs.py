@@ -3,7 +3,7 @@ from discord.utils import find
 import re
 import logging
 from utils.config import Config
-from utils.discoutils import permissionNode, sendMarkdown
+from utils.discoutils import permission_node, sendMarkdown
 from .utils.mcservutils import isUp, sendCmd
 
 log = logging.getLogger('charfred')
@@ -21,7 +21,7 @@ class Customs(commands.Cog):
         )
 
     @commands.group(invoke_without_command=True, aliases=['cc'])
-    @permissionNode('custom')
+    @permission_node(f'{__name__}.custom')
     async def custom(self, ctx):
         """Custom Minecraft server commands commands.
 
@@ -39,7 +39,7 @@ class Customs(commands.Cog):
         await sendMarkdown(ctx, msg)
 
     @custom.command(aliases=['edit', 'modify'])
-    @permissionNode('customEdit')
+    @permission_node(f'{__name__}.customEdit')
     async def add(self, ctx, name: str, minRole: str, *, cmd: str):
         """Add a custom command to the library.
 
@@ -62,7 +62,7 @@ class Customs(commands.Cog):
         await self.customcmds.save()
 
     @custom.command(aliases=['delete'])
-    @permissionNode('customEdit')
+    @permission_node(f'{__name__}.customEdit')
     async def remove(self, ctx, name: str):
         """Remove a custom command from the library.
 
@@ -126,7 +126,6 @@ class Customs(commands.Cog):
 
 
 def setup(bot):
+    permission_nodes = ['custom', 'customEdit']
+    bot.register_nodes([f'{__name__}.{node}' for node in permission_nodes])
     bot.add_cog(Customs(bot))
-
-
-permissionNodes = ['custom', 'customEdit']

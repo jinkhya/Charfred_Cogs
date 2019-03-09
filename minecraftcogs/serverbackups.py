@@ -6,7 +6,7 @@ import tarfile
 from shutil import rmtree
 from utils.config import Config
 from utils.flipbooks import Flipbook
-from utils.discoutils import permissionNode, sendMarkdown, promptConfirm
+from utils.discoutils import permission_node, sendMarkdown, promptConfirm
 from .utils.mcservutils import isUp
 
 log = logging.getLogger('charfred')
@@ -19,7 +19,7 @@ class ServerBackups(commands.Cog):
         self.servercfg = bot.servercfg
 
     @commands.group(invoke_without_command=True)
-    @permissionNode('backup')
+    @permission_node(f'{__name__}.backup')
     async def backup(self, ctx):
         """Minecraft server backup commands."""
 
@@ -43,7 +43,7 @@ class ServerBackups(commands.Cog):
         await backupsbook.flip()
 
     @backup.group(invoke_without_command=True)
-    @permissionNode('applyBackup')
+    @permission_node(f'{__name__}.apply')
     async def apply(self, ctx):
         """Backup application commands."""
 
@@ -79,7 +79,9 @@ class ServerBackups(commands.Cog):
             return
         log.info(f'Preparing for full backup application using {backupfile}!')
         await sendMarkdown(ctx, f'Using {backupfile}')
-        r, _, _ = await promptConfirm(ctx, 'Would you like to proceed?')
+        r, _, timedout = await promptConfirm(ctx, 'Would you like to proceed?')
+        if timedout:
+            return
         if r:
             log.info('Confirmed!')
             if isUp(server):
@@ -138,7 +140,9 @@ class ServerBackups(commands.Cog):
             log.info(r)
         await sendMarkdown(ctx, 'Regions that will be extracted:\n' +
                            '\n'.join(regions))
-        r, _, _ = await promptConfirm(ctx, 'Would you like to proceed?')
+        r, _, timedout = await promptConfirm(ctx, 'Would you like to proceed?')
+        if timedout:
+            return
         if r:
             log.info('Confirmed!')
             if isUp(server):
@@ -190,7 +194,6 @@ def setup(bot):
         bot.servercfg = Config(f'{bot.dir}/configs/serverCfgs.json',
                                default=f'{bot.dir}/configs/serverCfgs.json_default',
                                load=True, loop=bot.loop)
+    permission_nodes = ['backup', 'apply']
+    bot.register_nodes([f'{__name__}.{node}' for node in permission_nodes])
     bot.add_cog(ServerBackups(bot))
-
-
-permissionNodes = ['backup', 'applyBackup']

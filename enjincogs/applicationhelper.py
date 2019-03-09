@@ -2,7 +2,7 @@ import logging
 import json
 from discord.ext import commands
 from utils.config import Config
-from utils.discoutils import permissionNode, sendMarkdown, promptInput, promptConfirm, send
+from utils.discoutils import permission_node, sendMarkdown, promptInput, promptConfirm, send
 from .utils.enjinutils import post, verifysession
 
 log = logging.getLogger('charfred')
@@ -32,7 +32,7 @@ class ApplicationHelper(commands.Cog):
             self.enjinappcfg['fieldnames'] = {}
 
     @commands.group(aliases=['enjinapps', 'app'], invoke_without_command=True)
-    @permissionNode('enjinapps')
+    @permission_node(f'{__name__}.enjinapps')
     async def apps(self, ctx):
         """Enjin Application commands.
 
@@ -108,7 +108,7 @@ class ApplicationHelper(commands.Cog):
         await sendMarkdown(ctx, msg)
 
     @apps.command()
-    @permissionNode('enjinedittemplate')
+    @permission_node(f'{__name__}.enjinedittemplate')
     async def setfieldnames(self, ctx, anyappid: int):
         """Save a set of short identifiers for all application entry fields.
 
@@ -119,8 +119,10 @@ class ApplicationHelper(commands.Cog):
 
         if self.enjinappcfg and self.enjinappcfg['fieldnames']:
             log.info('Application field names already saved!')
-            b, _, _ = await promptConfirm(ctx, '> A set of field names is already '
-                                          'saved! Override?')
+            b, _, timedout = await promptConfirm(ctx, '> A set of field names is already '
+                                                 'saved! Override?')
+            if timedout:
+                return
             if not b:
                 await sendMarkdown(ctx, '> Override aborted.')
                 return
@@ -133,7 +135,7 @@ class ApplicationHelper(commands.Cog):
         await sendMarkdown(ctx, msg)
 
         await sendMarkdown(ctx, '> This next bit is gonna be a bit tricky...')
-        fieldnames, _, _ = await promptInput(
+        fieldnames, _, timedout = await promptInput(
             ctx,
             '# Please enter the field names for each field, in the order '
             'as they appear in the above application listing, seperated by spaces.\n\n'
@@ -142,6 +144,8 @@ class ApplicationHelper(commands.Cog):
             '# Also hurry it up, this prompt will time out in 5 minutes!',
             360
         )
+        if timedout:
+            return
         if not fieldnames:
             log.info('Prompt failed!')
             await sendMarkdown(ctx, '< Prompt failed, please try again! >')
@@ -158,7 +162,7 @@ class ApplicationHelper(commands.Cog):
         await sendMarkdown(ctx, '# Field names saved!')
 
     @apps.command(aliases=['configure'])
-    @permissionNode('enjinedittemplate')
+    @permission_node(f'{__name__}.enjinedittemplate')
     async def settemplate(self, ctx, correctappid: int):
         """Save a template for validation of an application.
 
@@ -169,8 +173,10 @@ class ApplicationHelper(commands.Cog):
 
         if self.enjinappcfg:
             log.info('Application template already saved.')
-            b, _, _ = await promptConfirm(ctx, 'An application template already '
-                                          'exists, do you wish to override?')
+            b, _, timedout = await promptConfirm(ctx, 'An application template already '
+                                                 'exists, do you wish to override?')
+            if timedout:
+                return
             if not b:
                 await sendMarkdown(ctx, '> Configuration complete!')
                 return
@@ -181,13 +187,15 @@ class ApplicationHelper(commands.Cog):
             return
         msg = self._formatmsg(fields, qhashes, numbered=True)
         await sendMarkdown(ctx, msg)
-        selection, _, _ = await promptInput(
+        selection, _, timedout = await promptInput(
             ctx,
             '# Please enter the numbers for all the fields you wish to include '
             'in the template, seperated by spaces.\n\n'
             '# Go on, type type! This prompt times out in 5 minutes!',
             360
         )
+        if timedout:
+            return
         if not selection:
             log.info('Prompt failed!')
             await sendMarkdown(ctx, '< Prompt failed, please try again! >')
@@ -325,7 +333,6 @@ class ApplicationHelper(commands.Cog):
 
 
 def setup(bot):
+    permission_nodes = ['enjinapps', 'enjinedittemplate']
+    bot.register_nodes([f'{__name__}.{node}' for node in permission_nodes])
     bot.add_cog(ApplicationHelper(bot))
-
-
-permissionNodes = ['enjinapps', 'enjinedittemplate']

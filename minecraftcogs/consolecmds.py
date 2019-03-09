@@ -1,7 +1,7 @@
 from discord.ext import commands
 import logging
 from utils.config import Config
-from utils.discoutils import sendMarkdown, permissionNode
+from utils.discoutils import sendMarkdown, permission_node
 from .utils.mcservutils import isUp, sendCmd
 
 log = logging.getLogger('charfred')
@@ -14,7 +14,7 @@ class ConsoleCmds(commands.Cog):
         self.servercfg = bot.servercfg
 
     @commands.command()
-    @permissionNode('whitelist')
+    @permission_node(f'{__name__}.whitelist')
     async def player(self, ctx):
         """[DEPRECATED]"""
 
@@ -23,14 +23,14 @@ class ConsoleCmds(commands.Cog):
                            'versions.')
 
     @commands.group(aliases=['mc'], invoke_without_command=True)
-    @permissionNode('whitelist')
+    @permission_node(f'{__name__}.whitelist')
     async def minecraft(self, ctx):
         """Minecraft server console commands."""
 
         pass
 
     @minecraft.group(invoke_without_command=True)
-    @permissionNode('whitelist')
+    @permission_node(f'{__name__}.whitelist')
     async def whitelist(self, ctx, player: str):
         """Add a player to the whitelist."""
 
@@ -84,7 +84,7 @@ class ConsoleCmds(commands.Cog):
         await sendMarkdown(ctx, '\n'.join(msg))
 
     @minecraft.command()
-    @permissionNode('kick')
+    @permission_node(f'{__name__}.kick')
     async def kick(self, ctx, server: str, player: str):
         """Kick a player from a specified server.
 
@@ -101,7 +101,7 @@ class ConsoleCmds(commands.Cog):
         await sendMarkdown(ctx, '\n'.join(msg))
 
     @minecraft.command()
-    @permissionNode('ban')
+    @permission_node(f'{__name__}.ban')
     async def ban(self, ctx, player: str):
         """Bans a player, and unwhitelists just to be safe."""
 
@@ -119,7 +119,7 @@ class ConsoleCmds(commands.Cog):
         await sendMarkdown(ctx, '\n'.join(msg))
 
     @minecraft.command(aliases=['pass'])
-    @permissionNode('relay')
+    @permission_node(f'{__name__}.relay')
     async def relay(self, ctx, server: str, *, command: str):
         """Relays a command to a servers\' console.
 
@@ -142,7 +142,6 @@ def setup(bot):
         bot.servercfg = Config(f'{bot.dir}/configs/serverCfgs.json',
                                default=f'{bot.dir}/configs/serverCfgs.json_default',
                                load=True, loop=bot.loop)
+    permission_nodes = ['whitelist', 'kick', 'ban', 'relay']
+    bot.register_nodes([f'{__name__}.{node}' for node in permission_nodes])
     bot.add_cog(ConsoleCmds(bot))
-
-
-permissionNodes = ['whitelist', 'kick', 'ban', 'relay']

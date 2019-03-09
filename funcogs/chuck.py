@@ -1,6 +1,6 @@
 import logging
 from discord.ext import commands
-from utils.discoutils import permissionNode, send
+from utils.discoutils import send
 
 log = logging.getLogger('charfred')
 
@@ -12,7 +12,6 @@ class Chuck(commands.Cog):
 
     @commands.group(invoke_without_command=True, aliases=['chuck', 'roundhouse'])
     @commands.cooldown(60, 60)
-    @permissionNode('chuck')
     async def norris(self, ctx):
         """Interactions with ChuckNorrisJokes API.
 
@@ -47,6 +46,3 @@ class Chuck(commands.Cog):
 
 def setup(bot):
     bot.add_cog(Chuck(bot))
-
-
-permissionNodes = ['chuck']
