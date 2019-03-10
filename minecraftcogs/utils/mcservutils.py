@@ -201,14 +201,14 @@ def getcrashreport(server, serverspath, nthlast: int=0):
     return rpath, os.path.getmtime(rpath)
 
 
-def parsereport(report):
+def parsereport(rpath):
     """Retrieves and parses a crashreport given its path.
     Returns a list containing crashreport flavor text,
     time, description, short stacktrace and affected level
     section, if available, in a ready to print format.
     """
 
-    with open(report, 'r') as r:
+    with open(rpath, 'r') as r:
         # Discard until flavortext is found.
         while True:
             l = r.readline()
@@ -244,7 +244,7 @@ def parsereport(report):
                 level.append(l)
 
     report = []
-    report.append('> ' + os.path.basename(report) + '\n')
+    report.append('> ' + os.path.basename(rpath) + '\n')
     report.append('# ' + flavor)
     report.append('# ' + crashtime)
     report.append('# ' + desc)
