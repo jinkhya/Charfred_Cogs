@@ -7,7 +7,7 @@ from time import strftime, localtime, time
 from threading import Event
 from utils.config import Config
 from utils.discoutils import permission_node, sendMarkdown
-from .utils.mcservutils import isUp, getProc, serverStart, getcrashreport, parsereport
+from .utils.mcservutils import isUp, getProc, serverStart, getcrashreport, parsereport, formatreport
 
 log = logging.getLogger('charfred')
 
@@ -87,14 +87,15 @@ class Watchdog(commands.Cog):
 
             async def serverGone(crashed, report=None):
                 if crashed:
-                    report = '\n'.join(report)
                     await sendMarkdown(
                         ctx,
                         f'{self.watchcfg["notify"]}\n'
-                        f'< {strftime("%H:%M", localtime())} : {server} crashed! >\n'
-                        f'{report}',
+                        f'< {strftime("%H:%M", localtime())} : {server} crashed! >\n',
                         deletable=False
                     )
+                    for c in report:
+                        await asyncio.sleep(1, loop=self.loop)
+                        await sendMarkdown(ctx, c)
                 else:
                     await sendMarkdown(ctx, f'> {strftime("%H:%M", localtime())} : {server} is gone!\n'
                                        '> Watching for it to return...', deletable=False)
@@ -165,7 +166,10 @@ class Watchdog(commands.Cog):
                             rpath, mtime = getcrashreport(server, self.servercfg['serverspath'])
                             if mtime > (now - 60):
                                 crashed = True
-                                report = parsereport(rpath)
+                                ctime, desc, strace, flav, lev, bl, ph = parsereport(rpath)
+                                report = formatreport(
+                                    rpath, ctime, desc, flav, strace, lev, bl, ph
+                                )
                                 coro = serverGone(crashed, report)
                             else:
                                 crashed = False

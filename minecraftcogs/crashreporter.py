@@ -1,7 +1,8 @@
 from discord.ext import commands
 import logging
+import asyncio
 from utils.discoutils import permission_node, sendMarkdown
-from .utils.mcservutils import getcrashreport, parsereport
+from .utils.mcservutils import getcrashreport, parsereport, formatreport
 
 log = logging.getLogger('charfred')
 
@@ -29,10 +30,18 @@ class CrashReporter(commands.Cog):
         rpath, _ = await self.loop.run_in_executor(None, getcrashreport, server, serverspath, nthlast)
 
         log.info('Parsing report...')
-        report = await self.loop.run_in_executor(None, parsereport, rpath)
+        ctime, desc, strace, flavor, level, block, phase = await self.loop.run_in_executor(
+            None, parsereport, rpath
+        )
 
-        msg = '\n'.join(report)
-        await sendMarkdown(ctx, msg)
+        log.info('Formatting report...')
+        chunks = await self.loop.run_in_executor(
+            None, formatreport, rpath, ctime, desc, flavor, strace, level, block, phase
+        )
+
+        for c in chunks:
+            await sendMarkdown(ctx, c)
+            await asyncio.sleep(1, loop=self.loop)
         log.info('Report sent!')
 
 
