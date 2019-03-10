@@ -230,26 +230,29 @@ def parsereport(rpath):
                 break
             strace.append(l)
         # Look for relevant sections in remaining report.
+        block = []
+        level = []
+        phase = []
         while True:
             l = r.readline()
             if not l:
                 break
             if '-- Block entity being' in l:
-                block = ['# Block entity being ticked:\n']
+                block.append('# Block entity being ticked:\n')
                 while True:
                     l = r.readline()
                     if not l or l == '\n' or l == 'Stacktrace:\n':
                         break
                     block.append(l)
             if '-- Affected' in l:
-                level = ['# Affected level:\n']
+                level.append('# Affected level:\n')
                 while True:
                     l = r.readline()
                     if not l or l == '\n':
                         break
                     level.append(l)
             if '-- Sponge PhaseTracker' in l:
-                phase = ['# Sponge PhaseTracker:\n']
+                phase.append('# Sponge PhaseTracker:\n')
                 r.readline()
                 r.readline()
                 while True:
