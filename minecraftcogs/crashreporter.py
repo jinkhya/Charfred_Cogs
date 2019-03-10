@@ -1,5 +1,4 @@
 from discord.ext import commands
-import os
 import logging
 from utils.discoutils import permission_node, sendMarkdown
 from .utils.mcservutils import getcrashreport, parsereport
@@ -28,25 +27,9 @@ class CrashReporter(commands.Cog):
         log.info(f'Getting report for {server}.')
         serverspath = self.servercfg['serverspath']
         rpath, _ = await self.loop.run_in_executor(None, getcrashreport, server, serverspath, nthlast)
-        if rpath:
-            log.info(f'Report found.')
-        else:
-            log.warning('No crashreports found!')
-            return
 
         log.info('Parsing report...')
-        sections = await self.loop.run_in_executor(None, parsereport, rpath)
-
-        report = []
-        report.append('> ' + os.path.basename(rpath) + '\n')
-        report.append('# ' + sections['flavor'] + '\n')
-        report.append('# ' + sections['time'])
-        report.append('# ' + sections['desc'] + '\n')
-        report.append('# Shortened Stacktrace:')
-        report.extend(sections['trace'][:4])
-        if 'level' in sections:
-            report.append('\n# Affected level:')
-            report.extend(sections['level'][1:])
+        report = await self.loop.run_in_executor(None, parsereport, rpath)
 
         msg = '\n'.join(report)
         await sendMarkdown(ctx, msg)

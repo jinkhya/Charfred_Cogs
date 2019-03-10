@@ -203,12 +203,11 @@ def getcrashreport(server, serverspath, nthlast: int=0):
 
 def parsereport(report):
     """Retrieves and parses a crashreport given its path.
-    Returns a dictionary containing crashreport flavor text,
+    Returns a list containing crashreport flavor text,
     time, description, short stacktrace and affected level
-    section, if available.
+    section, if available, in a ready to print format.
     """
 
-    sections = {}
     with open(report, 'r') as r:
         # Discard until flavortext is found.
         while True:
@@ -233,10 +232,8 @@ def parsereport(report):
         # Look for an "Affected level" section in remaining report.
         level = []
         for l in r:
-            if not l:
-                break
             if '-- Affected' in l:
-                level.append(l)
+                level.append('\n# Affected level:')
                 break
         # Read in "Affected level" section, if found.
         if level:
@@ -246,10 +243,13 @@ def parsereport(report):
                     break
                 level.append(l)
 
-    sections['flavor'] = flavor
-    sections['time'] = crashtime
-    sections['desc'] = desc
-    sections['trace'] = strace
-    if level:
-        sections['level'] = level
-    return sections
+    report = []
+    report.append('> ' + os.path.basename(report) + '\n')
+    report.append('# ' + flavor)
+    report.append('# ' + crashtime)
+    report.append('# ' + desc)
+    report.append('# Shortened Stacktrace:')
+    report.extend(strace[:3])
+    report.extend(level)
+
+    return report
