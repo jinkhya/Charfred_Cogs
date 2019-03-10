@@ -257,7 +257,7 @@ def parsereport(rpath):
                 r.readline()
                 while True:
                     l = r.readline()
-                    if not l or l == '\n' or l.startswith('/***'):
+                    if not l or l == '\n' or l.startswith('/***') or l.startswith('Stacktrace:'):
                         break
                     phase.append(l)
                 if len(phase) <= 1:

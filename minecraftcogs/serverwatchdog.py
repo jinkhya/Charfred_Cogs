@@ -6,7 +6,7 @@ import re
 from time import strftime, localtime, time
 from threading import Event
 from utils.config import Config
-from utils.discoutils import permission_node, sendMarkdown
+from utils.discoutils import permission_node, sendMarkdown, send
 from .utils.mcservutils import isUp, getProc, serverStart, getcrashreport, parsereport, formatreport
 
 log = logging.getLogger('charfred')
@@ -87,10 +87,12 @@ class Watchdog(commands.Cog):
 
             async def serverGone(crashed, report=None):
                 if crashed:
-                    await sendMarkdown(
+                    await send(
                         ctx,
                         f'{self.watchcfg["notify"]}\n'
-                        f'< {strftime("%H:%M", localtime())} : {server} crashed! >\n',
+                        '```markdown\n'
+                        f'< {strftime("%H:%M", localtime())} : {server} crashed! >\n'
+                        '```',
                         deletable=False
                     )
                     for c in report:
