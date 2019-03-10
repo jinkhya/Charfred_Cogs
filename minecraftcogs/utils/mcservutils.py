@@ -237,21 +237,21 @@ def parsereport(rpath):
             l = r.readline()
             if not l:
                 break
-            if '-- Block entity being' in l:
+            if l.startswith('-- Block'):
                 block.append('# Block entity being ticked:\n')
                 while True:
                     l = r.readline()
                     if not l or l == '\n' or l == 'Stacktrace:\n':
                         break
                     block.append(l)
-            if '-- Affected' in l:
+            if l.startswith('-- Affected'):
                 level.append('# Affected level:\n')
                 while True:
                     l = r.readline()
                     if not l or l == '\n':
                         break
                     level.append(l)
-            if '-- Sponge PhaseTracker' in l:
+            if l.startswith('-- Sponge'):
                 phase.append('# Sponge PhaseTracker:\n')
                 r.readline()
                 r.readline()
@@ -293,5 +293,7 @@ def formatreport(rpath, crashtime, desc, flavor, strace, *sections):
             else:
                 chunks.append(chunk)
                 chunk = l
+    else:
+        chunks.append(chunk)
 
     return chunks
