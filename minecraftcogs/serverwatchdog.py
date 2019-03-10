@@ -146,6 +146,7 @@ class Watchdog(commands.Cog):
                 log.info(f'WD: Ending watch on {server}.')
                 if future.exception():
                     log.warning(f'WD: Exception in watchdog for {server}!')
+                    raise future.exception()
                 asyncio.run_coroutine_threadsafe(watchGone(), self.loop)
 
             def watch(event):
