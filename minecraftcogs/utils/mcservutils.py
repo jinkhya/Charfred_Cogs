@@ -229,48 +229,36 @@ def parsereport(rpath):
             if not l or l == '\n':
                 break
             strace.append(l)
-        # Look for "Block entity" section in remaining report.
-        block = []
-        for l in r:
+        # Look for relevant sections in remaining report.
+        while True:
+            l = r.readline()
+            if not l:
+                break
             if '-- Block entity being' in l:
-                block.append('# Block entity being ticked:')
-                break
-        # Read in "Block entity" section if found.
-        if block:
-            while True:
-                l = r.readline()
-                if not l or l == '\n' or l == 'Stacktrace:\n':
-                    break
-                block.append(l)
-        # Look for an "Affected level" section in remaining report.
-        level = []
-        for l in r:
+                block = ['# Block entity being ticked:\n']
+                while True:
+                    l = r.readline()
+                    if not l or l == '\n' or l == 'Stacktrace:\n':
+                        break
+                    block.append(l)
             if '-- Affected' in l:
-                level.append('# Affected level:')
-                break
-        # Read in "Affected level" section, if found.
-        if level:
-            while True:
-                l = r.readline()
-                if not l or l == '\n':
-                    break
-                level.append(l)
-        # Look for a "Sponge PhaseTracker" section and see if its relevant.
-        phase = []
-        for l in r:
+                level = ['# Affected level:\n']
+                while True:
+                    l = r.readline()
+                    if not l or l == '\n':
+                        break
+                    level.append(l)
             if '-- Sponge PhaseTracker' in l:
-                phase.append('# Sponge PhaseTracker:')
-                break
-        if phase:
-            r.readline()
-            r.readline()
-            while True:
-                l = r.readline()
-                if not l or l == '\n' or l.startswith('/***'):
-                    break
-                phase.append(l)
-            if len(phase) <= 1:
-                phase = []
+                phase = ['# Sponge PhaseTracker:\n']
+                r.readline()
+                r.readline()
+                while True:
+                    l = r.readline()
+                    if not l or l == '\n' or l.startswith('/***'):
+                        break
+                    phase.append(l)
+                if len(phase) <= 1:
+                    phase = []
 
     return crashtime, desc, strace, flavor, level, block, phase
 
