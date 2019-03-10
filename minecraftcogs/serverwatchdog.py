@@ -161,7 +161,7 @@ class Watchdog(commands.Cog):
                         if not serverProc.is_running():
                             log.info(f'WD: {server} is gone!')
                             lastState = False
-                            now = time.time()
+                            now = time()
                             rpath, mtime = getcrashreport(server, self.servercfg['serverspath'])
                             if mtime > (now - 60):
                                 crashed = True
