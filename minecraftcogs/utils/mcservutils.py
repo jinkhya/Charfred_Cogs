@@ -294,6 +294,7 @@ def formatreport(rpath, crashtime, desc, flavor, strace, *sections):
                 chunks.append(chunk)
                 chunk = l
     else:
-        chunks.append(chunk)
+        if chunk:
+            chunks.append(chunk)
 
     return chunks
