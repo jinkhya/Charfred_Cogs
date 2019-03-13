@@ -59,7 +59,7 @@ class FunkyText(commands.Cog):
             text = 'HE SEES!'
 
         nonspaceindeces = [i for i, c in enumerate(text) if not c.isspace()]
-        zalgoindeces = random.sample(nonspaceindeces, amount)
+        zalgoindeces = [random.choice(nonspaceindeces) for _ in range(amount)]
         text = list(text)
 
         for i in zalgoindeces:
