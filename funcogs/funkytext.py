@@ -46,29 +46,52 @@ class FunkyText(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
+    def _zalgofy(self, amount, text):
+        if amount < 0:
+            text = text[:abs(amount)]
+        elif amount == 0:
+            text = text[:1]
+            amount = 10
+
+        if not text:
+            text = 'HE SEES!'
+
+        nonspaceindeces = [i for i, c in enumerate(text) if not c.isspace()]
+        zalgoindeces = random.sample(nonspaceindeces, amount)
+        text = list(text)
+
+        for i in zalgoindeces:
+            text[i] = f'{random.choice(random.choice(zalgoScripts))}{text[i]}'
+
+        text = ''.join(text)
+        return text
+
     @commands.command()
-    async def zalgo(self, ctx, amount: int, *, text: str):
+    async def zalgo(self, ctx, amount, *, text: str):
         """Zalgofy some text.
 
         Takes a number for the amount and some text.
+        Optionally you can enter 'nickname' instead of
+        an amount, to get a (hopefully) 32-character-limit
+        friendly result.
         """
 
-        zalgo = []
+        if amount == 'nickname':
+            msg = self._zalgofy((32 - len(text)), text)
 
-        for char in text:
-            for i in range(amount):
-                char = f'{random.choice(random.choice(zalgoScripts))}{char}'
-            zalgo.append(char)
-        zalgo = ''.join(zalgo)
+        elif amount > 8:
+            msg = self._zalgofy(3, 'HE DISAPPROVES!')
+        else:
+            msg = self._zalgofy(amount, text)
 
         try:
-            log.info('Zalgofy!')
+            log.info('HE APPROVES!')
             await ctx.message.delete()
         except discord.Forbidden:
             log.warning('Couldn\'t delete msg!')
             pass
         finally:
-            await send(ctx, zalgo)
+            await send(ctx, msg)
 
     @commands.command()
     async def figlet(self, ctx, fnt: str, *, text: str):
