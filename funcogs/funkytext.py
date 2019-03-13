@@ -78,11 +78,10 @@ class FunkyText(commands.Cog):
 
         if amount == 'nickname':
             msg = self._zalgofy((32 - len(text)), text)
-
-        elif amount > 8:
+        elif int(amount) > 8:
             msg = self._zalgofy(3, 'HE DISAPPROVES!')
         else:
-            msg = self._zalgofy(amount, text)
+            msg = self._zalgofy(int(amount), text)
 
         try:
             log.info('HE APPROVES!')
