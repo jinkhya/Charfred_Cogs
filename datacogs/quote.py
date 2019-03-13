@@ -28,7 +28,14 @@ class Quotator(commands.Cog):
 
             log.info('Saving a quote!')
             quotee = reaction.message.author
-            quote = reaction.message.content
+            if reaction.message.attachments:
+                urls = []
+                for a in reaction.message.attachments:
+                    urls.append(a.url)
+                urls = '\n'.join(urls)
+                quote = f'{reaction.message.content}\n{urls}'
+            else:
+                quote = reaction.message.content
             id = str(quotee.id)
 
             if id not in self.quotes:
