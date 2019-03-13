@@ -80,8 +80,6 @@ class FunkyText(commands.Cog):
 
         if amount == 'nickname':
             z = partial(self._zalgofy, (32 - len(text)), text)
-        elif int(amount) > 8:
-            z = partial(self._zalgofy, 3, 'HE DISAPPROVES!')
         else:
             z = partial(self._zalgofy, int(amount), text)
 
