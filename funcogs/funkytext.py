@@ -1,6 +1,7 @@
 import discord
 import logging
 import random
+from functools import partial
 from pyfiglet import Figlet
 from discord.ext import commands
 from utils.discoutils import send
@@ -45,6 +46,7 @@ zalgoScripts = [superscript, middlescript, subscript]
 class FunkyText(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
+        self.loop = bot.loop
 
     def _zalgofy(self, amount, text):
         if amount < 0:
@@ -77,11 +79,13 @@ class FunkyText(commands.Cog):
         """
 
         if amount == 'nickname':
-            msg = self._zalgofy((32 - len(text)), text)
+            z = partial(self._zalgofy, (32 - len(text)), text)
         elif int(amount) > 8:
-            msg = self._zalgofy(3, 'HE DISAPPROVES!')
+            z = partial(self._zalgofy, 3, 'HE DISAPPROVES!')
         else:
-            msg = self._zalgofy(int(amount), text)
+            z = partial(self._zalgofy, int(amount), text)
+
+        msg = await self.loop.run_in_executor(None, z)
 
         try:
             log.info('HE APPROVES!')
