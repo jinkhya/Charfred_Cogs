@@ -48,7 +48,7 @@ class ConsoleCmds(commands.Cog):
         else:
             servers = self.servercfg['servers']
 
-        msg = ['Command Log', '==========', f'{category}:' if category else '']
+        msg = ['Command Log', '==========', f'> Category: {category}' if category else '']
         for server in servers:
             if isUp(server):
                 log.info(f'Whitelisting {player} on {server}.')
@@ -76,7 +76,7 @@ class ConsoleCmds(commands.Cog):
         else:
             servers = self.servercfg['servers']
 
-        msg = ['Command Log', '==========', f'{category}:' if category else '']
+        msg = ['Command Log', '==========', f'> Category: {category}' if category else '']
         for server in servers:
             if isUp(server):
                 log.info(f'Unwhitelisting {player} on {server}.')
