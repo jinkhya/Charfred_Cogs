@@ -129,6 +129,7 @@ class ConsoleCmds(commands.Cog):
             for server in servers:
                 log.info(f'Added {server} to {category}.')
                 self.servercfg['whitelistcategories'][category].append(server)
+        await self.servercfg.save()
         await sendMarkdown(ctx, f'Done!')
 
     @category.command(name='remove')
@@ -157,6 +158,7 @@ class ConsoleCmds(commands.Cog):
             await sendMarkdown(ctx, f'< {category} does not exist! >')
         else:
             await sendMarkdown(ctx, f'# {category} removed!')
+        await self.servercfg.save()
 
     @minecraft.command()
     @permission_node(f'{__name__}.kick')
