@@ -14,6 +14,8 @@ class ConsoleCmds(commands.Cog):
         self.servercfg = bot.servercfg
         if 'whitelistcategories' not in self.servercfg:
             self.servercfg['whitelistcategories'] = {}
+        if 'defaultcategory' not in self.servercfg:
+            self.servercfg['defaultcategory'] = ''
 
     @commands.group(aliases=['mc'], invoke_without_command=True)
     @permission_node(f'{__name__}.whitelist')
@@ -29,9 +31,13 @@ class ConsoleCmds(commands.Cog):
 
         Optionally takes a category name, for whitelisting
         given player on servers in that category only.
+        If a default category is set, it will be used, instead
+        of defaulting to all known servers.
         """
 
         log.info('Whitelisting player.')
+        if not category:
+            category = self.servercfg['defaultcategory']
         if category:
             try:
                 servers = self.servercfg['whitelistcategories'][category]
@@ -42,7 +48,7 @@ class ConsoleCmds(commands.Cog):
         else:
             servers = self.servercfg['servers']
 
-        msg = ['Command Log', '==========']
+        msg = ['Command Log', '==========', f'{category}:' if category else '']
         for server in servers:
             if isUp(server):
                 log.info(f'Whitelisting {player} on {server}.')
@@ -58,6 +64,8 @@ class ConsoleCmds(commands.Cog):
         """Remove a player from the whitelist."""
 
         log.info('Unwhitelisting player.')
+        if not category:
+            category = self.servercfg['defaultcategory']
         if category:
             try:
                 servers = self.servercfg['whitelistcategories'][category]
@@ -68,7 +76,7 @@ class ConsoleCmds(commands.Cog):
         else:
             servers = self.servercfg['servers']
 
-        msg = ['Command Log', '==========']
+        msg = ['Command Log', '==========', f'{category}:' if category else '']
         for server in servers:
             if isUp(server):
                 log.info(f'Unwhitelisting {player} on {server}.')
@@ -112,6 +120,23 @@ class ConsoleCmds(commands.Cog):
         except KeyError:
             msg.append('> No Categories defined!')
         await sendMarkdown(ctx, '\n'.join(msg))
+
+    @category.command()
+    async def setdefault(self, ctx, category: str):
+        """Sets a defined category to be the default for whitelisting.
+
+        If a default is set, whitelist commands will use it instead
+        of defaulting to all known servers.
+        """
+
+        if category not in self.servercfg['whitelistcategories']:
+            log.warning('Category not found!')
+            await sendMarkdown(ctx, f'< {category} does not exist! >')
+        else:
+            self.servercfg['defaultcategory'] = category
+            log.info('Set default whitelisting category!')
+            await self.servercfg.save()
+            await sendMarkdown(ctx, f'# {category} set as default whitelisting category.')
 
     @category.command()
     async def add(self, ctx, category: str, *servers):
