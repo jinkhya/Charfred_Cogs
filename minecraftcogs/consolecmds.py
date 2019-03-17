@@ -13,15 +13,6 @@ class ConsoleCmds(commands.Cog):
         self.loop = bot.loop
         self.servercfg = bot.servercfg
 
-    @commands.command()
-    @permission_node(f'{__name__}.whitelist')
-    async def player(self, ctx):
-        """[DEPRECATED]"""
-
-        await sendMarkdown(ctx, '< \"player\" is being deprecated, please use \"minecraft\" '
-                           'or \"mc\" instead! >\n> This message will be removed in future '
-                           'versions.')
-
     @commands.group(aliases=['mc'], invoke_without_command=True)
     @permission_node(f'{__name__}.whitelist')
     async def minecraft(self, ctx):
@@ -31,11 +22,26 @@ class ConsoleCmds(commands.Cog):
 
     @minecraft.group(invoke_without_command=True)
     @permission_node(f'{__name__}.whitelist')
-    async def whitelist(self, ctx, player: str):
-        """Add a player to the whitelist."""
+    async def whitelist(self, ctx, player: str, category: str=None):
+        """Add a player to the whitelist.
+
+        Optionally takes a category name, for whitelisting
+        given player on servers in that category only.
+        """
+
+        log.info('Whitelisting player.')
+        if category:
+            try:
+                servers = self.servercfg['whitelistcategories'][category]
+            except KeyError:
+                log.warning('Category not found!')
+                await sendMarkdown(ctx, f'< {category} does not exist! >')
+                return
+        else:
+            servers = self.servercfg['servers']
 
         msg = ['Command Log', '==========']
-        for server in self.servercfg['servers']:
+        for server in servers:
             if isUp(server):
                 log.info(f'Whitelisting {player} on {server}.')
                 await sendCmd(self.loop, server, f'whitelist add {player}')
@@ -46,19 +52,22 @@ class ConsoleCmds(commands.Cog):
         await sendMarkdown(ctx, '\n'.join(msg))
 
     @whitelist.command()
-    async def add(self, ctx):
-        """[DEPRECATED]"""
-
-        await sendMarkdown(ctx, '< \"add\" is being deprecated, please use '
-                           'just \"whitelist\" instead! >\n> This message will be removed '
-                           'in future versions.')
-
-    @whitelist.command()
-    async def remove(self, ctx, player: str):
+    async def remove(self, ctx, player: str, category: str=None):
         """Remove a player from the whitelist."""
 
+        log.info('Unwhitelisting player.')
+        if category:
+            try:
+                servers = self.servercfg['whitelistcategories'][category]
+            except KeyError:
+                log.warning('Category not found!')
+                await sendMarkdown(ctx, f'< {category} does not exist! >')
+                return
+        else:
+            servers = self.servercfg['servers']
+
         msg = ['Command Log', '==========']
-        for server in self.servercfg['servers']:
+        for server in servers:
             if isUp(server):
                 log.info(f'Unwhitelisting {player} on {server}.')
                 await sendCmd(self.loop, server, f'whitelist remove {player}')
@@ -82,6 +91,70 @@ class ConsoleCmds(commands.Cog):
                 else:
                     msg.append(f'< {player} is NOT whitelisted on {server}. >')
         await sendMarkdown(ctx, '\n'.join(msg))
+
+    @whitelist.group(invoke_without_command=True)
+    @permission_node(f'{__name__}.categories')
+    async def category(self, ctx):
+        """Whitelist category commands.
+
+        Returns a list of all currently defined
+        categories, if no subcommand is given.
+        """
+
+        msg = ['Whitelist Categories', '============']
+        try:
+            for category, servers in self.servercfg['whitelistcategories'].items():
+                msg.append(f'# {category}:')
+                for server in servers:
+                    msg.append(f'\t{server}')
+        except KeyError:
+            msg.append('> No Categories defined!')
+        await sendMarkdown(ctx, '\n'.join(msg))
+
+    @category.command()
+    async def add(self, ctx, category: str, *servers):
+        """Add a new whitelist category.
+
+        Takes a name for the new category and the names
+        of all servers that should be a part of it.
+        If category exists, given servers will be added to it.
+        """
+
+        if category not in self.servercfg['whitelistcategories']:
+            log.info('Adding new whitelist category.')
+            self.servercfg['whitelistcategories'][category] = []
+        if servers:
+            for server in servers:
+                log.info(f'Added {server} to {category}.')
+                self.servercfg['whitelistcategories'][category].append(server)
+        await sendMarkdown(ctx, f'Done!')
+
+    @category.command(name='remove')
+    async def _remove(self, ctx, category: str, server: str=None):
+        """Removes a whitelist category or a given server from a category."""
+
+        if server:
+            log.info(f'Removing {server} from {category}.')
+            try:
+                self.servercfg['whitelistcategories'][category].remove(server)
+            except KeyError:
+                log.warning('Category not found!')
+                await sendMarkdown(ctx, f'< {category} does not exist! >')
+            except ValueError:
+                log.warning('Server not found!')
+                await sendMarkdown(ctx, f'> {server} is not in {category}!')
+            else:
+                await sendMarkdown(ctx, f'# {server} removed from {category}.')
+            finally:
+                return
+        log.info(f'Removing {category}.')
+        try:
+            del self.servercfg['whitelistcategories'][category]
+        except KeyError:
+            log.warning('Category not found!')
+            await sendMarkdown(ctx, f'< {category} does not exist! >')
+        else:
+            await sendMarkdown(ctx, f'# {category} removed!')
 
     @minecraft.command()
     @permission_node(f'{__name__}.kick')
@@ -142,6 +215,6 @@ def setup(bot):
         bot.servercfg = Config(f'{bot.dir}/configs/serverCfgs.json',
                                default=f'{bot.dir}/configs/serverCfgs.json_default',
                                load=True, loop=bot.loop)
-    permission_nodes = ['whitelist', 'kick', 'ban', 'relay']
+    permission_nodes = ['whitelist', 'categories', 'kick', 'ban', 'relay']
     bot.register_nodes([f'{__name__}.{node}' for node in permission_nodes])
     bot.add_cog(ConsoleCmds(bot))
