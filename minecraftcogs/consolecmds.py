@@ -12,6 +12,8 @@ class ConsoleCmds(commands.Cog):
         self.bot = bot
         self.loop = bot.loop
         self.servercfg = bot.servercfg
+        if 'whitelistcategories' not in self.servercfg:
+            self.servercfg['whitelistcategories'] = {}
 
     @commands.group(aliases=['mc'], invoke_without_command=True)
     @permission_node(f'{__name__}.whitelist')
