@@ -42,7 +42,7 @@ async def getUserData(name, session):
         d = await r.json()
     if len(d) > 1:
         nameHistory = []
-        for names in d[1:]:
+        for names in d:
             nameHistory.append(names['name'])
     else:
         nameHistory = None
