@@ -15,8 +15,14 @@ async def getUUID(name, session):
         if r.status != 204:
             return await r.json()['id']
         else:
-            log.warning(f'Could not retrieve UUID for {name}.')
-            return None
+            log.warning(f'Could not retrieve UUID for {name}, trying original name uuid lookup!')
+            async with session.get('https://api.mojang.com/users/profiles/minecraft/' +
+                                   name + '?at=0') as r2:
+                if r2.status != 204:
+                    return await r2.json()
+                else:
+                    log.warning(f'Additional lookup for {name} failed!')
+                    return None
 
 
 async def getUserData(name, session):
@@ -25,8 +31,14 @@ async def getUserData(name, session):
         if r.status != 204:
             d = await r.json()
         else:
-            log.warning(f'Could not retrieve UserData for {name}.')
-            raise mojException("Either the username does not exist or Mojang has troubles!")
+            log.info(f'Could not retrieve UserData for {name}, trying original name uuid lookup!')
+            async with session.get('https://api.mojang.com/users/profiles/minecraft/' +
+                                   name + '?at=0') as r2:
+                if r2.status != 204:
+                    d = await r2.json()
+                else:
+                    log.warning(f'Additional lookup for {name} failed!')
+                    raise mojException("Either the username does not exist or Mojang has troubles!")
     currName = d['name']
     uuid = d['id']
     if 'demo' in d:
