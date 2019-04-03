@@ -343,12 +343,10 @@ class ApplicationHelper(commands.Cog):
                         self.openapps = apps
                         if diff:
                             for app in diff:
-                                msg = '```markdown\nNew Application by: '
-                                + app['username']
-                                + '\n```'
+                                msg = f'```markdown\nNew Application by: {app["username"]}'
+                                '\n```'
                                 f'{self.enjinsession.url}/dashboard/applications/'
-                                'application?app_id='
-                                + app['application_id']
+                                f'application?app_id={app["application_id"]}'
                                 self.latestappids.append(app['application_id'])
                                 coro = send(ctx, msg)
                                 asyncio.run_coroutine_threadsafe(coro, self.loop)
