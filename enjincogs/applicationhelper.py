@@ -324,23 +324,33 @@ class ApplicationHelper(commands.Cog):
                     log.error('AW: Exception in app list retrieval!')
                     log.error(e)
                 else:
-                    if not apps:
+                    if apps is None:
                         coro = sendMarkdown(ctx, '< App list could not be retrieved! >')
                         asyncio.run_coroutine_threadsafe(coro, self.loop)
                     else:
-                        apps = [{'username': app['username'],
-                                 'application_id': app['application_id']}
-                                for app in apps]
-                        diff = [app for app in apps if app not in self.openapps]
+                        if len(apps) > 0:
+                            apps = [{'username': app['username'],
+                                     'application_id': app['application_id']}
+                                    for app in apps]
+                            diff = [app for app in apps if app not in self.openapps]
+                        else:
+                            diff = []
                         self.openapps = apps
-                        msg = ['# New applications:\n']
-                        for app in diff:
-                            msg.append('# Application by: ' + app['username'])
-                            msg.append('> Application ID: ' + app['application_id'] + '\n')
-                        msg = '\n'.join(msg)
-                        coro = sendMarkdown(ctx, msg)
-                        asyncio.run_coroutine_threadsafe(coro, self.loop)
-                        log.info('Applications retrieved and listed!')
+                        if diff:
+                            msg = ['```markdown\n# New applications:\n```']
+                            for app in diff:
+                                msg.append('Application by: ' + app['username'])
+                                msg.append(
+                                    f'{self.enjinsession.url}/dashboard/applications/'
+                                    'application?app_id=' + app['application_id'])
+                            msg.append('```markdown\n'
+                                       f'< There are {len(apps)} open at the moment! >\n```')
+                            msg = '\n'.join(msg)
+                            coro = send(ctx, msg)
+                            asyncio.run_coroutine_threadsafe(coro, self.loop)
+                            log.info('New applications retrieved and listed!')
+                        else:
+                            log.info('No new applications.')
                 sleep(300)
 
         event = Event()
