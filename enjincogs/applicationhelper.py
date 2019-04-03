@@ -395,7 +395,7 @@ class ApplicationHelper(commands.Cog):
                 applicationid = self.latestappids.pop()
             else:
                 log.warning('No id given and no latest app id known!')
-                await sendMarkdown(ctx, '< No application id given! >')
+                await sendMarkdown(ctx, '< No id given and no latest app id known! >')
                 return
 
         payload = {
