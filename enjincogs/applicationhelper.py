@@ -39,6 +39,10 @@ class ApplicationHelper(commands.Cog):
         self.latestappids = []
         self.openapps = []
 
+    def cog_unload(self):
+        if self.watchdogfuture:
+            self.watchdogfuture[1].set()
+
     @commands.group(aliases=['enjinapps', 'app'], invoke_without_command=True)
     @permission_node(f'{__name__}.enjinapps')
     async def apps(self, ctx):
