@@ -36,7 +36,7 @@ class ApplicationHelper(commands.Cog):
             self.enjinappcfg['fieldnames'] = {}
 
         self.watchdogfuture = None
-        self.latestappid = None
+        self.latestappids = []
         self.openapps = []
 
     @commands.group(aliases=['enjinapps', 'app'], invoke_without_command=True)
@@ -334,6 +334,7 @@ class ApplicationHelper(commands.Cog):
                                     for app in apps]
                             diff = [app for app in apps if app not in self.openapps]
                         else:
+                            self.latestappids.clear()
                             diff = []
                         self.openapps = apps
                         if diff:
@@ -343,6 +344,7 @@ class ApplicationHelper(commands.Cog):
                                 msg.append(
                                     f'{self.enjinsession.url}/dashboard/applications/'
                                     'application?app_id=' + app['application_id'])
+                                self.latestappids.append(app['application_id'])
                             msg.append('```markdown\n'
                                        f'< There are {len(apps)} open at the moment! >\n```')
                             msg = '\n'.join(msg)
@@ -377,7 +379,8 @@ class ApplicationHelper(commands.Cog):
         validate (you may use the apps list command to retrieve a
         list of such ids).
         If no application id is given, the id of the latest known
-        application will be used, if available.
+        application will be used, removing it from the list of
+        latest application ids.
         """
 
         log.info('Validating application...')
@@ -388,9 +391,9 @@ class ApplicationHelper(commands.Cog):
             return
 
         if not applicationid:
-            if self.latestappid is not None:
+            if len(self.latestappids) > 0:
                 log.info('Using latest application id.')
-                applicationid = self.latestappid
+                applicationid = self.latestappids.pop()
             else:
                 log.warning('No id given and no latest app id known!')
                 await sendMarkdown(ctx, '< No application id given! >')
