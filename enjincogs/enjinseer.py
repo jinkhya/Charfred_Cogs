@@ -1,9 +1,9 @@
 import logging
 import json
 from collections import namedtuple
-from discord import Forbidden
 from discord.ext import commands
-from utils.discoutils import send, sendMarkdown
+from utils.config import Config
+from utils.discoutils import send, sendMarkdown, permission_node
 from .utils.enjinutils import login, verifysession, post
 
 log = logging.getLogger('charfred')
@@ -22,14 +22,18 @@ class Enjinseer(commands.Cog):
             bot.enjinlogin = None
         self.enjinlogin = bot.enjinlogin
 
+        self.enjincfg = Config(
+            f'{bot.dir}/configs/enjincfg.json',
+            loop=self.bot.loop, load=True
+        )
+
     @commands.group(hidden=True)
-    @commands.is_owner()
     async def enjin(self, ctx):
         """Enjin Management commands."""
         pass
 
     @enjin.command()
-    @commands.is_owner()
+    @permission_node(f'{__name__}.enjinlogin')
     async def login(self, ctx, email: str=None, password: str=None,
                     url: str=None, site_id: str=None):
         """Enjin user login and session saving.
@@ -38,6 +42,7 @@ class Enjinseer(commands.Cog):
         """
 
         log.info('Starting enjin login!')
+
         if self.enjinsession:
             valid = await verifysession(self.session, self.enjinsession)
             if valid:
@@ -47,12 +52,27 @@ class Enjinseer(commands.Cog):
             else:
                 log.info('Current enjin session invalid!')
                 self.enjinsession = None
+
+        if None in (email, password, url, site_id):
+            log.info('No credentials given, trying config...')
+            if 'login' in self.enjincfg:
+                log.info('Logging in with saved credentials...')
+                email, password, url, site_id = self.enjincfg['login']
+            else:
+                log.warning('No saved credentials available!')
+                await sendMarkdown(ctx, '< No credentials! Login impossible. >')
+                return
+        else:
+            if url.endswith('/'):
+                url = url[:-1]
+
         self.enjinlogin = Enjinlogin(
             email=email,
             password=password,
-            url=url[:-1],
+            url=url,
             site_id=site_id
         )
+
         async with ctx.typing():
             log.info('Logging into Enjin...')
             await sendMarkdown(ctx, '> Logging in...')
@@ -60,16 +80,10 @@ class Enjinseer(commands.Cog):
             if enjinsession:
                 self.bot.enjinsession = enjinsession
                 self.enjinsession = self.bot.enjinsession
+                self.enjincfg['login'] = [email, password, url, site_id]
                 await sendMarkdown(ctx, '# Login successful!', deletable=False)
             else:
                 await sendMarkdown(ctx, '< Login failed! >', deletable=False)
-        log.info('Cleaning up login dialog...')
-        try:
-            await ctx.message.delete()
-        except Forbidden:
-            log.warning('No permission to clean up!')
-        else:
-            log.info('Cleaned up!')
 
     @enjin.command(aliases=['stupify', 'post'])
     @commands.is_owner()
@@ -121,4 +135,5 @@ class Enjinseer(commands.Cog):
 
 
 def setup(bot):
+    bot.register_nodes([f'{__name__}.enjinlogin'])
     bot.add_cog(Enjinseer(bot))

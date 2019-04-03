@@ -1,5 +1,8 @@
 import logging
 import json
+import asyncio
+from time import sleep
+from threading import Event
 from discord.ext import commands
 from utils.config import Config
 from utils.discoutils import permission_node, sendMarkdown, promptInput, promptConfirm, send
@@ -11,6 +14,7 @@ log = logging.getLogger('charfred')
 class ApplicationHelper(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
+        self.loop = bot.loop
         self.session = bot.session
         if hasattr(bot, 'enjinsession'):
             self.enjinsession = bot.enjinsession
@@ -30,6 +34,10 @@ class ApplicationHelper(commands.Cog):
             self.enjinappcfg['fieldnames']
         except KeyError:
             self.enjinappcfg['fieldnames'] = {}
+
+        self.watchdogfuture = None
+        self.latestappid = None
+        self.openapps = []
 
     @commands.group(aliases=['enjinapps', 'app'], invoke_without_command=True)
     @permission_node(f'{__name__}.enjinapps')
@@ -225,15 +233,7 @@ class ApplicationHelper(commands.Cog):
             msg = '\n'.join(msg)
             await sendMarkdown(ctx, msg)
 
-    @apps.command(name='list')
-    async def _list(self, ctx, type: str='open'):
-        """Retrieves a condensed list of applications.
-
-        You may specify a type, if you wish to see closed or rejected
-        applications, otherwise it will default to open ones.
-        """
-
-        log.info('Retrieving applications...')
+    async def _getapplist(self, type: str='open'):
         payload = {
             'method': 'Applications.getList',
             'params': {
@@ -244,24 +244,130 @@ class ApplicationHelper(commands.Cog):
         }
         apps = await post(self.session, payload, self.enjinsession.url)
         if not apps:
+            return None
+        else:
+            return apps['result']['items']
+
+    @apps.command(name='list')
+    async def _list(self, ctx, type: str='open'):
+        """Retrieves a condensed list of applications.
+
+        You may specify a type, if you wish to see closed or rejected
+        applications, otherwise it will default to open ones.
+        """
+
+        log.info('Retrieving applications...')
+        apps = await self._getapplist(type)
+        if not apps:
             log.warning('Application retrieval failed!')
             await sendMarkdown(ctx, f'< Application retrieval failed! >')
             return
         msg = [f'# The following applications are currently {type}:\n']
-        for app in apps['result']['items']:
+        for app in apps:
             msg.append('# Application by: ' + app['username'])
             msg.append('> Application ID: ' + app['application_id'] + '\n')
         msg = '\n'.join(msg)
         await sendMarkdown(ctx, msg)
         log.info('Applications retrieved and listed!')
 
+    @apps.group(invoke_without_command=True)
+    async def watchdog(self, ctx):
+        """Application watchdog commands.
+
+        Returns the status of the application watchdog,
+        if no subcommand was given.
+        """
+
+        if self.watchdogfuture:
+            if self.watchdogfuture[0].done():
+                await sendMarkdown(ctx, '< Application watchdog inactive! >')
+            else:
+                await sendMarkdown(ctx, '# Application watchdog active!')
+
+    @watchdog.command()
+    async def start(self, ctx):
+        """Start application watchdog.
+
+        Checks for new applications every 5 minutes,
+        and reports the number of open applications at that time.
+        """
+
+        async def applisttimeout():
+            await sendMarkdown(ctx, '< App list retrieval timed out! Odd... >',
+                               deletable=False)
+
+        async def applistexception():
+            await sendMarkdown(ctx, '< An exception occured during app list retrieval! >',
+                               deletable=False)
+
+        async def watchgone():
+            await sendMarkdown(ctx, '> Application watchdog stopped!', deletable=False)
+
+        def watchdone(future):
+            log.info('AW: Application watchdog stopped.')
+            if future.exception():
+                log.warning('AW: Exception in application watchdog!')
+                raise future.exception()
+            asyncio.run_coroutine_threadsafe(watchgone(), self.loop)
+
+        def watch(event):
+            log.info('Starting application watchdog.')
+            while not event.is_set():
+                future = asyncio.run_coroutine_threadsafe(self._getapplist(), self.loop)
+                try:
+                    apps = future.result(10)
+                except asyncio.TimeoutError:
+                    log.warning('AW: App list retrievel timed out!')
+                    future.cancel()
+                    asyncio.run_coroutine_threadsafe(applisttimeout(), self.loop)
+                except Exception as e:
+                    log.error('AW: Exception in app list retrieval!')
+                    log.error(e)
+                else:
+                    if not apps:
+                        coro = sendMarkdown(ctx, '< App list could not be retrieved! >')
+                        asyncio.run_coroutine_threadsafe(coro, self.loop)
+                    else:
+                        apps = [{'username': app['username'],
+                                 'application_id': app['application_id']}
+                                for app in apps]
+                        diff = [app for app in apps if app not in self.openapps]
+                        self.openapps = apps
+                        msg = ['# New applications:\n']
+                        for app in diff:
+                            msg.append('# Application by: ' + app['username'])
+                            msg.append('> Application ID: ' + app['application_id'] + '\n')
+                        msg = '\n'.join(msg)
+                        coro = sendMarkdown(ctx, msg)
+                        asyncio.run_coroutine_threadsafe(coro, self.loop)
+                        log.info('Applications retrieved and listed!')
+                sleep(300)
+
+        event = Event()
+        watchfuture = self.loop.run_in_executor(None, watch, event)
+        watchfuture.add_done_callback(watchdone)
+        self.watchdogfuture = (watchfuture, event)
+        await sendMarkdown(ctx, '# Application watchdog activated!', deletable=False)
+
+    @watchdog.command()
+    async def stop(self, ctx):
+        """Stop the application watchdog."""
+
+        if self.watchdogfuture and not self.watchdogfuture[0].done():
+            self.watchdogfuture[1].set()
+            await sendMarkdown(ctx, '> Terminating application watchdog...', deletable=False)
+        else:
+            await sendMarkdown(ctx, '# Application watchdog already inactive!', deletable=False)
+
     @apps.command(aliases=['check'])
-    async def validate(self, ctx, applicationid: int):
-        """Validate a given application against the saved template.
+    async def validate(self, ctx, applicationid: int=None):
+        """Validate an application against the saved template.
 
         Requires the application id for the application you wish to
         validate (you may use the apps list command to retrieve a
         list of such ids).
+        If no application id is given, the id of the latest known
+        application will be used, if available.
         """
 
         log.info('Validating application...')
@@ -270,6 +376,14 @@ class ApplicationHelper(commands.Cog):
             await sendMarkdown(ctx, '< No template found! Please configure'
                                'one before trying again! >')
             return
+
+        if not applicationid:
+            if self.latestappid is not None:
+                log.info('Using latest application id.')
+                applicationid = self.latestappid
+            else:
+                log.warning('No id given and no latest app id known!')
+                await sendMarkdown(ctx, '< No application id given! >')
 
         payload = {
             'method': 'Applications.getApplication',
