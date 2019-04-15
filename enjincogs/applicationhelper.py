@@ -5,7 +5,7 @@ from time import sleep
 from threading import Event
 from discord.ext import commands
 from utils.config import Config
-from utils.discoutils import permission_node, sendMarkdown, promptInput, promptConfirm, send
+from utils.discoutils import permission_node, sendmarkdown, promptinput, promptconfirm, send
 from .utils.enjinutils import post, verifysession
 
 log = logging.getLogger('charfred')
@@ -61,19 +61,19 @@ class ApplicationHelper(commands.Cog):
             self.enjinlogin = None
 
         if not self.enjinappcfg:
-            await sendMarkdown(ctx, '< No application configuration available! >')
+            await sendmarkdown(ctx, '< No application configuration available! >')
         if not self.enjinappcfg['fieldnames']:
-            await sendMarkdown(ctx, '< No fieldnames set! >')
+            await sendmarkdown(ctx, '< No fieldnames set! >')
         if not self.enjinappcfg['template']:
-            await sendMarkdown(ctx, '< No application template set! >')
+            await sendmarkdown(ctx, '< No application template set! >')
         if not self.enjinsession:
-            await sendMarkdown(ctx, '< Not logged into enjin! >')
+            await sendmarkdown(ctx, '< Not logged into enjin! >')
         else:
             valid = await verifysession(self.session, self.enjinsession)
             if valid:
-                await sendMarkdown(ctx, '# All is well!')
+                await sendmarkdown(ctx, '# All is well!')
             else:
-                await sendMarkdown(ctx, '< Current enjin session is invalid! >')
+                await sendmarkdown(ctx, '< Current enjin session is invalid! >')
 
     async def _getapp(self, appid):
         payload = {
@@ -114,10 +114,10 @@ class ApplicationHelper(commands.Cog):
 
         fields, qhashes = await self._getapp(appid)
         if not fields:
-            await sendMarkdown(ctx, '< Application could not be retrieved! >')
+            await sendmarkdown(ctx, '< Application could not be retrieved! >')
             return
         msg = self._formatmsg(fields, qhashes)
-        await sendMarkdown(ctx, msg)
+        await sendmarkdown(ctx, msg)
 
     @apps.command()
     @permission_node(f'{__name__}.enjinedittemplate')
@@ -131,23 +131,23 @@ class ApplicationHelper(commands.Cog):
 
         if self.enjinappcfg and self.enjinappcfg['fieldnames']:
             log.info('Application field names already saved!')
-            b, _, timedout = await promptConfirm(ctx, '> A set of field names is already '
+            b, _, timedout = await promptconfirm(ctx, '> A set of field names is already '
                                                  'saved! Override?')
             if timedout:
                 return
             if not b:
-                await sendMarkdown(ctx, '> Override aborted.')
+                await sendmarkdown(ctx, '> Override aborted.')
                 return
 
         fields, qhashes = await self._getapp(anyappid)
         if not fields:
-            await sendMarkdown(ctx, '< Application could not be retrieved! >')
+            await sendmarkdown(ctx, '< Application could not be retrieved! >')
             return
         msg = self._formatmsg(fields, qhashes, numbered=True)
-        await sendMarkdown(ctx, msg)
+        await sendmarkdown(ctx, msg)
 
-        await sendMarkdown(ctx, '> This next bit is gonna be a bit tricky...')
-        fieldnames, _, timedout = await promptInput(
+        await sendmarkdown(ctx, '> This next bit is gonna be a bit tricky...')
+        fieldnames, _, timedout = await promptinput(
             ctx,
             '# Please enter the field names for each field, in the order '
             'as they appear in the above application listing, seperated by spaces.\n\n'
@@ -160,18 +160,18 @@ class ApplicationHelper(commands.Cog):
             return
         if not fieldnames:
             log.info('Prompt failed!')
-            await sendMarkdown(ctx, '< Prompt failed, please try again! >')
+            await sendmarkdown(ctx, '< Prompt failed, please try again! >')
             return
         fieldnames = fieldnames.split()
         if not (len(fieldnames) == len(qhashes)):
             log.info('Not enough names entered!')
-            await sendMarkdown(ctx, '< Not enough names entered, please try again! >')
+            await sendmarkdown(ctx, '< Not enough names entered, please try again! >')
             return
         self.enjinappcfg['fieldnames'] = {}
         for i, name in enumerate(fieldnames):
             self.enjinappcfg['fieldnames'][qhashes[i]] = name
         await self.enjinappcfg.save()
-        await sendMarkdown(ctx, '# Field names saved!')
+        await sendmarkdown(ctx, '# Field names saved!')
 
     @apps.command(aliases=['configure'])
     @permission_node(f'{__name__}.enjinedittemplate')
@@ -185,21 +185,21 @@ class ApplicationHelper(commands.Cog):
 
         if self.enjinappcfg:
             log.info('Application template already saved.')
-            b, _, timedout = await promptConfirm(ctx, 'An application template already '
+            b, _, timedout = await promptconfirm(ctx, 'An application template already '
                                                  'exists, do you wish to override?')
             if timedout:
                 return
             if not b:
-                await sendMarkdown(ctx, '> Configuration complete!')
+                await sendmarkdown(ctx, '> Configuration complete!')
                 return
 
         fields, qhashes = await self._getapp(correctappid)
         if not fields:
-            await sendMarkdown(ctx, '< Application could not be retrieved! >')
+            await sendmarkdown(ctx, '< Application could not be retrieved! >')
             return
         msg = self._formatmsg(fields, qhashes, numbered=True)
-        await sendMarkdown(ctx, msg)
-        selection, _, timedout = await promptInput(
+        await sendmarkdown(ctx, msg)
+        selection, _, timedout = await promptinput(
             ctx,
             '# Please enter the numbers for all the fields you wish to include '
             'in the template, seperated by spaces.\n\n'
@@ -210,13 +210,13 @@ class ApplicationHelper(commands.Cog):
             return
         if not selection:
             log.info('Prompt failed!')
-            await sendMarkdown(ctx, '< Prompt failed, please try again! >')
+            await sendmarkdown(ctx, '< Prompt failed, please try again! >')
         selection = selection.split()
         self.enjinappcfg['template'] = {}
         for i in selection:
             self.enjinappcfg['template'][qhashes[int(i)]] = fields[qhashes[int(i)]]
         await self.enjinappcfg.save()
-        await sendMarkdown(ctx, '# Template saved!\n> You may review the current '
+        await sendmarkdown(ctx, '# Template saved!\n> You may review the current '
                            'template via the viewtemplate command.')
 
     @apps.command()
@@ -227,7 +227,7 @@ class ApplicationHelper(commands.Cog):
 
         if raw:
             template = json.dumps(self.enjinappcfg.cfgs, indent=2)
-            await sendMarkdown(ctx, '# Current enjin application template:')
+            await sendmarkdown(ctx, '# Current enjin application template:')
             await send(ctx, f'```json\n{template}```')
         else:
             msg = ['# Current enjin application template:\n']
@@ -235,7 +235,7 @@ class ApplicationHelper(commands.Cog):
                 fieldname = self.enjinappcfg['fieldnames'][k]
                 msg.append(f'[{fieldname}]: {v}')
             msg = '\n'.join(msg)
-            await sendMarkdown(ctx, msg)
+            await sendmarkdown(ctx, msg)
 
     async def _getapplist(self, type: str='open'):
         payload = {
@@ -264,14 +264,14 @@ class ApplicationHelper(commands.Cog):
         apps = await self._getapplist(type)
         if not apps:
             log.warning('Application retrieval failed!')
-            await sendMarkdown(ctx, f'< Application retrieval failed! >')
+            await sendmarkdown(ctx, f'< Application retrieval failed! >')
             return
         msg = [f'# The following applications are currently {type}:\n']
         for app in apps:
             msg.append('# Application by: ' + app['username'])
             msg.append('> Application ID: ' + app['application_id'] + '\n')
         msg = '\n'.join(msg)
-        await sendMarkdown(ctx, msg)
+        await sendmarkdown(ctx, msg)
         log.info('Applications retrieved and listed!')
 
     @apps.group(invoke_without_command=True)
@@ -284,9 +284,9 @@ class ApplicationHelper(commands.Cog):
 
         if self.watchdogfuture:
             if self.watchdogfuture[0].done():
-                await sendMarkdown(ctx, '< Application watchdog inactive! >')
+                await sendmarkdown(ctx, '< Application watchdog inactive! >')
             else:
-                await sendMarkdown(ctx, '# Application watchdog active!')
+                await sendmarkdown(ctx, '# Application watchdog active!')
 
     @watchdog.command()
     async def start(self, ctx):
@@ -297,15 +297,15 @@ class ApplicationHelper(commands.Cog):
         """
 
         async def applisttimeout():
-            await sendMarkdown(ctx, '< App list retrieval timed out! Odd... >',
+            await sendmarkdown(ctx, '< App list retrieval timed out! Odd... >',
                                deletable=False)
 
         async def applistexception():
-            await sendMarkdown(ctx, '< An exception occured during app list retrieval! >',
+            await sendmarkdown(ctx, '< An exception occured during app list retrieval! >',
                                deletable=False)
 
         async def watchgone():
-            await sendMarkdown(ctx, '> Application watchdog stopped!', deletable=False)
+            await sendmarkdown(ctx, '> Application watchdog stopped!', deletable=False)
 
         def watchdone(future):
             log.info('AW: Application watchdog stopped.')
@@ -329,7 +329,7 @@ class ApplicationHelper(commands.Cog):
                     log.error(e)
                 else:
                     if apps is None:
-                        coro = sendMarkdown(ctx, '< App list could not be retrieved! >')
+                        coro = sendmarkdown(ctx, '< App list could not be retrieved! >')
                         asyncio.run_coroutine_threadsafe(coro, self.loop)
                     else:
                         if len(apps) > 0:
@@ -358,7 +358,7 @@ class ApplicationHelper(commands.Cog):
         watchfuture = self.loop.run_in_executor(None, watch, event)
         watchfuture.add_done_callback(watchdone)
         self.watchdogfuture = (watchfuture, event)
-        await sendMarkdown(ctx, '# Application watchdog activated!', deletable=False)
+        await sendmarkdown(ctx, '# Application watchdog activated!', deletable=False)
 
     @watchdog.command()
     async def stop(self, ctx):
@@ -366,9 +366,9 @@ class ApplicationHelper(commands.Cog):
 
         if self.watchdogfuture and not self.watchdogfuture[0].done():
             self.watchdogfuture[1].set()
-            await sendMarkdown(ctx, '> Terminating application watchdog...', deletable=False)
+            await sendmarkdown(ctx, '> Terminating application watchdog...', deletable=False)
         else:
-            await sendMarkdown(ctx, '# Application watchdog already inactive!', deletable=False)
+            await sendmarkdown(ctx, '# Application watchdog already inactive!', deletable=False)
 
     @apps.command(aliases=['check'])
     async def validate(self, ctx, applicationid: int=None):
@@ -385,7 +385,7 @@ class ApplicationHelper(commands.Cog):
         log.info('Validating application...')
         if not self.enjinappcfg:
             log.warning('No template found!')
-            await sendMarkdown(ctx, '< No template found! Please configure'
+            await sendmarkdown(ctx, '< No template found! Please configure'
                                'one before trying again! >')
             return
 
@@ -395,7 +395,7 @@ class ApplicationHelper(commands.Cog):
                 applicationid = self.latestappids.pop()
             else:
                 log.warning('No id given and no latest app id known!')
-                await sendMarkdown(ctx, '< No id given and no latest app id known! >')
+                await sendmarkdown(ctx, '< No id given and no latest app id known! >')
                 return
 
         payload = {
@@ -408,7 +408,7 @@ class ApplicationHelper(commands.Cog):
         app = await post(self.session, payload, self.enjinsession.url)
         if not app:
             log.warning('App could not be retrieved!')
-            await sendMarkdown(ctx, '< App could not be retrieved! >')
+            await sendmarkdown(ctx, '< App could not be retrieved! >')
             return
 
         user = app['result']['username']
@@ -454,7 +454,7 @@ class ApplicationHelper(commands.Cog):
             msg.append(f'> {fieldname}: {v}')
 
         msg = '\n'.join(msg)
-        await sendMarkdown(ctx, msg)
+        await sendmarkdown(ctx, msg)
         await send(ctx, f'{self.enjinsession.url}/dashboard/applications'
                    f'/application?app_id={applicationid}')
 

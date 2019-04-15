@@ -1,7 +1,7 @@
 from discord.ext import commands
 import logging
 import asyncio
-from utils.discoutils import permission_node, sendMarkdown
+from utils.discoutils import permission_node, sendmarkdown
 from .utils.mcservutils import getcrashreport, parsereport, formatreport
 
 log = logging.getLogger('charfred')
@@ -22,7 +22,7 @@ class CrashReporter(commands.Cog):
         0 for the newest report, 1 for the one before, etc.
         """
         if server not in self.servercfg['servers']:
-            await sendMarkdown(ctx, f'< I have no knowledge of {server}! >')
+            await sendmarkdown(ctx, f'< I have no knowledge of {server}! >')
             return
 
         log.info(f'Getting report for {server}.')
@@ -40,7 +40,7 @@ class CrashReporter(commands.Cog):
         )
 
         for c in chunks:
-            await sendMarkdown(ctx, c)
+            await sendmarkdown(ctx, c)
             await asyncio.sleep(1, loop=self.loop)
         log.info('Report sent!')
 

@@ -3,7 +3,7 @@ import json
 from collections import namedtuple
 from discord.ext import commands
 from utils.config import Config
-from utils.discoutils import send, sendMarkdown, permission_node
+from utils.discoutils import send, sendmarkdown, permission_node
 from .utils.enjinutils import login, verifysession, post
 
 log = logging.getLogger('charfred')
@@ -47,7 +47,7 @@ class Enjinseer(commands.Cog):
             valid = await verifysession(self.session, self.enjinsession)
             if valid:
                 log.info('Current enjin session still valid!')
-                await sendMarkdown(ctx, "# Current enjin session is still valid!")
+                await sendmarkdown(ctx, "# Current enjin session is still valid!")
                 return
             else:
                 log.info('Current enjin session invalid!')
@@ -60,7 +60,7 @@ class Enjinseer(commands.Cog):
                 email, password, url, site_id = self.enjincfg['login']
             else:
                 log.warning('No saved credentials available!')
-                await sendMarkdown(ctx, '< No credentials! Login impossible. >')
+                await sendmarkdown(ctx, '< No credentials! Login impossible. >')
                 return
         else:
             if url.endswith('/'):
@@ -75,15 +75,15 @@ class Enjinseer(commands.Cog):
 
         async with ctx.typing():
             log.info('Logging into Enjin...')
-            await sendMarkdown(ctx, '> Logging in...')
+            await sendmarkdown(ctx, '> Logging in...')
             enjinsession = await login(self.session, self.enjinlogin)
             if enjinsession:
                 self.bot.enjinsession = enjinsession
                 self.enjinsession = self.bot.enjinsession
                 self.enjincfg['login'] = [email, password, url, site_id]
-                await sendMarkdown(ctx, '# Login successful!', deletable=False)
+                await sendmarkdown(ctx, '# Login successful!', deletable=False)
             else:
-                await sendMarkdown(ctx, '< Login failed! >', deletable=False)
+                await sendmarkdown(ctx, '< Login failed! >', deletable=False)
 
     @enjin.command(aliases=['stupify', 'post'])
     @commands.is_owner()
@@ -98,7 +98,7 @@ class Enjinseer(commands.Cog):
         """
 
         if not self.enjinsession:
-            await sendMarkdown(ctx, '< I am not logged in to enjin yet! >')
+            await sendmarkdown(ctx, '< I am not logged in to enjin yet! >')
             return
 
         async with ctx.typing():
@@ -111,7 +111,7 @@ class Enjinseer(commands.Cog):
                 log.info('Parsing parameters...')
                 if not (len(params) % 2 == 0):
                     log.warning('Uneven number of keys/values!')
-                    await sendMarkdown(ctx, '< Uneven number of keys/values! >')
+                    await sendmarkdown(ctx, '< Uneven number of keys/values! >')
                     return
                 params = iter(params)
                 params = dict(list(zip(params, params)))
@@ -131,7 +131,7 @@ class Enjinseer(commands.Cog):
                     await send(ctx, f'```json\n{section}```')
             else:
                 log.warning('Request failed!')
-                await sendMarkdown(ctx, '< Request failed for some reason! >')
+                await sendmarkdown(ctx, '< Request failed for some reason! >')
 
 
 def setup(bot):

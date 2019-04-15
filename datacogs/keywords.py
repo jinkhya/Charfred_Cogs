@@ -1,7 +1,7 @@
 import logging
 import random
 from discord.ext import commands
-from utils.discoutils import permission_node, promptConfirm, send
+from utils.discoutils import permission_node, promptconfirm, send
 
 log = logging.getLogger('charfred')
 
@@ -92,7 +92,7 @@ class Keywords(commands.Cog):
             return
 
         if category in self.phrases:
-            r, _, timedout = await promptConfirm(ctx, f'You are about to delete {category},'
+            r, _, timedout = await promptconfirm(ctx, f'You are about to delete {category},'
                                                  '\nare you certain? [y|N]')
             if timedout:
                 return

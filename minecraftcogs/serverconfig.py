@@ -3,7 +3,7 @@ import discord
 import re
 import logging
 from utils.config import Config
-from utils.discoutils import permission_node, sendMarkdown, promptInput, promptConfirm, send
+from utils.discoutils import permission_node, sendmarkdown, promptinput, promptconfirm, send
 from utils.flipbooks import EmbedFlipbook
 
 log = logging.getLogger('charfred')
@@ -47,7 +47,7 @@ class ServerConfig(commands.Cog):
         await send(ctx, f'```Please enter the name of the main world folder for {server}:```')
         r3 = await self.bot.wait_for('message', check=check, timeout=120)
         self.servercfg['servers'][server]['worldname'] = r3.content
-        await sendMarkdown(ctx, f'You have entered the following for {server}:\n' +
+        await sendmarkdown(ctx, f'You have entered the following for {server}:\n' +
                            f'Invocation: {r1.content}\n' +
                            f'Backup: {r2.content}\n' +
                            f'Worldname: {r3.content}\n' +
@@ -55,21 +55,21 @@ class ServerConfig(commands.Cog):
         r4 = await self.bot.wait_for('message', check=check, timeout=120)
         if re.match('(y|yes)', r4.content, flags=re.I):
             await self.servercfg.save()
-            await sendMarkdown(ctx, f'# Serverconfigurations for {server} have been saved!')
+            await sendmarkdown(ctx, f'# Serverconfigurations for {server} have been saved!')
         else:
             del self.servercfg['servers'][server]
-            await sendMarkdown(ctx, f'< Serverconfigurations for {server} have been discarded. >')
+            await sendmarkdown(ctx, f'< Serverconfigurations for {server} have been discarded. >')
 
     @config.command(name='list')
     async def _list(self, ctx, server: str):
         """Lists all configurations for a given server."""
 
         if server not in self.servercfg['servers']:
-            await sendMarkdown(ctx, f'< No configurations for {server} listed! >')
+            await sendmarkdown(ctx, f'< No configurations for {server} listed! >')
             return
-        await sendMarkdown(ctx, f'# Configuration entries for {server}:\n')
+        await sendmarkdown(ctx, f'# Configuration entries for {server}:\n')
         for k, v in self.servercfg['servers'][server].items():
-            await sendMarkdown(ctx, f'{k}: {v}\n')
+            await sendmarkdown(ctx, f'{k}: {v}\n')
 
     def buildEmbeds(self):
         embeds = []
@@ -96,54 +96,54 @@ class ServerConfig(commands.Cog):
         """Interactively edit the configurations for a given server."""
 
         if server not in self.servercfg['servers']:
-            await sendMarkdown(ctx, f'< No configurations for {server} listed! >')
+            await sendmarkdown(ctx, f'< No configurations for {server} listed! >')
             return
 
         def check(m):
             return m.author.id == ctx.author.id and m.channel.id == ctx.channel.id
 
-        await sendMarkdown(ctx, f'Available options for {server}: ' +
+        await sendmarkdown(ctx, f'Available options for {server}: ' +
                            ' '.join(self.servercfg['servers'][server].keys()))
-        await sendMarkdown(ctx, f'# Please enter the configuration option for {server}, that you want to edit:')
+        await sendmarkdown(ctx, f'# Please enter the configuration option for {server}, that you want to edit:')
         r = await self.bot.wait_for('message', check=check, timeout=120)
         r = r.content.lower()
         if r not in self.servercfg['servers'][server]:
-            await sendMarkdown(ctx, f'< {r.content.lower()} is not a valid entry! >')
+            await sendmarkdown(ctx, f'< {r.content.lower()} is not a valid entry! >')
             return
-        await sendMarkdown(ctx, f'Please enter the new value for {r}:')
+        await sendmarkdown(ctx, f'Please enter the new value for {r}:')
         r2 = await self.bot.wait_for('message', check=check, timeout=120)
-        await sendMarkdown(ctx, f'You have entered the following for {server}:\n' +
+        await sendmarkdown(ctx, f'You have entered the following for {server}:\n' +
                            f'{r}: {r2.content}\n' +
                            '# Please confirm! [y/n]')
         r3 = await self.bot.wait_for('message', check=check, timeout=120)
         if re.match('(y|yes)', r3.content, flags=re.I):
             self.servercfg['servers'][server][r] = r2.content
             await self.servercfg.save()
-            await sendMarkdown(ctx, f'# Edit to {server} has been saved!')
+            await sendmarkdown(ctx, f'# Edit to {server} has been saved!')
         else:
-            await sendMarkdown(ctx, f'< Edit to {server} has been discarded! >')
+            await sendmarkdown(ctx, f'< Edit to {server} has been discarded! >')
 
     @config.command()
     async def delete(self, ctx, server: str):
         """Delete the configuration of a given server."""
 
         if server not in self.servercfg['servers']:
-            await sendMarkdown(ctx, f'< Nothing to delete for {server}! >')
+            await sendmarkdown(ctx, f'< Nothing to delete for {server}! >')
             return
 
         def check(m):
             return m.author.id == ctx.author.id and m.channel.id == ctx.channel.id
 
-        await sendMarkdown(ctx, '< You are about to delete all configuration options ' +
+        await sendmarkdown(ctx, '< You are about to delete all configuration options ' +
                            f'for {server}. >\n' +
                            '# Please confirm! [y/n]')
         r = await self.bot.wait_for('message', check=check, timeout=120)
         if re.match('(y|yes)', r.content, flags=re.I):
             del self.servercfg['servers'][server]
             await self.servercfg.save()
-            await sendMarkdown(ctx, f'# Configurations for {server} have been deleted!')
+            await sendmarkdown(ctx, f'# Configurations for {server} have been deleted!')
         else:
-            await sendMarkdown(ctx, f'< Deletion of configurations aborted! >')
+            await sendmarkdown(ctx, f'< Deletion of configurations aborted! >')
 
     @config.command()
     async def editpaths(self, ctx):
@@ -155,37 +155,37 @@ class ServerConfig(commands.Cog):
         if 'serverspath' not in self.servercfg:
             self.servercfg['serverspath'] = 'NONE'
             await self.servercfg.save()
-        await sendMarkdown(ctx, 'Current path for directory, where all minecraft servers'
+        await sendmarkdown(ctx, 'Current path for directory, where all minecraft servers'
                            'are located is:\n' + self.servercfg['serverspath'])
-        r, _, timedout = await promptConfirm(ctx, 'Would you like to change this path?')
+        r, _, timedout = await promptconfirm(ctx, 'Would you like to change this path?')
         if timedout:
             return
         if r:
-            newpath, _, timedout = await promptInput(ctx, 'Please enter the new path now!\n'
+            newpath, _, timedout = await promptinput(ctx, 'Please enter the new path now!\n'
                                                      '(it needs to be the full path)')
             if timedout:
                 return
             if newpath:
                 self.servercfg['serverspath'] = newpath
                 await self.servercfg.save()
-                await sendMarkdown(ctx, 'Saved new path for minecraft servers directory!')
+                await sendmarkdown(ctx, 'Saved new path for minecraft servers directory!')
 
         if 'backupspath' not in self.servercfg:
             self.servercfg['backupspath'] = 'NONE'
-        await sendMarkdown(ctx, 'Current path for directory, where backups are saved is:\n' +
+        await sendmarkdown(ctx, 'Current path for directory, where backups are saved is:\n' +
                            self.servercfg['backupspath'])
-        r, _, timedout = await promptConfirm(ctx, 'Would you like to change this path?')
+        r, _, timedout = await promptconfirm(ctx, 'Would you like to change this path?')
         if timedout:
             return
         if r:
-            newpath, _, timedout = await promptInput(ctx, 'Please enter the new path now!\n'
+            newpath, _, timedout = await promptinput(ctx, 'Please enter the new path now!\n'
                                                      '(it needs to be the full path)')
             if timedout:
                 return
             if newpath:
                 self.servercfg['backupspath'] = newpath
                 await self.servercfg.save()
-                await sendMarkdown(ctx, 'Saved new path for minecraft backups directory!')
+                await sendmarkdown(ctx, 'Saved new path for minecraft backups directory!')
 
     @config.command(aliases=['editbackuptimer'])
     async def editmaxbackupage(self, ctx):
@@ -200,20 +200,20 @@ class ServerConfig(commands.Cog):
         if 'oldTimer' not in self.servercfg:
             self.servercfg['oldTimer'] = 1440
             await self.servercfg.save()
-        await sendMarkdown(ctx, 'Current maximum age for backups is:\n' +
+        await sendmarkdown(ctx, 'Current maximum age for backups is:\n' +
                            self.servercfg['oldTimer'])
-        r, _, timedout = await promptConfirm(ctx, 'Would you like to change it?')
+        r, _, timedout = await promptconfirm(ctx, 'Would you like to change it?')
         if timedout:
             return
         if r:
-            newage, _, timedout = await promptInput(ctx, 'Please enter the new maximum backup age now!'
+            newage, _, timedout = await promptinput(ctx, 'Please enter the new maximum backup age now!'
                                                     '\n(Age needs to be in minutes)')
             if timedout:
                 return
             if newage:
                 self.servercfg['oldTimer'] = newage
                 await self.servercfg.save()
-                await sendMarkdown(ctx, 'Saved new maximum backup age!')
+                await sendmarkdown(ctx, 'Saved new maximum backup age!')
 
 
 def setup(bot):

@@ -6,7 +6,7 @@ import re
 from time import strftime, localtime, time
 from threading import Event
 from utils.config import Config
-from utils.discoutils import permission_node, sendMarkdown, send
+from utils.discoutils import permission_node, sendmarkdown, send
 from .utils.mcservutils import isUp, getProc, serverStart, getcrashreport, parsereport, formatreport
 
 log = logging.getLogger('charfred')
@@ -43,9 +43,9 @@ class Watchdog(commands.Cog):
 
         for server, wd in self.watchdogs.items():
             if wd[0].done():
-                await sendMarkdown(ctx, f'< {server} watchdog inactive! >')
+                await sendmarkdown(ctx, f'< {server} watchdog inactive! >')
             else:
-                await sendMarkdown(ctx, f'# {server} watchdog active!')
+                await sendmarkdown(ctx, f'# {server} watchdog active!')
 
     @watchdog.command(aliases=['blame'])
     async def setmention(self, ctx, mentionee: str):
@@ -56,13 +56,13 @@ class Watchdog(commands.Cog):
         role = find(lambda r: r.name == mentionee, ctx.guild.roles)
         if role:
             self.watchcfg['notify'] = role.mention
-            await sendMarkdown(ctx, f'# Set role to mention to: {mentionee}!\n'
+            await sendmarkdown(ctx, f'# Set role to mention to: {mentionee}!\n'
                                '> They will be notified if a crash is suspected,\n'
                                '> given that mentioning is enabled.')
             await self.watchcfg.save()
             log.info('Watchdog cfg saved!')
         else:
-            await sendMarkdown(ctx, f'< {mentionee} is not a valid role! >')
+            await sendmarkdown(ctx, f'< {mentionee} is not a valid role! >')
             log.warning('Role could not be found, role to mention unchanged.')
 
     @watchdog.command(name='activate', aliases=['start', 'watch'])
@@ -71,19 +71,19 @@ class Watchdog(commands.Cog):
 
         if server in self.watchdogs and not self.watchdogs[server][0].done():
             log.info(f'{server} watchdog active.')
-            await sendMarkdown(ctx, '# Watchdog already active!')
+            await sendmarkdown(ctx, '# Watchdog already active!')
         else:
             if server not in self.servercfg['servers']:
                 log.warning(f'{server} has been misspelled or not configured!')
-                await sendMarkdown(ctx, f'< {server} has been misspelled or not configured! >')
+                await sendmarkdown(ctx, f'< {server} has been misspelled or not configured! >')
                 return
 
             if isUp(server):
                 log.info(f'Starting watchdog on online server.')
-                await sendMarkdown(ctx, f'# {server} is up and running.', deletable=False)
+                await sendmarkdown(ctx, f'# {server} is up and running.', deletable=False)
             else:
                 log.info(f'Starting watchdog on offline server.')
-                await sendMarkdown(ctx, f'< {server} is not running. >', deletable=False)
+                await sendmarkdown(ctx, f'< {server} is not running. >', deletable=False)
 
             async def serverGone(crashed, report=None):
                 if crashed:
@@ -97,21 +97,21 @@ class Watchdog(commands.Cog):
                     )
                     for c in report:
                         await asyncio.sleep(1, loop=self.loop)
-                        await sendMarkdown(ctx, c)
+                        await sendmarkdown(ctx, c)
                 else:
-                    await sendMarkdown(ctx, f'> {strftime("%H:%M", localtime())} : {server} is gone!\n'
+                    await sendmarkdown(ctx, f'> {strftime("%H:%M", localtime())} : {server} is gone!\n'
                                        '> Watching for it to return...', deletable=False)
 
             async def serverBack():
-                await sendMarkdown(ctx, '# ' + strftime("%H:%M") + f' {server} is back online!\n'
+                await sendmarkdown(ctx, '# ' + strftime("%H:%M") + f' {server} is back online!\n'
                                    '> Continuing watch!', deletable=False)
 
             async def watchGone():
-                await sendMarkdown(ctx, f'> Ended watch on {server}!', deletable=False)
+                await sendmarkdown(ctx, f'> Ended watch on {server}!', deletable=False)
 
             async def startServer():
                 # TODO: Remove message informing about the change from 'react to restart' to 'react to abort'
-                abortPrompt = await sendMarkdown(
+                abortPrompt = await sendmarkdown(
                     ctx,
                     '< IMPORTANT NOTE: The purpose of this prompt has changed, please read it carefully! >\n\n'
                     f'# Attempting to start {server} back up again in 90 seconds!\n'
@@ -197,7 +197,7 @@ class Watchdog(commands.Cog):
             watchFuture = self.loop.run_in_executor(None, watch, event)
             watchFuture.add_done_callback(watchDone)
             self.watchdogs[server] = (watchFuture, event)
-            await sendMarkdown(ctx, '# Watchdog activated!', deletable=False)
+            await sendmarkdown(ctx, '# Watchdog activated!', deletable=False)
 
     @watchdog.command(name='deactivate', aliases=['stop', 'unwatch'])
     async def wdstop(self, ctx, server: str):
@@ -206,13 +206,13 @@ class Watchdog(commands.Cog):
         if server in self.watchdogs and not self.watchdogs[server][0].done():
             watcher = self.watchdogs[server]
             watcher[1].set()
-            await sendMarkdown(ctx, f'> Terminating {server} watchdog...', deletable=False)
+            await sendmarkdown(ctx, f'> Terminating {server} watchdog...', deletable=False)
         else:
             if server not in self.servercfg['servers']:
                 log.warning(f'{server} has been misspelled or not configured!')
-                await sendMarkdown(ctx, f'< {server} has been misspelled or not configured! >')
+                await sendmarkdown(ctx, f'< {server} has been misspelled or not configured! >')
             else:
-                await sendMarkdown(ctx, '# Watchdog already inactive!', deletable=False)
+                await sendmarkdown(ctx, '# Watchdog already inactive!', deletable=False)
 
 
 def setup(bot):
