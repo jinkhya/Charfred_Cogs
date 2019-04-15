@@ -350,8 +350,6 @@ class ApplicationHelper(commands.Cog):
                                 coro = send(ctx, msg)
                                 asyncio.run_coroutine_threadsafe(coro, self.loop)
                             log.info('New applications retrieved and listed!')
-                        else:
-                            log.info('No new applications.')
                 sleep(300)
 
         event = Event()
