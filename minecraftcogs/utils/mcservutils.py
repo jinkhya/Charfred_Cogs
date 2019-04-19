@@ -252,11 +252,11 @@ def parsereport(rpath):
                         break
                     level.append(l)
             if l.startswith('-- Sponge'):
-                phase.append('# Sponge PhaseTracker:\n')
                 r.readline()
                 l = r.readline()
                 if l == '\n':
                     break
+                phase.append('# Sponge PhaseTracker:\n')
                 while True:
                     l = r.readline()
                     if not l or l == '\n' or l.startswith('/***') or l.startswith('Stacktrace:'):
