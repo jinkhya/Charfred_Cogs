@@ -37,7 +37,7 @@ class CrashReporter(commands.Cog):
         if b:
             log.info('Uploading crashreport to discord...')
             reportfile = File(rpath, filename=f'{server}-report.txt')
-            await ctx.send(f'Crashreport for {server}: ', file=reportfile)
+            await ctx.send('```markdown\n# Here you go, sir:\n```', file=reportfile)
             return
 
         log.info('Parsing report...')
