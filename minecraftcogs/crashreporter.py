@@ -1,7 +1,8 @@
 from discord.ext import commands
 import logging
 import asyncio
-from utils.discoutils import permission_node, sendmarkdown
+from discord import File
+from utils.discoutils import permission_node, sendmarkdown, promptconfirm
 from .utils.mcservutils import getcrashreport, parsereport, formatreport
 
 log = logging.getLogger('charfred')
@@ -28,6 +29,16 @@ class CrashReporter(commands.Cog):
         log.info(f'Getting report for {server}.')
         serverspath = self.servercfg['serverspath']
         rpath, _ = await self.loop.run_in_executor(None, getcrashreport, server, serverspath, nthlast)
+
+        b, _, timedout = await promptconfirm(ctx, 'Do you wish to download the full report?')
+        if timedout:
+            log.info('Crasreport prompt timed out!')
+            return
+        if b:
+            log.info('Uploading crashreport to discord...')
+            reportfile = File(rpath, filename=f'{server}-report.txt')
+            await ctx.send(f'Crashreport for {server}: ', file=reportfile)
+            return
 
         log.info('Parsing report...')
         ctime, desc, strace, flavor, level, block, phase = await self.loop.run_in_executor(
