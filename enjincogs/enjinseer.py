@@ -4,7 +4,7 @@ from collections import namedtuple
 from discord.ext import commands
 from utils.config import Config
 from utils.discoutils import send, sendmarkdown, permission_node
-from .utils.enjinutils import login, verifysession, post
+from .utils.enjinutils import login, post
 
 log = logging.getLogger('charfred')
 
@@ -43,16 +43,6 @@ class Enjinseer(commands.Cog):
 
         log.info('Starting enjin login!')
 
-        if self.enjinsession:
-            valid = await verifysession(self.session, self.enjinsession)
-            if valid:
-                log.info('Current enjin session still valid!')
-                await sendmarkdown(ctx, "# Current enjin session is still valid!")
-                return
-            else:
-                log.info('Current enjin session invalid!')
-                self.enjinsession = None
-
         if None in (email, password, url, site_id):
             log.info('No credentials given, trying config...')
             if 'login' in self.enjincfg:
@@ -66,7 +56,7 @@ class Enjinseer(commands.Cog):
             if url.endswith('/'):
                 url = url[:-1]
 
-        self.enjinlogin = Enjinlogin(
+        self.enjinlogin = self.bot.enjinlogin = Enjinlogin(
             email=email,
             password=password,
             url=url,
@@ -78,8 +68,7 @@ class Enjinseer(commands.Cog):
             await sendmarkdown(ctx, '> Logging in...')
             enjinsession = await login(self.session, self.enjinlogin)
             if enjinsession:
-                self.bot.enjinsession = enjinsession
-                self.enjinsession = self.bot.enjinsession
+                self.enjinsession = self.bot.enjinsession = enjinsession
                 self.enjincfg['login'] = [email, password, url, site_id]
                 await sendmarkdown(ctx, '# Login successful!', deletable=False)
             else:

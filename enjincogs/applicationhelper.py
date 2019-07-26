@@ -20,10 +20,6 @@ class ApplicationHelper(commands.Cog):
             self.enjinsession = bot.enjinsession
         else:
             self.enjinsession = None
-        if hasattr(bot, 'enjinlogin'):
-            self.enjinlogin = bot.enjinlogin
-        else:
-            self.enjinlogin = None
         self.enjinappcfg = Config(f'{bot.dir}/configs/applicationcfg.json',
                                   load=True, loop=bot.loop)
         try:

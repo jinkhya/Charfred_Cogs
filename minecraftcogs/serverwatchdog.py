@@ -11,7 +11,7 @@ from .utils.mcservutils import isUp, getProc, serverStart, getcrashreport, parse
 
 log = logging.getLogger('charfred')
 
-cronpat = re.compile('^(?P<disabled>#)*((?P<reboot>@reboot)|(?P<min>(\*/\d+|\*|(\d+,?)+))\s(?P<hour>(\*/\d+|\*|(\d+,?)+))\s(?P<day>(\*/\d+|\*|(\d+,?)+)))\s.*spiffy\s(?P<cmd>\w+)\s(?P<server>\w+)\s(?P<args>.*)>>')
+cronpat = re.compile(r'^(?P<disabled>#)*((?P<reboot>@reboot)|(?P<min>(\*/\d+|\*|(\d+,?)+))\s(?P<hour>(\*/\d+|\*|(\d+,?)+))\s(?P<day>(\*/\d+|\*|(\d+,?)+)))\s.*spiffy\s(?P<cmd>\w+)\s(?P<server>\w+)\s(?P<args>.*)>>')
 every = '*/'
 always = '*'
 
@@ -79,10 +79,10 @@ class Watchdog(commands.Cog):
                 return
 
             if isUp(server):
-                log.info(f'Starting watchdog on online server.')
+                log.info('Starting watchdog on online server.')
                 await sendmarkdown(ctx, f'# {server} is up and running.', deletable=False)
             else:
-                log.info(f'Starting watchdog on offline server.')
+                log.info('Starting watchdog on offline server.')
                 await sendmarkdown(ctx, f'< {server} is not running. >', deletable=False)
 
             async def serverGone(crashed, report=None):
@@ -131,7 +131,7 @@ class Watchdog(commands.Cog):
                 except asyncio.TimeoutError:
                     log.info('Prompt timed out.')
                     await abortPrompt.clear_reactions()
-                    await abortPrompt.edit(content=f'```markdown\n> Prompt to abort'
+                    await abortPrompt.edit(content='```markdown\n> Prompt to abort'
                                            ' timed out!\n```')
                     await asyncio.sleep(5, loop=self.loop)
                     if isUp(server):
