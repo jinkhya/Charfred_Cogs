@@ -350,18 +350,18 @@ class ApplicationHelper(commands.Cog):
                     except asyncio.TimeoutError:
                         log.error('AW: Relog timed out!')
                         future.cancel()
-                        coro = await sendmarkdown(ctx, '< Enjin login timed out! >\n'
-                                                  '< Stopping watchdog, please try to'
-                                                  ' relog manually and start the watchdog'
-                                                  ' again! >')
+                        coro = sendmarkdown(ctx, '< Enjin login timed out! >\n'
+                                            '< Stopping watchdog, please try to'
+                                            ' relog manually and start the watchdog'
+                                            ' again! >')
                         event.set()
                         break
                     else:
                         if not status:
                             log.error('AW: Relog failed!')
-                            coro = await sendmarkdown(ctx, '< Stopping watchdog, please'
-                                                      ' try to relog manually and start'
-                                                      ' the watchdog again! >')
+                            coro = sendmarkdown(ctx, '< Stopping watchdog, please'
+                                                ' try to relog manually and start'
+                                                ' the watchdog again! >')
                             event.set()
                             break
                 except Exception as e:
