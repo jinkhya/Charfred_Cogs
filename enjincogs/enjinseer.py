@@ -34,8 +34,8 @@ class Enjinseer(commands.Cog):
 
     @enjin.command()
     @permission_node(f'{__name__}.enjinlogin')
-    async def login(self, ctx, email: str=None, password: str=None,
-                    url: str=None, site_id: str=None):
+    async def login(self, ctx, email: str = None, password: str = None,
+                    url: str = None, site_id: str = None):
         """Enjin user login and session saving.
 
         Establishes a session to be used by other enjin related cogs.

@@ -6,7 +6,7 @@ from threading import Event
 from discord.ext import commands
 from utils.config import Config
 from utils.discoutils import permission_node, sendmarkdown, promptinput, promptconfirm, send, sendlong
-from .utils.enjinutils import post, verifysession
+from .utils.enjinutils import post, verifysession, login
 
 log = logging.getLogger('charfred')
 
@@ -20,6 +20,10 @@ class ApplicationHelper(commands.Cog):
             self.enjinsession = bot.enjinsession
         else:
             self.enjinsession = None
+        if hasattr(bot, 'enjinlogin'):
+            self.enjinlogin = bot.enjinlogin
+        else:
+            self.enjinlogin = None
         self.enjinappcfg = Config(f'{bot.dir}/configs/applicationcfg.json',
                                   load=True, loop=bot.loop)
         try:
@@ -216,7 +220,7 @@ class ApplicationHelper(commands.Cog):
                            'template via the viewtemplate command.')
 
     @apps.command()
-    async def viewtemplate(self, ctx, raw: bool=False):
+    async def viewtemplate(self, ctx, raw: bool = False):
         """Prints the current template."""
 
         log.info('Printing enjin application template.')
@@ -233,7 +237,7 @@ class ApplicationHelper(commands.Cog):
             msg = '\n'.join(msg)
             await sendmarkdown(ctx, msg)
 
-    async def _getapplist(self, type: str='open'):
+    async def _getapplist(self, type: str = 'open'):
         payload = {
             'method': 'Applications.getList',
             'params': {
@@ -249,7 +253,7 @@ class ApplicationHelper(commands.Cog):
             return apps['result']['items']
 
     @apps.command(name='list')
-    async def _list(self, ctx, type: str='open'):
+    async def _list(self, ctx, type: str = 'open'):
         """Retrieves a condensed list of applications.
 
         You may specify a type, if you wish to see closed or rejected
@@ -300,6 +304,23 @@ class ApplicationHelper(commands.Cog):
             await sendmarkdown(ctx, '< An exception occured during app list retrieval! >',
                                deletable=False)
 
+        async def enjinrelog():
+            await sendmarkdown(ctx, '< No \'result\' section in apps retrieval!\n'
+                               'This usually means that the Enjin login has expired,\n'
+                               'or that Enjin is being an asshole today! >'
+                               '# Attempting to relog...')
+            async with ctx.typing():
+                log.info('Logging into Enjin...')
+                await sendmarkdown(ctx, '> Logging in...')
+                enjinsession = await login(self.session, self.enjinlogin)
+                if enjinsession:
+                    self.enjinsession = self.bot.enjinsession = enjinsession
+                    await sendmarkdown(ctx, '# Login successful!', deletable=False)
+                    return True
+                else:
+                    await sendmarkdown(ctx, '< Login failed! >', deletable=False)
+                    return False
+
         async def watchgone():
             await sendmarkdown(ctx, '> Application watchdog stopped!', deletable=False)
 
@@ -320,9 +341,33 @@ class ApplicationHelper(commands.Cog):
                     log.warning('AW: App list retrievel timed out!')
                     future.cancel()
                     asyncio.run_coroutine_threadsafe(applisttimeout(), self.loop)
+                except KeyError as e:
+                    log.error('AW: Exception in app list retrieval!')
+                    log.error(e)
+                    future = asyncio.run_coroutine_threadsafe(enjinrelog(), self.loop)
+                    try:
+                        status = future.result(20)
+                    except asyncio.TimeoutError:
+                        log.error('AW: Relog timed out!')
+                        future.cancel()
+                        coro = await sendmarkdown(ctx, '< Enjin login timed out! >\n'
+                                                  '< Stopping watchdog, please try to'
+                                                  ' relog manually and start the watchdog'
+                                                  ' again! >')
+                        event.set()
+                        break
+                    else:
+                        if not status:
+                            log.error('AW: Relog failed!')
+                            coro = await sendmarkdown(ctx, '< Stopping watchdog, please'
+                                                      ' try to relog manually and start'
+                                                      ' the watchdog again! >')
+                            event.set()
+                            break
                 except Exception as e:
                     log.error('AW: Exception in app list retrieval!')
                     log.error(e)
+                    asyncio.run_coroutine_threadsafe(applistexception(), self.loop)
                 else:
                     if apps is None:
                         coro = sendmarkdown(ctx, '< App list could not be retrieved! >')
@@ -365,7 +410,7 @@ class ApplicationHelper(commands.Cog):
             await sendmarkdown(ctx, '# Application watchdog already inactive!', deletable=False)
 
     @apps.command(aliases=['check'])
-    async def validate(self, ctx, applicationid: int=None):
+    async def validate(self, ctx, applicationid: int = None):
         """Validate an application against the saved template.
 
         Requires the application id for the application you wish to
