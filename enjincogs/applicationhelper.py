@@ -296,6 +296,11 @@ class ApplicationHelper(commands.Cog):
         and reports the number of open applications at that time.
         """
 
+        if self.watchdogfuture:
+            if not self.watchdogfuture[0].done():
+                await sendmarkdown(ctx, '< Application watchdog already active! >')
+                return
+
         async def applisttimeout():
             await sendmarkdown(ctx, '< App list retrieval timed out! Odd... >',
                                deletable=False)
