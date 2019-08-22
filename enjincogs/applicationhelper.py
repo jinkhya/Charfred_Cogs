@@ -4,6 +4,7 @@ import asyncio
 from time import sleep
 from threading import Event
 from discord.ext import commands
+from discord.utils import find
 from utils.config import Config
 from utils.discoutils import permission_node, sendmarkdown, promptinput, promptconfirm, send, sendlong
 from .utils.enjinutils import post, verifysession, login
@@ -34,6 +35,8 @@ class ApplicationHelper(commands.Cog):
             self.enjinappcfg['fieldnames']
         except KeyError:
             self.enjinappcfg['fieldnames'] = {}
+        if 'notify' not in self.enjinappcfg:
+            self.enjinappcfg['notify'] = '@here'
 
         self.watchdogfuture = None
         self.latestappids = []
@@ -107,6 +110,24 @@ class ApplicationHelper(commands.Cog):
                 msg.append(f'[{fieldnames[i]}]: {fields[key]}')
         msg = '\n'.join(msg)
         return msg
+
+    @apps.command()
+    async def setmention(self, ctx, mentionee: str):
+        """Set who to mention for new app notification."""
+
+        log.info(f'Setting role to mention to: {mentionee}.')
+
+        role = find(lambda r: r.name == mentionee, ctx.guild.roles)
+        if role:
+            self.enjinappcfg['notify'] = role.mention
+            await sendmarkdown(ctx, f'# Set role to mention to: {mentionee}!\n'
+                               '> They will be notified if a new app is submitted,\n'
+                               '> given that mentioning is enabled.')
+            await self.enjinappcfg.save()
+            log.info('Watchdog cfg saved!')
+        else:
+            await sendmarkdown(ctx, f'< {mentionee} is not a valid role! >')
+            log.warning('Role could not be found, role to mention unchanged.')
 
     @apps.command(name='get')
     async def getapp(self, ctx, appid):
@@ -312,7 +333,7 @@ class ApplicationHelper(commands.Cog):
         async def enjinrelog():
             await sendmarkdown(ctx, '< No \'result\' section in apps retrieval!\n'
                                'This usually means that the Enjin login has expired,\n'
-                               'or that Enjin is being an asshole today! >'
+                               'or that Enjin is being an asshole today! >\n'
                                '# Attempting to relog...')
             async with ctx.typing():
                 log.info('Logging into Enjin...')
@@ -389,7 +410,8 @@ class ApplicationHelper(commands.Cog):
                         self.openapps = apps
                         if diff:
                             for app in diff:
-                                msg = (f'```markdown\nNew Application by: {app["username"]}\n```'
+                                msg = (f'{self.enjinappcfg["notify"]}\n'
+                                       f'```markdown\nNew Application by: {app["username"]}\n```'
                                        f'{self.enjinsession.url}/dashboard/applications/'
                                        f'application?app_id={app["application_id"]}')
                                 self.latestappids.append(app['application_id'])
