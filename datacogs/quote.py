@@ -22,10 +22,6 @@ class Quotator(commands.Cog):
             if user.bot or reaction.message.author.bot:
                 return
 
-            if reaction.message.embeds:
-                await reaction.message.add_reaction('🖕')
-                return
-
             log.info('Saving a quote!')
             quotee = reaction.message.author
             if reaction.message.attachments:
@@ -36,6 +32,10 @@ class Quotator(commands.Cog):
                 quote = f'{reaction.message.content}\n{urls}'
             else:
                 quote = reaction.message.content
+                if not quote:
+                    await reaction.message.add_reaction('🖕')
+                    return
+
             id = str(quotee.id)
 
             if id not in self.quotes:
