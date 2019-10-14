@@ -55,4 +55,5 @@ ENV/
 !/moderationcogs
 !/auxAdmincogs
 !/enjincogs
+!/dicecogs
 .flake8
