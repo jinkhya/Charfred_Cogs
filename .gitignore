@@ -48,6 +48,7 @@ ENV/
 #Project Specific
 /*
 !/.gitignore
+!/LICENSE.txt
 !/requirements.txt
 !/datacogs
 !/funcogs
