@@ -241,8 +241,11 @@ class ConsoleCmds(commands.Cog):
 
 def setup(bot):
     if not hasattr(bot, 'servercfg'):
+        default = {
+            "servers": {}, "serverspath": "NONE", "backupspath": "NONE", "oldTimer": 1440
+        }
         bot.servercfg = Config(f'{bot.dir}/configs/serverCfgs.json',
-                               default=f'{bot.dir}/configs/serverCfgs.json_default',
+                               default=default,
                                load=True, loop=bot.loop)
     permission_nodes = ['whitelist', 'categories', 'kick', 'ban', 'relay']
     bot.register_nodes([f'{__name__}.{node}' for node in permission_nodes])
