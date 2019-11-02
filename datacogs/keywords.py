@@ -47,7 +47,7 @@ class Keywords(commands.Cog):
             log.info('Forgetting something!')
             try:
                 self.phrases[category].remove(phrase)
-            except:
+            except KeyError:
                 log.info('Cannot remove, phrase unknown!')
                 await send(ctx, 'Can\'t forget this, because I never even knew that!')
             else:

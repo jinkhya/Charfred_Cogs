@@ -119,7 +119,7 @@ class Quotator(commands.Cog):
                 else:
                     await send(ctx, 'I am sorry, sir, but you are neither the quotee, '
                                'nor the person who requested this quote to be saved.')
-            except:
+            except KeyError:
                 log.info('Unknown quote, cannot remove!')
                 await send(ctx, 'Sorry sir, I don\'t seem to have a record of this quote.')
         else:
