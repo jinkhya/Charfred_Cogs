@@ -47,8 +47,7 @@ class StalkCmds(commands.Cog):
         )
         reportCard.set_author(
             name="Classified Report",
-            url='https://google.com/search?q=minecraft%20' +
-            mcU.name,
+            url=f'https://google.com/search?q=minecraft%20"{mcU.name}"',
             icon_url='https://crafatar.com/avatars/' +
             mcU.uuid
         )
@@ -82,9 +81,9 @@ class StalkCmds(commands.Cog):
                 value="This guy is old-school!"
             )
         if mcU.nameHistory is not None:
-            pastNames = ', '.join(mcU.nameHistory)
+            pastNames = '\n'.join(mcU.nameHistory)
             reportCard.add_field(name="Past names:",
-                                 value=pastNames)
+                                 value=f'```{pastNames}```')
         reportCard.set_footer(text="Report compiled by Agent Charfred")
         log.info('Sent Reportcard.')
         await send(ctx, embed=reportCard)
