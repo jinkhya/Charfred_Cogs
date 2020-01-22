@@ -149,7 +149,8 @@ class Quotator(commands.Cog):
                 name = member.name
             quoteFlip = Flipbook(ctx, quotelist, entries_per_page=12,
                                  title=f'Shit {name} says!',
-                                 color=discord.Color.blurple())
+                                 color=discord.Color.blurple(),
+                                 close_on_exit=True)
             await quoteFlip.flip()
 
         else:
