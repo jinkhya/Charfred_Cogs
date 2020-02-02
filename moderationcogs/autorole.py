@@ -71,7 +71,8 @@ class Autorole(commands.Cog):
 
     @autorole.group(aliases=['observe'], invoke_without_command=True)
     async def watch(self, ctx, message_id: str, reason: str='Autorole'):
-        """Adds a message specified by its id to the watchlist.
+        """Adds a message specified by its id to the watchlist, you need to be
+        in the channel the message is in for this to work!
 
         You can optionally add a reason that will be added to each role add/remove
         action resulting from watching this message (only visible in the audit log).
@@ -79,12 +80,8 @@ class Autorole(commands.Cog):
         This alone doesn't really do anything, you'll need to also use
         the 'autorole watch mapping' command.
         """
-
-        log.debug(message_id)
-        log.debug(f'{isinstance(message_id, str)}')
-
         try:
-            await ctx.me.fetch_message(message_id)
+            await ctx.channel.fetch_message(message_id)
         except NotFound:
             await sendmarkdown(ctx, '< Sorry, I can\'t find that message! >')
         except Forbidden:
