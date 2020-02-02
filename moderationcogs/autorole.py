@@ -145,3 +145,8 @@ class Autorole(commands.Cog):
             log.info(f'Autorole: Watch on {message_id} cancelled.')
         else:
             await sendmarkdown(ctx, '< Specified message is not currently under observation! >')
+
+
+def setup(bot):
+    bot.register_nodes([f'{__name__}.management'])
+    bot.add_cog(Autorole(bot))
