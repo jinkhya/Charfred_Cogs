@@ -28,7 +28,7 @@ class Autorole(commands.Cog):
                 log.info(f'Autorole: Reaction recognized: {emoji}')
                 reason = watchorder['reason']
                 watchorder = watchorder['map'][emoji]
-                role = self.bot.get_guild(raw.guild_id).get_role(watchorder['role'])
+                role = self.bot.get_guild(raw.guild_id).get_role(watchorder)
                 try:
                     if watchorder['action'] == 'add':
                         await raw.member.add_roles(role, reason=reason)
@@ -50,7 +50,7 @@ class Autorole(commands.Cog):
                 reason = watchorder['reason']
                 guild = self.bot.get_guild(raw.guild_id)
                 watchorder = watchorder['map'][emoji]
-                role = self.bot.get_guild(raw.guild_id).get_role(watchorder['role'])
+                role = self.bot.get_guild(raw.guild_id).get_role(watchorder)
                 member = guild.get_member(raw.user_id)
                 try:
                     if watchorder['action'] == 'add':
