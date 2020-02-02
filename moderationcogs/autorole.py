@@ -24,6 +24,7 @@ class Autorole(commands.Cog):
         if message_id in self.autoroles['watchlist']:
             watchorder = self.autoroles['watchlist'][message_id]
             if raw.emoji in watchorder:
+                log.info(f'Autorole: Reaction recognized: {raw.emoji}')
                 reason = watchorder['reason']
                 watchorder = watchorder['map'][raw.emoji]
                 role = self.bot.get_guild(raw.guild_id).get_role(watchorder['role'])
@@ -43,6 +44,7 @@ class Autorole(commands.Cog):
         if message_id in self.autoroles['watchlist']:
             watchorder = self.autoroles['watchlist'][message_id]
             if raw.emoji in watchorder:
+                log.info(f'Autorole: Reaction recognized: {raw.emoji}')
                 reason = watchorder['reason']
                 guild = self.bot.get_guild(raw.guild_id)
                 watchorder = watchorder['map'][raw.emoji]
@@ -75,6 +77,10 @@ class Autorole(commands.Cog):
         This alone doesn't really do anything, you'll need to also use
         the 'autorole watch mapping' command.
         """
+
+        log.debug(message_id)
+        log.debug(f'{isinstance(message_id, str)}')
+
         try:
             ctx.me.fetch_message(message_id)
         except NotFound:
