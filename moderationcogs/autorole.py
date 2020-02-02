@@ -26,13 +26,12 @@ class Autorole(commands.Cog):
             emoji = str(raw.emoji)
             if emoji in watchorder['map']:
                 log.info(f'Autorole: Reaction recognized: {emoji}')
-                reason = watchorder['reason']
                 role = self.bot.get_guild(raw.guild_id).get_role(watchorder['map'][emoji])
                 try:
                     if watchorder['action'] == 'add':
-                        await raw.member.add_roles(role, reason=reason)
+                        await raw.member.add_roles(role)
                     else:
-                        await raw.member.remove_roles(role, reason=reason)
+                        await raw.member.remove_roles(role)
                 except Forbidden:
                     log.warning('Autorole: Could not assign role, no permission!')
                 except HTTPException:
@@ -46,15 +45,14 @@ class Autorole(commands.Cog):
             emoji = str(raw.emoji)
             if emoji in watchorder['map']:
                 log.info(f'Autorole: Reaction recognized: {emoji}')
-                reason = watchorder['reason']
                 guild = self.bot.get_guild(raw.guild_id)
                 role = self.bot.get_guild(raw.guild_id).get_role(watchorder['map'][emoji])
                 member = guild.get_member(raw.user_id)
                 try:
                     if watchorder['action'] == 'add':
-                        await member.remove_roles(role, reason=reason)
+                        await member.remove_roles(role)
                     else:
-                        await member.add_roles(role, reason=reason)
+                        await member.add_roles(role)
                 except Forbidden:
                     log.warning('Autorole: Could not assign role, no permission!')
                 except HTTPException:
@@ -68,39 +66,12 @@ class Autorole(commands.Cog):
         pass
 
     @autorole.group(aliases=['observe'], invoke_without_command=True)
-    async def watch(self, ctx, message_id: str, reason: str='Autorole'):
-        """Adds a message specified by its id to the watchlist, you need to be
+    async def watch(self, ctx, message_id: str, action: str, *emojitorole):
+        """Adds a message specified by its id to the watchlist, sets which action
+        to perform and sets an emoji to role mapping table; you need to be
         in the channel the message is in for this to work!
 
-        You can optionally add a reason that will be added to each role add/remove
-        action resulting from watching this message (only visible in the audit log).
-
-        This alone doesn't really do anything, you'll need to also use
-        the 'autorole watch mapping' command.
-        """
-        try:
-            await ctx.channel.fetch_message(message_id)
-        except NotFound:
-            await sendmarkdown(ctx, '< Sorry, I can\'t find that message! >')
-        except Forbidden:
-            await sendmarkdown(ctx, '< Oh dear, I don\'t seem to have access to that message. >')
-        except HTTPException:
-            await sendmarkdown(ctx, '< Uh oh, something went wrong, I\'m terribly sorry! >')
-            raise
-        else:
-            self.autoroles['watchlist'][message_id] = {
-                'reason': reason,
-                'map': {}
-            }
-            await self.autoroles.save()
-            await sendmarkdown(ctx, '# Observation is underway!')
-            log.info(f'Autorole: Watching {message_id} for reason: \"{reason}\".')
-
-    @watch.command(aliases=['map'])
-    async def mapping(self, ctx, message_id: str, action: str, *emojitorole):
-        """Sets an emoji to role mapping table for the message being
-        watched, identified by its id, and which action to perform,
-        current supported actions are: 'add' and 'remove',
+        Current supported actions are: 'add' and 'remove',
         you can add several emoji role pairs, just list them one after
         the other with spaces between.
 
@@ -110,10 +81,17 @@ class Autorole(commands.Cog):
         If there is already a mapping in place for the specified message, it will be
         replaced!
         """
-        if message_id not in self.autoroles['watchlist']:
-            await sendmarkdown(ctx, '< The specified message is currently not under'
-                               ' observation, please use the watch command first! >')
+        try:
+            towatch = await ctx.channel.fetch_message(message_id)
+        except NotFound:
+            await sendmarkdown(ctx, '< Sorry, I can\'t find that message! >')
             return
+        except Forbidden:
+            await sendmarkdown(ctx, '< Oh dear, I don\'t seem to have access to that message. >')
+            return
+        except HTTPException:
+            await sendmarkdown(ctx, '< Uh oh, something went wrong, I\'m terribly sorry! >')
+            raise
 
         if not (action == 'add' or action == 'remove'):
             await sendmarkdown(ctx, '< Unknown action, only add and remove '
@@ -149,11 +127,14 @@ class Autorole(commands.Cog):
             else:
                 roles.append(role.id)
 
-        self.autoroles['watchlist'][message_id]['action'] = action
-        self.autoroles['watchlist'][message_id]['map'] = dict(zip(emojilist, roles))
+        self.autoroles['watchlist'][message_id] = {
+            'action': action,
+            'map': dict(zip(emojilist, roles))
+        }
         await self.autoroles.save()
-        await sendmarkdown(ctx, '# Mapping added!')
-        log.info(f'Autorole: Added mapping for {message_id}.')
+        await sendmarkdown(ctx, '# Observation is underway!')
+        await towatch.add_reaction('🔭')
+        log.info(f'Autorole: Watching {message_id}.')
 
     @autorole.command(aliases=['stop', 'cancel'])
     async def endwatch(self, ctx, message_id: str):
