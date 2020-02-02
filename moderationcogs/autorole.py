@@ -84,7 +84,7 @@ class Autorole(commands.Cog):
         log.debug(f'{isinstance(message_id, str)}')
 
         try:
-            ctx.me.fetch_message(message_id)
+            await ctx.me.fetch_message(message_id)
         except NotFound:
             await sendmarkdown(ctx, '< Sorry, I can\'t find that message! >')
         except Forbidden:
@@ -144,8 +144,18 @@ class Autorole(commands.Cog):
                                ' a valid role, please try again! >')
             return
 
+        roles = []
+        for rolename in rolelist:
+            role = find(lambda r: r.name == rolename, ctx.guild.roles)
+            if role is None:
+                await sendmarkdown(ctx, f'< {rolename} did not match any existing role! '
+                                   'Abort! >')
+                return
+            else:
+                roles.append(role.id)
+
         self.autoroles['watchlist'][message_id]['action'] = action
-        self.autoroles['watchlist'][message_id]['map'] = dict(zip(emojilist, rolelist))
+        self.autoroles['watchlist'][message_id]['map'] = dict(zip(emojilist, roles))
         await self.autoroles.save()
         await sendmarkdown(ctx, '# Mapping added!')
         log.info(f'Autorole: Added mapping for {message_id}.')
