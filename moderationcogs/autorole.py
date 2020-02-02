@@ -74,7 +74,7 @@ class Autorole(commands.Cog):
         the 'autorole watch mapping' command.
         """
         try:
-            self.bot.fetch_message(message_id)
+            ctx.me.fetch_message(message_id)
         except NotFound:
             await sendmarkdown(ctx, '< Sorry, I can\'t find that message! >')
         except Forbidden:
