@@ -20,11 +20,12 @@ class Autorole(commands.Cog):
 
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, raw):
-        if raw.message_id in self.autoroles['watchlist']:
-            watchorder = self.autoroles['watchlist'][raw.message_id]
-            if raw.emoji.name in watchorder:
+        message_id = str(raw.message_id)
+        if message_id in self.autoroles['watchlist']:
+            watchorder = self.autoroles['watchlist'][message_id]
+            if raw.emoji in watchorder:
                 reason = watchorder['reason']
-                watchorder = watchorder['map'][raw.emoji.name]
+                watchorder = watchorder['map'][raw.emoji]
                 role = self.bot.get_guild(raw.guild_id).get_role(watchorder['role'])
                 try:
                     if watchorder['action'] == 'add':
@@ -38,12 +39,13 @@ class Autorole(commands.Cog):
 
     @commands.Cog.listener()
     async def on_raw_reaction_remove(self, raw):
-        if raw.message_id in self.autoroles['watchlist']:
-            watchorder = self.autoroles['watchlist'][raw.message_id]
-            if raw.emoji.name in watchorder:
+        message_id = str(raw.message_id)
+        if message_id in self.autoroles['watchlist']:
+            watchorder = self.autoroles['watchlist'][message_id]
+            if raw.emoji in watchorder:
                 reason = watchorder['reason']
                 guild = self.bot.get_guild(raw.guild_id)
-                watchorder = watchorder['map'][raw.emoji.name]
+                watchorder = watchorder['map'][raw.emoji]
                 role = self.bot.get_guild(raw.guild_id).get_role(watchorder['role'])
                 member = guild.get_member(raw.user_id)
                 try:
@@ -64,7 +66,7 @@ class Autorole(commands.Cog):
         pass
 
     @autorole.group(aliases=['observe'], invoke_without_command=True)
-    async def watch(self, ctx, message_id, reason: str='Autorole'):
+    async def watch(self, ctx, message_id: str, reason: str='Autorole'):
         """Adds a message specified by its id to the watchlist.
 
         You can optionally add a reason that will be added to each role add/remove
@@ -92,7 +94,7 @@ class Autorole(commands.Cog):
             log.info(f'Autorole: Watching {message_id} for reason: \"{reason}\".')
 
     @watch.command(aliases=['map'])
-    async def mapping(self, ctx, message_id, *emojitorole):
+    async def mapping(self, ctx, message_id: str, *emojitorole):
         """Sets an emoji to role mapping table for the message being
         watched, identified by its id, you can add several emoji role pairs,
         just list them one after the other with spaces between.
@@ -133,7 +135,7 @@ class Autorole(commands.Cog):
         log.info(f'Autorole: Added mapping for {message_id}.')
 
     @autorole.command(aliases=['stop', 'cancel'])
-    async def endwatch(self, ctx, message_id):
+    async def endwatch(self, ctx, message_id: str):
         """Removes a message identified by its id from the watchlist.
 
         This also clears the emoji to role mapping table for that message.
