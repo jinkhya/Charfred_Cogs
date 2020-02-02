@@ -23,10 +23,11 @@ class Autorole(commands.Cog):
         message_id = str(raw.message_id)
         if message_id in self.autoroles['watchlist']:
             watchorder = self.autoroles['watchlist'][message_id]
-            if raw.emoji in watchorder:
-                log.info(f'Autorole: Reaction recognized: {raw.emoji}')
+            emoji = str(raw.emoji)
+            if emoji in watchorder['map']:
+                log.info(f'Autorole: Reaction recognized: {emoji}')
                 reason = watchorder['reason']
-                watchorder = watchorder['map'][raw.emoji]
+                watchorder = watchorder['map'][emoji]
                 role = self.bot.get_guild(raw.guild_id).get_role(watchorder['role'])
                 try:
                     if watchorder['action'] == 'add':
@@ -43,11 +44,12 @@ class Autorole(commands.Cog):
         message_id = str(raw.message_id)
         if message_id in self.autoroles['watchlist']:
             watchorder = self.autoroles['watchlist'][message_id]
-            if raw.emoji in watchorder:
-                log.info(f'Autorole: Reaction recognized: {raw.emoji}')
+            emoji = str(raw.emoji)
+            if emoji in watchorder['map']:
+                log.info(f'Autorole: Reaction recognized: {emoji}')
                 reason = watchorder['reason']
                 guild = self.bot.get_guild(raw.guild_id)
-                watchorder = watchorder['map'][raw.emoji]
+                watchorder = watchorder['map'][emoji]
                 role = self.bot.get_guild(raw.guild_id).get_role(watchorder['role'])
                 member = guild.get_member(raw.user_id)
                 try:
@@ -100,10 +102,12 @@ class Autorole(commands.Cog):
             log.info(f'Autorole: Watching {message_id} for reason: \"{reason}\".')
 
     @watch.command(aliases=['map'])
-    async def mapping(self, ctx, message_id: str, *emojitorole):
+    async def mapping(self, ctx, message_id: str, action: str, *emojitorole):
         """Sets an emoji to role mapping table for the message being
-        watched, identified by its id, you can add several emoji role pairs,
-        just list them one after the other with spaces between.
+        watched, identified by its id, and which action to perform,
+        current supported actions are: 'add' and 'remove',
+        you can add several emoji role pairs, just list them one after
+        the other with spaces between.
 
         Please use the role name to identify the role, if a role name has spaces
         in it, wrap it in "" .
@@ -114,6 +118,11 @@ class Autorole(commands.Cog):
         if message_id not in self.autoroles['watchlist']:
             await sendmarkdown(ctx, '< The specified message is currently not under'
                                ' observation, please use the watch command first! >')
+            return
+
+        if not (action == 'add' or action == 'remove'):
+            await sendmarkdown(ctx, '< Unknown action, only add and remove '
+                               'are currently supported. >')
             return
 
         l1 = emojitorole[0::2]
@@ -135,6 +144,7 @@ class Autorole(commands.Cog):
                                ' a valid role, please try again! >')
             return
 
+        self.autoroles['watchlist'][message_id]['action'] = action
         self.autoroles['watchlist'][message_id]['map'] = dict(zip(emojilist, rolelist))
         await self.autoroles.save()
         await sendmarkdown(ctx, '# Mapping added!')
