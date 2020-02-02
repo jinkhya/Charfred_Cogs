@@ -37,7 +37,7 @@ class Porter(commands.Cog):
         if str(member) in self.promotees['awaiting']:
             log.info(f'Promotee {member.name} has joined, promoting now.')
             memberRole = find(lambda r: r.name == self.memberRoleName, member.guild.roles)
-            await member.add_roles(memberRole)
+            await member.edit(roles=[memberRole])
             self.promotees['awaiting'].remove(str(member))
             await self.promotees.save()
             return
@@ -120,7 +120,7 @@ class Porter(commands.Cog):
         else:
             log.info('User is already a member, promoting immediately.')
             memberRole = find(lambda r: r.name == self.memberRoleName, member.guild.roles)
-            await member.add_roles(memberRole)
+            await member.edit(roles=[memberRole])
             await sendmarkdown(ctx, '# User is already a member, promoting immediately.')
 
     @commands.group()
