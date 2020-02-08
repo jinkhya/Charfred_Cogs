@@ -93,13 +93,16 @@ class ConsoleCmds(commands.Cog):
 
         msg = ['Command Log', '==========']
         for server in self.servercfg['servers']:
-            with open(
-                self.servercfg['serverspath'] + f'/{server}/whitelist.json', 'r'
-            ) as whitelist:
-                if player in whitelist.read():
-                    msg.append(f'# {player} is whitelisted on {server}.')
-                else:
-                    msg.append(f'< {player} is NOT whitelisted on {server}. >')
+            try:
+                with open(
+                    self.servercfg['serverspath'] + f'/{server}/whitelist.json', 'r'
+                ) as whitelist:
+                    if player in whitelist.read():
+                        msg.append(f'# {player} is whitelisted on {server}.')
+                    else:
+                        msg.append(f'< {player} is NOT whitelisted on {server}. >')
+            except FileNotFoundError:
+                msg.append(f'< {server} does not have a whitelist.json file! >')
         await sendmarkdown(ctx, '\n'.join(msg))
 
     @whitelist.group(invoke_without_command=True)
