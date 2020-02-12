@@ -257,7 +257,9 @@ def parsereport(rpath):
                 if l == '\n':
                     break
                 phase.append('# Sponge PhaseTracker:\n')
-                while True:
+                spongecounter = 20  # Workaround for when the PhaseTracker flips out.
+                while spongecounter > 0:
+                    spongecounter -= 1
                     l = r.readline()
                     if not l or l == '\n' or l.startswith('/***') or l.startswith('Stacktrace:'):
                         break
