@@ -6,7 +6,7 @@ from threading import Event
 from discord.ext import commands
 from discord.utils import find
 from utils.config import Config
-from utils.discoutils import permission_node, sendmarkdown, promptinput, promptconfirm, send, sendlong
+from utils.discoutils import permission_node, sendmarkdown, promptinput, promptconfirm, send
 from .utils.enjinutils import post, verifysession, login
 
 log = logging.getLogger('charfred')
@@ -520,7 +520,7 @@ class ApplicationHelper(commands.Cog):
             msg.append(f'> {fieldname}: {v}')
 
         msg = '\n'.join(msg)
-        await sendlong(ctx, msg, markdown=True)
+        await send(ctx, msg, markdown=True)
         await send(ctx, f'{self.enjinsession.url}/dashboard/applications'
                    f'/application?app_id={applicationid}')
 
