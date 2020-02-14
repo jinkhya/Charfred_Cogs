@@ -520,7 +520,7 @@ class ApplicationHelper(commands.Cog):
             msg.append(f'> {fieldname}: {v}')
 
         msg = '\n'.join(msg)
-        await send(ctx, msg, codeblocked=True)
+        await send(ctx, f'```markdown\n{msg}\n```', codeblocked=True)
         await send(ctx, f'{self.enjinsession.url}/dashboard/applications'
                    f'/application?app_id={applicationid}')
 
