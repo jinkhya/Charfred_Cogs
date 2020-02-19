@@ -56,8 +56,8 @@ class UnitConverter(commands.Cog):
         """Convert Minecraft x, z coordinates to chunk and region.
         """
 
-        chunk = f'{(x >> 4)}, {(z >> 4)}'
-        regionfile = 'r.' + str((x >> 4) // 32) + '.' + str((z >> 4) // 32) + '.mca'
+        chunk = f'{(int(x) >> 4)}, {(int(z) >> 4)}'
+        regionfile = 'r.' + str((int(x) >> 4) // 32) + '.' + str((int(z) >> 4) // 32) + '.mca'
         await sendmarkdown(ctx, f'# Coordinates {x}, {z} correspond to:\n'
                            f'Chunk coordinates: {chunk}\n\n'
                            f'Region file: {regionfile}')
