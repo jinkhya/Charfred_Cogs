@@ -35,14 +35,14 @@ class UnitConverter(commands.Cog):
             out = m.to(targetunit)
         except DimensionalityError as e:
             log.warning(e)
-            sendmarkdown(ctx, f'< Error! >'
-                         f'< {e} >')
+            await sendmarkdown(ctx, f'< Error! >'
+                               f'< {e} >')
         except DefinitionSyntaxError as e:
             log.warning(e)
-            sendmarkdown(ctx, f'< Unable to parse {measurement}! >'
-                         f'< {e} >')
+            await sendmarkdown(ctx, f'< Unable to parse {measurement}! >'
+                               f'< {e} >')
         else:
-            sendmarkdown(ctx, f'# {measurement} is (roughly) {out}')
+            await sendmarkdown(ctx, f'# {measurement} is (roughly) {out}')
 
 
 def setup(bot):
