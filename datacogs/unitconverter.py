@@ -1,6 +1,7 @@
 import logging
 
-from pint import UnitRegistry, DimensionalityError, DefinitionSyntaxError
+from pint import UnitRegistry, DimensionalityError, DefinitionSyntaxError, \
+    UndefinedUnitError
 
 from discord.ext import commands
 from utils.discoutils import sendmarkdown
@@ -39,8 +40,12 @@ class UnitConverter(commands.Cog):
                                f'< {e} >')
         except DefinitionSyntaxError as e:
             log.warning(e)
-            await sendmarkdown(ctx, f'< Unable to parse {measurement}! >'
+            await sendmarkdown(ctx, f'< Unable to parse {measurement}! >\n'
                                f'< {e} >')
+        except UndefinedUnitError as e:
+            log.warning(e)
+            await sendmarkdown(ctx, '< Sorry, I can only do basic units >\n'
+                               '< and temperatures. >')
         else:
             await sendmarkdown(ctx, f'# {measurement} is (roughly) {out}')
 
