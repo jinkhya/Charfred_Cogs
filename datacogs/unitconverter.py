@@ -58,8 +58,8 @@ class UnitConverter(commands.Cog):
 
         chunk = f'{(int(x) >> 4)}, {(int(z) >> 4)}'
         regionfile = 'r.' + str((int(x) >> 4) // 32) + '.' + str((int(z) >> 4) // 32) + '.mca'
-        await sendmarkdown(ctx, f'# Coordinates {x}, {z} correspond to:\n'
-                           f'Chunk coordinates: {chunk}\n\n'
+        await sendmarkdown(ctx, f'# Coordinates x:{x}, z:{z} correspond to:\n'
+                           f'Chunk coordinates: {chunk}\n'
                            f'Region file: {regionfile}')
 
     @convert.command()
