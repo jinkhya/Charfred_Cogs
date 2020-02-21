@@ -92,14 +92,21 @@ class Customs(commands.Cog):
             await sendmarkdown(ctx, f'< \"{cmd}\" is undefined! >')
             return
         _cmd = self.customcmds[cmd]['cmd']
-        minRole = self.customcmds[cmd]['role']
-        minRole = find(lambda r: r.name == minRole, ctx.guild.roles)
-        if ctx.author.top_role < minRole:  # TODO: Don't even allow ranks that don't exist!
-            log.warning(f'User is missing permissions for {cmd}!')
-            await sendmarkdown(ctx, f'< You are not permitted to run {cmd}! >\n'
-                               f'< Minimum required role is {str(minRole)}. >')
+        role = self.customcmds[cmd]['role']
+        minRole = find(lambda r: r.name == role, ctx.guild.roles)
+        if minRole:
+            hierarchy = set(self.bot.cfg['hierarchy'])
+            roles = [r for r in ctx.author.roles if r.name in hierarchy]
+            if (not roles) or (roles[-1] < minRole):
+                log.warning(f'User is missing permissions for {cmd}!')
+                await sendmarkdown(ctx, f'< You are not permitted to run {cmd}! >\n'
+                                   f'< Minimum required role is {str(minRole)}. >')
+                return
+        else:
+            log.warning(f'Required role "{role}" does not exist!')
+            await sendmarkdown(ctx, f'< Required role "{role}" does not exist! Abort! >')
             return
-        log.info(f'Required: {str(minRole)}; User has: {str(ctx.author.top_role)}')
+        log.info(f'Required: {str(minRole)}; User has: {str(roles[-1])}')
 
         if args:
             _cmd = _cmd.format(*args)
