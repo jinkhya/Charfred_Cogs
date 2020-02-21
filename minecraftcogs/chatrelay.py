@@ -98,7 +98,7 @@ class ChatRelay(commands.Cog):
                     info.append('> No clients configured.\n')
         if len(info) == 2:
             info.append('> No clients connected, nothing configured.')
-        await sendmarkdown(ctx, '\n'.join(info)
+        await sendmarkdown(ctx, '\n'.join(info))
 
     async def incoming_worker(self, reader, client):
         log.info(f'CR-Incoming: Worker for {client} started.')
