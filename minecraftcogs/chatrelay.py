@@ -1,5 +1,6 @@
 import logging
 import asyncio
+from concurrent.futures import CancelledError
 from discord.ext import commands
 from utils.config import Config
 from utils.discoutils import sendmarkdown, permission_node
@@ -34,6 +35,9 @@ class ChatRelay(commands.Cog):
 
     @commands.Cog.listener()
     async def on_message(self, message):
+        if self.server is None:  # Don't even do anything if the server isn't running.
+            return
+
         if message.author.bot or (message.guild is None):
             return
 
@@ -58,8 +62,8 @@ class ChatRelay(commands.Cog):
             for client in self.relaycfg['ch_to_clients'][message.channel.id]:
                 try:
                     self.outqueues[client].put_nowait((5, content))
-                except KeyError as e:
-                    log.critical(e)
+                except KeyError:
+                    pass
                 except asyncio.QueueFull:
                     pass
 
@@ -72,6 +76,10 @@ class ChatRelay(commands.Cog):
         """
 
         info = ['# Chat Relay Status:']
+        if self.server and self.server.sockets:
+            info.append('\n# Relay server is online.\n')
+        else:
+            info.append('\n< Relay server is offline! >\n')
         if self.outqueues:
             info.append('\n# Currently connected clients:')
             for server in self.outqueues:
@@ -88,39 +96,50 @@ class ChatRelay(commands.Cog):
                         info.append('\n')
                 else:
                     info.append('> No clients configured.\n')
-        if len(info) > 1:
-            await sendmarkdown(ctx, '\n'.join(info))
-        else:
-            await sendmarkdown(ctx, f'> No clients connected, nothing configured.')
+        if len(info) == 2:
+            info.append('> No clients connected, nothing configured.')
+        await sendmarkdown(ctx, '\n'.join(info)
 
     async def incoming_worker(self, reader, client):
         log.info(f'CR-Incoming: Worker for {client} started.')
-        while True:
-            data = await reader.readline()
-            if not data:
-                log.info(f'CR-Incoming: {client} appears to have disconnected!')
-                break
-            data = data.decode()
-            try:
-                self.inqueue.put_nowait((client, data))
-            except asyncio.QueueFull:
-                log.warning(f'CR-Incoming: Incoming queue full, message dropped!')
-        log.info(f'CR-Incoming: Worker for {client} exited.')
+        try:
+            while True:
+                data = await reader.readline()
+                if not data:
+                    log.info(f'CR-Incoming: {client} appears to have disconnected!')
+                    break
+                try:
+                    data = data.decode()
+                except UnicodeDecodeError as e:
+                    log.info(f'CR-Incoming: {e}')
+                    continue
+                try:
+                    self.inqueue.put_nowait((client, data))
+                except asyncio.QueueFull:
+                    log.warning(f'CR-Incoming: Incoming queue full, message dropped!')
+        except CancelledError:
+            raise
+        finally:
+            log.info(f'CR-Incoming: Worker for {client} exited.')
 
     async def outgoing_worker(self, writer, client):
         log.info(f'CR-Outgoing: Worker for {client} started.')
-        while True:
-            try:
-                _, data = await self.outqueues[client].get()
-            except (KeyError, AttributeError):
-                log.error(f'CR-Outgoing: Outqueue for {client} is gone!'
-                          ' Connection shutting down!')
-                break
-            else:
-                data = data.encode()
-                writer.write(data)
-                await writer.drain()
-        log.info(f'CR-Outgoing: Worker for {client} exited.')
+        try:
+            while True:
+                try:
+                    _, data = await self.outqueues[client].get()
+                except (KeyError, AttributeError):
+                    log.error(f'CR-Outgoing: Outqueue for {client} is gone!'
+                              ' Connection shutting down!')
+                    break
+                else:
+                    data = data.encode()
+                    writer.write(data)
+                    await writer.drain()
+        except CancelledError:
+            raise
+        finally:
+            log.info(f'CR-Outgoing: Worker for {client} exited.')
 
     async def connection_handler(self, reader, writer):
         peer = str(writer.get_extra_info("peername"))
@@ -171,18 +190,23 @@ class ChatRelay(commands.Cog):
 
     async def inqueue_worker(self):
         log.info('CR-Inqueue: Worker started!')
-        while True:
-            client, data = await self.inqueue.get()
-            if client not in self.relaycfg['client_to_ch']:
-                continue
-            data = data.split('::')
-            if data[0] == ':MSG':
-                channel = self.bot.get_channel(self.relaycfg['client_to_ch'][client])
-                if not channel:
-                    log.warning(f'CR-Inqueue: MSG from {client} could not be relayed!'
-                                ' Registered channel does not exist!')
+        try:
+            while True:
+                client, data = await self.inqueue.get()
+                if client not in self.relaycfg['client_to_ch']:
                     continue
-                await channel.send(f'[{data[1]}]<{data[2]}>: {data[3]}')
+                data = data.split('::')
+                if data[0] == ':MSG':
+                    channel = self.bot.get_channel(self.relaycfg['client_to_ch'][client])
+                    if not channel:
+                        log.warning(f'CR-Inqueue: MSG from {client} could not be relayed!'
+                                    ' Registered channel does not exist!')
+                        continue
+                    await channel.send(f'[**{data[1]}**] {data[2]} : {data[3]}')
+        except CancelledError:
+            raise
+        finally:
+            log.info('CR-Inqueue: Worker exited.')
 
     @chatrelay.command(aliases=['start', 'init'])
     @permission_node(f'{__name__}.chatrelay.init')
@@ -219,6 +243,7 @@ class ChatRelay(commands.Cog):
         self.inqueue_worker_task.cancel()
         await self.server.wait_closed()
         log.info('CR: Server closed!')
+        self.server = None
         await sendmarkdown(ctx, '# Server closed, all clients disconnected!')
 
     @chatrelay.command(aliases=['listen'])
@@ -233,7 +258,7 @@ class ChatRelay(commands.Cog):
         without a subcommand.
         """
 
-        channel_id = ctx.channel.id
+        channel_id = str(ctx.channel.id)
         if client not in self.outqueues:
             await sendmarkdown(ctx, '< Client unknown, registering anyway. >\n'
                                '< Please check if you got the name right,'
@@ -272,7 +297,7 @@ class ChatRelay(commands.Cog):
         without a subcommand.
         """
 
-        channel_id = ctx.channel.id
+        channel_id = str(ctx.channel.id)
         if client not in self.outqueues:
             await sendmarkdown(ctx, '< Client unknown, unregistering anyway. >\n'
                                '< Please check if you got the name right,'
