@@ -55,6 +55,11 @@ class Customs(commands.Cog):
         left to right, with the given arguments,
         when the command is ran.
         """
+        if minRole not in self.bot.cfg['hierarchy']:
+            await sendmarkdown(ctx, f'< {minRole} is not in the role hierarchy. >\n'
+                               '> Please try again!')
+            return
+
         self.customcmds[name] = {'role': minRole, 'cmd': cmd}
         log.info(f'Added \"{cmd}\" to custom console commands library as \"{name}\".')
         await sendmarkdown(ctx, f'# Added \"{cmd}\" to your custom console commands'
