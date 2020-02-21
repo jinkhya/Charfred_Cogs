@@ -209,7 +209,7 @@ class ChatRelay(commands.Cog):
             log.info('CR-Inqueue: Worker exited.')
 
     @chatrelay.command(aliases=['start', 'init'])
-    @permission_node(f'{__name__}.chatrelay.init')
+    @permission_node(f'{__name__}.init')
     async def initialize(self, ctx, port):
         """This initializes the relay server on the given port,
         allowing connections from Minecraft servers to be established.
@@ -230,7 +230,7 @@ class ChatRelay(commands.Cog):
         await sendmarkdown(ctx, '# Server started.')
 
     @chatrelay.command(aliases=['stop'])
-    @permission_node(f'{__name__}.chatrelay.init')
+    @permission_node(f'{__name__}.init')
     async def close(self, ctx):
         """This closes the relay server, disconnecting all clients.
         """
@@ -247,7 +247,7 @@ class ChatRelay(commands.Cog):
         await sendmarkdown(ctx, '# Server closed, all clients disconnected!')
 
     @chatrelay.command(aliases=['listen'])
-    @permission_node(f'{__name__}.chatrelay.register')
+    @permission_node(f'{__name__}.register')
     async def register(self, ctx, client: str):
         """Registers a channel to recieve chat from a given client,
         and send chat from the channel to the client.
@@ -286,7 +286,7 @@ class ChatRelay(commands.Cog):
                            f' recieving chat from, and sending chat to {client}.')
 
     @chatrelay.command(aliases=['unlisten'])
-    @permission_node(f'{__name__}.chatrelay.register')
+    @permission_node(f'{__name__}.register')
     async def unregister(self, ctx, client: str):
         """Unregisters a channel from recieving chat from a given
         client or sending chat to that client.
@@ -322,4 +322,6 @@ class ChatRelay(commands.Cog):
 
 
 def setup(bot):
+    permission_nodes = ['init', 'register']
+    bot.register_nodes([f'{__name__}.{node}' for node in permission_nodes])
     bot.add_cog(ChatRelay(bot))
