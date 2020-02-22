@@ -3,7 +3,7 @@ import asyncio
 from concurrent.futures import CancelledError
 from discord.ext import commands
 from utils.config import Config
-from utils.discoutils import sendmarkdown, permission_node
+from utils.discoutils import permission_node
 
 log = logging.getLogger('charfred')
 
@@ -98,7 +98,7 @@ class ChatRelay(commands.Cog):
                     info.append('> No clients configured.\n')
         if len(info) == 2:
             info.append('> No clients connected, nothing configured.')
-        await sendmarkdown(ctx, '\n'.join(info))
+        await ctx.sendmarkdown('\n'.join(info))
 
     async def incoming_worker(self, reader, client):
         log.info(f'CR-Incoming: Worker for {client} started.')
@@ -221,13 +221,13 @@ class ChatRelay(commands.Cog):
 
         if self.server:
             log.warning('CR: Server already established!')
-            await sendmarkdown(ctx, '> Server already running!')
+            await ctx.sendmarkdown('> Server already running!')
             return
         self.inqueue_worker_task = self.loop.create_task(self.inqueue_worker())
         self.server = await asyncio.start_server(self.connection_handler, '127.0.0.1', port,
                                                  loop=self.loop)
         log.info('CR: Server started!')
-        await sendmarkdown(ctx, '# Server started.')
+        await ctx.sendmarkdown('# Server started.')
 
     @chatrelay.command(aliases=['stop'])
     @permission_node(f'{__name__}.init')
@@ -237,14 +237,14 @@ class ChatRelay(commands.Cog):
 
         if not self.server:
             log.info('CR: No server to be closed.')
-            await sendmarkdown(ctx, '> No server to be closed.')
+            await ctx.sendmarkdown('> No server to be closed.')
             return
         self.server.close()
         self.inqueue_worker_task.cancel()
         await self.server.wait_closed()
         log.info('CR: Server closed!')
         self.server = None
-        await sendmarkdown(ctx, '# Server closed, all clients disconnected!')
+        await ctx.sendmarkdown('# Server closed, all clients disconnected!')
 
     @chatrelay.command(aliases=['listen'])
     @permission_node(f'{__name__}.register')
@@ -260,19 +260,19 @@ class ChatRelay(commands.Cog):
 
         channel_id = str(ctx.channel.id)
         if client not in self.outqueues:
-            await sendmarkdown(ctx, '< Client unknown, registering anyway. >\n'
-                               '< Please check if you got the name right,'
-                               ' when the client eventually connects. >')
+            await ctx.sendmarkdown('< Client unknown, registering anyway. >\n'
+                                   '< Please check if you got the name right,'
+                                   ' when the client eventually connects. >')
         log.info(f'CR: Registering {ctx.channel.name} for {client}.')
 
         if client in self.relaycfg['client_to_ch'] and self.relaycfg['client_to_ch'][client]:
             channel = self.bot.get_channel(self.relaycfg['client_to_ch'][client])
             if channel == ctx.channel:
-                await sendmarkdown(ctx, f'> {client} is already registered with this channel!')
+                await ctx.sendmarkdown(f'> {client} is already registered with this channel!')
             else:
-                await sendmarkdown(ctx, f'< {client} is already registered with {channel.name}! >\n'
-                                   '> A client can only be registered to one channel.\n'
-                                   '> Please unregister the other channel first!')
+                await ctx.sendmarkdown(f'< {client} is already registered with {channel.name}! >\n'
+                                       '> A client can only be registered to one channel.\n'
+                                       '> Please unregister the other channel first!')
             return
         else:
             self.relaycfg['client_to_ch'][client] = channel_id
@@ -282,8 +282,8 @@ class ChatRelay(commands.Cog):
                 self.relaycfg['ch_to_clients'][channel_id] = [client]
 
         await self.relaycfg.save()
-        await sendmarkdown(ctx, f'# {ctx.channel.name} is now registered for'
-                           f' recieving chat from, and sending chat to {client}.')
+        await ctx.sendmarkdown(f'# {ctx.channel.name} is now registered for'
+                               f' recieving chat from, and sending chat to {client}.')
 
     @chatrelay.command(aliases=['unlisten'])
     @permission_node(f'{__name__}.register')
@@ -299,9 +299,9 @@ class ChatRelay(commands.Cog):
 
         channel_id = str(ctx.channel.id)
         if client not in self.outqueues:
-            await sendmarkdown(ctx, '< Client unknown, unregistering anyway. >\n'
-                               '< Please check if you got the name right,'
-                               ' when the client eventually connects. >')
+            await ctx.sendmarkdown('< Client unknown, unregistering anyway. >\n'
+                                   '< Please check if you got the name right,'
+                                   ' when the client eventually connects. >')
         log.info(f'CR: Unregistering {ctx.channel.name} for {client}.')
 
         if client in self.relaycfg['client_to_ch']:
@@ -313,12 +313,12 @@ class ChatRelay(commands.Cog):
                 log.critical(f'CR: Relay mapping inconsistency detected!')
                 raise
             else:
-                await sendmarkdown(ctx, '# This channel will no longer send chat to'
-                                   f' or recieve chat from {client}!')
+                await ctx.sendmarkdown('# This channel will no longer send chat to'
+                                       f' or recieve chat from {client}!')
             finally:
                 await self.relaycfg.save()
         else:
-            await sendmarkdown(ctx, '> This channel is not registered yet.')
+            await ctx.sendmarkdown('> This channel is not registered yet.')
 
 
 def setup(bot):

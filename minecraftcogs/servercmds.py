@@ -2,7 +2,7 @@ from discord.ext import commands
 import asyncio
 import logging
 from utils.config import Config
-from utils.discoutils import permission_node, sendmarkdown
+from utils.discoutils import permission_node
 from .utils.mcservutils import isUp, sendCmd, sendCmds, serverStart, \
     serverStop, serverTerminate, serverStatus, buildCountdownSteps
 
@@ -29,22 +29,22 @@ class ServerCmds(commands.Cog):
 
         if server not in self.servercfg['servers']:
             log.warning(f'{server} has been misspelled or not configured!')
-            await sendmarkdown(ctx, f'< {server} has been misspelled or not configured! >')
+            await ctx.sendmarkdown(f'< {server} has been misspelled or not configured! >')
             return
         if isUp(server):
             log.info(f'{server} appears to be running already!')
-            await sendmarkdown(ctx, f'< {server} appears to be running already! >')
+            await ctx.sendmarkdown(f'< {server} appears to be running already! >')
         else:
             log.info(f'Starting {server}')
-            await sendmarkdown(ctx, f'> Starting {server}...')
+            await ctx.sendmarkdown(f'> Starting {server}...')
             await serverStart(server, self.servercfg, self.loop)
             await asyncio.sleep(5, loop=self.loop)
             if isUp(server):
                 log.info(f'{server} is now running!')
-                await sendmarkdown(ctx, f'# {server} is now running!')
+                await ctx.sendmarkdown(f'# {server} is now running!')
             else:
                 log.warning(f'{server} does not appear to have started!')
-                await sendmarkdown(ctx, f'< {server} does not appear to have started! >')
+                await ctx.sendmarkdown(f'< {server} does not appear to have started! >')
 
     @server.command()
     @permission_node(f'{__name__}.stop')
@@ -57,18 +57,18 @@ class ServerCmds(commands.Cog):
 
         if server not in self.servercfg['servers']:
             log.warning(f'{server} has been misspelled or not configured!')
-            await sendmarkdown(ctx, f'< {server} has been misspelled or not configured! >')
+            await ctx.sendmarkdown(f'< {server} has been misspelled or not configured! >')
             return
         if isUp(server):
             log.info(f'Stopping {server}...')
-            await sendmarkdown(ctx, f'> Stopping {server}...')
+            await ctx.sendmarkdown(f'> Stopping {server}...')
             await serverStop(server, self.loop)
             await asyncio.sleep(20, loop=self.loop)
             if isUp(server):
                 log.warning(f'{server} does not appear to have stopped!')
-                msg = await sendmarkdown(ctx, f'< {server} does not appear to have stopped! >'
-                                         f'React with ❌ within 60 seconds to force stop {server}!',
-                                         deletable=False)
+                msg = await ctx.sendmarkdown(f'< {server} does not appear to have stopped! >'
+                                             f'React with ❌ within 60 seconds to force stop {server}!',
+                                             deletable=False)
                 await msg.add_reaction('❌')
 
                 def termcheck(reaction, user):
@@ -100,10 +100,10 @@ class ServerCmds(commands.Cog):
                         await msg.edit(content=f'```markdown\n< {server} termination failed! >\n')
             else:
                 log.info(f'{server} was stopped.')
-                await sendmarkdown(ctx, f'# {server} was stopped.')
+                await ctx.sendmarkdown(f'# {server} was stopped.')
         else:
             log.info(f'{server} already is not running.')
-            await sendmarkdown(ctx, f'< {server} already is not running. >')
+            await ctx.sendmarkdown(f'< {server} already is not running. >')
 
     @server.command()
     @permission_node(f'{__name__}.restart')
@@ -122,7 +122,7 @@ class ServerCmds(commands.Cog):
 
         if server not in self.servercfg['servers']:
             log.warning(f'{server} has been misspelled or not configured!')
-            await sendmarkdown(ctx, f'< {server} has been misspelled or not configured! >')
+            await ctx.sendmarkdown(f'< {server} has been misspelled or not configured! >')
             return
         if isUp(server):
             countdownSteps = ["20m", "15m", "10m", "5m", "3m",
@@ -132,18 +132,18 @@ class ServerCmds(commands.Cog):
                     log.error(f'{countdown} is an undefined step, aborting!')
                     availableSteps1 = ', '.join(countdownSteps[:5])
                     availableSteps2 = ', '.join(countdownSteps[5:])
-                    await sendmarkdown(ctx, f'< {countdown} is an undefined step, aborting! >\n'
-                                       '> Available countdown steps are:\n'
-                                       f'> {availableSteps1},\n'
-                                       f'> {availableSteps2}')
+                    await ctx.sendmarkdown(f'< {countdown} is an undefined step, aborting! >\n'
+                                           '> Available countdown steps are:\n'
+                                           f'> {availableSteps1},\n'
+                                           f'> {availableSteps2}')
                     return
                 log.info(f'Restarting {server} with {countdown}-countdown.')
-                announcement = await sendmarkdown(ctx, f'> Restarting {server} with {countdown}-countdown.')
+                announcement = await ctx.sendmarkdown(f'> Restarting {server} with {countdown}-countdown.')
                 indx = countdownSteps.index(countdown)
                 cntd = countdownSteps[indx:]
             else:
                 log.info(f'Restarting {server} with default 10min countdown.')
-                announcement = await sendmarkdown(ctx, f'> Restarting {server} with default 10min countdown.', deletable=False)
+                announcement = await ctx.sendmarkdown(f'> Restarting {server} with default 10min countdown.', deletable=False)
                 cntd = countdownSteps[2:]
             await asyncio.sleep(1, loop=self.loop)  # Tiny delay to allow message to be edited!
             steps = buildCountdownSteps(cntd)
@@ -177,7 +177,7 @@ class ServerCmds(commands.Cog):
                         'title @a title {\"text\":\"Restart aborted!\", \"bold\":true}',
                         'broadcast Restart aborted!'
                     )
-                    await sendmarkdown(ctx, f'# Restart of {server} aborted!')
+                    await ctx.sendmarkdown(f'# Restart of {server} aborted!')
                     return
             await sendCmd(
                 self.loop,
@@ -230,20 +230,20 @@ class ServerCmds(commands.Cog):
                         await announcement.edit(content=f'```markdown\n< {server} termination failed! >\n')
             else:
                 log.info(f'Restart in progress, {server} was stopped.')
-                await sendmarkdown(ctx, f'# Restart in progress, {server} was stopped.')
+                await ctx.sendmarkdown(f'# Restart in progress, {server} was stopped.')
                 log.info(f'Starting {server}')
-                await sendmarkdown(ctx, f'> Starting {server}.')
+                await ctx.sendmarkdown(f'> Starting {server}.')
                 await serverStart(server, self.servercfg, self.loop)
                 await asyncio.sleep(5, loop=self.loop)
                 if isUp(server):
                     log.info(f'Restart successful, {server} is now running!')
-                    await sendmarkdown(ctx, f'# Restart successful, {server} is now running!')
+                    await ctx.sendmarkdown(f'# Restart successful, {server} is now running!')
                 else:
                     log.warning(f'Restart failed, {server} does not appear to have started!')
-                    await sendmarkdown(ctx, f'< Restart failed, {server} does not appear to have started! >')
+                    await ctx.sendmarkdown(f'< Restart failed, {server} does not appear to have started! >')
         else:
             log.warning(f'Restart cancelled, {server} is offline!')
-            await sendmarkdown(ctx, f'< Restart cancelled, {server} is offline! >')
+            await ctx.sendmarkdown(f'< Restart cancelled, {server} is offline! >')
 
     @server.command()
     @permission_node(f'{__name__}.status')
@@ -257,12 +257,12 @@ class ServerCmds(commands.Cog):
             servers = self.servercfg['servers'].keys()
         elif server not in self.servercfg['servers']:
             log.warning(f'{server} has been misspelled or not configured!')
-            await sendmarkdown(ctx, f'< {server} has been misspelled or not configured! >')
+            await ctx.sendmarkdown(f'< {server} has been misspelled or not configured! >')
             return
         else:
             servers = [server]
         statuses = await serverStatus(servers, self.loop)
-        await sendmarkdown(ctx, f'{statuses}')
+        await ctx.sendmarkdown(f'{statuses}')
 
     @server.command()
     @permission_node(f'{__name__}.terminate')
@@ -271,22 +271,22 @@ class ServerCmds(commands.Cog):
 
         if server not in self.servercfg['servers']:
             log.warning(f'{server} has been misspelled or not configured!')
-            await sendmarkdown(ctx, f'< {server} has been misspelled or not configured! >')
+            await ctx.sendmarkdown(f'< {server} has been misspelled or not configured! >')
             return
         if not isUp(server):
             log.info(f'{server} is not running!')
-            await sendmarkdown(ctx, f'< {server} is not running! >')
+            await ctx.sendmarkdown(f'< {server} is not running! >')
             return
         log.info(f'Attempting termination of {server}...')
-        await sendmarkdown(ctx, f'> Attempting termination of {server}\n'
-                           '> Please hold, this may take a couple of seconds.')
+        await ctx.sendmarkdown(f'> Attempting termination of {server}\n'
+                               '> Please hold, this may take a couple of seconds.')
         killed = await serverTerminate(server, self.loop)
         if killed:
             log.info(f'{server} terminated.')
-            await sendmarkdown(ctx, f'# {server} terminated.')
+            await ctx.sendmarkdown(f'# {server} terminated.')
         else:
             log.info(f'Could not terminate {server}!')
-            await sendmarkdown(ctx, f'< Well this is awkward... {server} is still up! >')
+            await ctx.sendmarkdown(f'< Well this is awkward... {server} is still up! >')
 
 
 def setup(bot):

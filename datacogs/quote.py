@@ -4,7 +4,7 @@ from random import randrange
 from discord.ext import commands
 from utils.config import Config
 from utils.flipbooks import Flipbook
-from utils.discoutils import permission_node, send
+from utils.discoutils import permission_node
 
 log = logging.getLogger('charfred')
 
@@ -67,13 +67,13 @@ class Quotator(commands.Cog):
                     q = self.quotes[id][_index]['quote']
                 except (KeyError, IndexError):
                     log.info('No quote with that index!')
-                    await send(ctx, 'Sorry sir, there is no quote under that number!')
+                    await ctx.send('Sorry sir, there is no quote under that number!')
                     return
             if member.nick:
                 name = member.nick
             else:
                 name = member.name
-            await send(ctx, f'{q}\n\n_{name}; Quote #{_index}_')
+            await ctx.send(f'{q}\n\n_{name}; Quote #{_index}_')
         else:
 
             converter = commands.MemberConverter()
@@ -92,7 +92,7 @@ class Quotator(commands.Cog):
                     return member.name
 
             members = '\n'.join(filter(None, [await getName(id) for id in list(self.quotes.keys())]))
-            await send(ctx, f'I have quotes from these members:\n ```\n{members}\n```')
+            await ctx.send(f'I have quotes from these members:\n ```\n{members}\n```')
 
     @quote.command(aliases=['delete', 'unquote'])
     async def remove(self, ctx, member: discord.Member, *, _index: int):
@@ -114,17 +114,17 @@ class Quotator(commands.Cog):
                 if ctx.author.id == member.id or \
                         ctx.author.id == self.quotes[id][_index]['savedBy']:
                     del self.quotes[id][_index]
-                    await send(ctx, 'We shall never speak of it again, sir!')
+                    await ctx.send('We shall never speak of it again, sir!')
                     await self.quotes.save()
                 else:
-                    await send(ctx, 'I am sorry, sir, but you are neither the quotee, '
-                               'nor the person who requested this quote to be saved.')
+                    await ctx.send('I am sorry, sir, but you are neither the quotee, '
+                                   'nor the person who requested this quote to be saved.')
             except KeyError:
                 log.info('Unknown quote, cannot remove!')
-                await send(ctx, 'Sorry sir, I don\'t seem to have a record of this quote.')
+                await ctx.send('Sorry sir, I don\'t seem to have a record of this quote.')
         else:
             log.info('Unknown member!')
-            await send(ctx, 'Sorry lass, I don\'t seem to have heard of this person before.')
+            await ctx.send('Sorry lass, I don\'t seem to have heard of this person before.')
 
     @quote.command(name='list')
     async def _list(self, ctx, member: discord.Member):
@@ -155,7 +155,7 @@ class Quotator(commands.Cog):
 
         else:
             log.info('Unknown member!')
-            await send(ctx, 'Sorry lass, I don\'t seem to have heard of this person before.')
+            await ctx.send('Sorry lass, I don\'t seem to have heard of this person before.')
 
 
 def setup(bot):

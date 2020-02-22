@@ -3,7 +3,7 @@ from discord import Forbidden, HTTPException, NotFound
 from discord.ext import commands
 from discord.utils import find
 from utils.config import Config
-from utils.discoutils import permission_node, sendmarkdown
+from utils.discoutils import permission_node
 
 log = logging.getLogger('charfred')
 
@@ -84,26 +84,26 @@ class Autorole(commands.Cog):
         try:
             towatch = await ctx.channel.fetch_message(message_id)
         except NotFound:
-            await sendmarkdown(ctx, '< Sorry, I can\'t find that message! >')
+            await ctx.sendmarkdown('< Sorry, I can\'t find that message! >')
             return
         except Forbidden:
-            await sendmarkdown(ctx, '< Oh dear, I don\'t seem to have access to that message. >')
+            await ctx.sendmarkdown('< Oh dear, I don\'t seem to have access to that message. >')
             return
         except HTTPException:
-            await sendmarkdown(ctx, '< Uh oh, something went wrong, I\'m terribly sorry! >')
+            await ctx.sendmarkdown('< Uh oh, something went wrong, I\'m terribly sorry! >')
             raise
 
         if not (action == 'add' or action == 'remove'):
-            await sendmarkdown(ctx, '< Unknown action, only add and remove '
-                               'are currently supported. >')
+            await ctx.sendmarkdown('< Unknown action, only add and remove '
+                                   'are currently supported. >')
             return
 
         l1 = emojitorole[0::2]
         l2 = emojitorole[1::2]
 
         if not (len(l1) == len(l2)):
-            await sendmarkdown(ctx, '< You have entered an uneven number of emoji and roles,'
-                               ' please only enter pairs. >')
+            await ctx.sendmarkdown('< You have entered an uneven number of emoji and roles,'
+                                   ' please only enter pairs. >')
             return
 
         if find(lambda r: r.name == l1[0], ctx.guild.roles):
@@ -113,16 +113,16 @@ class Autorole(commands.Cog):
             rolelist = l2
             emojilist = l1
         else:
-            await sendmarkdown(ctx, '< Well this is awkward, you seem to have not entered'
-                               ' a valid role, please try again! >')
+            await ctx.sendmarkdown('< Well this is awkward, you seem to have not entered'
+                                   ' a valid role, please try again! >')
             return
 
         roles = []
         for rolename in rolelist:
             role = find(lambda r: r.name == rolename, ctx.guild.roles)
             if role is None:
-                await sendmarkdown(ctx, f'< {rolename} did not match any existing role! '
-                                   'Abort! >')
+                await ctx.sendmarkdown(f'< {rolename} did not match any existing role! '
+                                       'Abort! >')
                 return
             else:
                 roles.append(role.id)
@@ -132,7 +132,7 @@ class Autorole(commands.Cog):
             'map': dict(zip(emojilist, roles))
         }
         await self.autoroles.save()
-        await sendmarkdown(ctx, '# Observation is underway!')
+        await ctx.sendmarkdown('# Observation is underway!')
         await towatch.add_reaction('🔭')
         log.info(f'Autorole: Watching {message_id}.')
 
@@ -145,10 +145,10 @@ class Autorole(commands.Cog):
         if message_id in self.autoroles['watchlist']:
             del self.autoroles['watchlist'][message_id]
             await self.autoroles.save()
-            await sendmarkdown(ctx, '# Observation called off!')
+            await ctx.sendmarkdown('# Observation called off!')
             log.info(f'Autorole: Watch on {message_id} cancelled.')
         else:
-            await sendmarkdown(ctx, '< Specified message is not currently under observation! >')
+            await ctx.sendmarkdown('< Specified message is not currently under observation! >')
 
 
 def setup(bot):

@@ -1,6 +1,5 @@
 import logging
 from discord.ext import commands
-from utils.discoutils import send
 
 log = logging.getLogger('charfred')
 
@@ -21,7 +20,7 @@ class Chuck(commands.Cog):
         log.info('Getting random chuck joke.')
         async with self.session.get('https://api.chucknorris.io/jokes/random') as r:
             joke = await r.json()
-            await send(ctx, f"`{joke['value']}`")
+            await ctx.send(f"`{joke['value']}`")
 
     @norris.command()
     async def category(self, ctx, category: str=None):
@@ -36,12 +35,12 @@ class Chuck(commands.Cog):
             async with self.session.get('https://api.chucknorris.io/jokes/categories') as r:
                 cats = await r.json()
                 cats = ', '.join(cats)
-                await send(ctx, f'Available categories: `{cats}`')
+                await ctx.send(f'Available categories: `{cats}`')
         else:
             log.info(f'Trying for a random joke from {category}.')
             async with self.session.get(f'https://api.chucknorris.io/jokes/random?category={category}') as r:
                 joke = await r.json()
-                await send(ctx, f"`{joke['value']}`")
+                await ctx.send(f"`{joke['value']}`")
 
 
 def setup(bot):

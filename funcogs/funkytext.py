@@ -4,7 +4,6 @@ import random
 from functools import partial
 from pyfiglet import Figlet
 from discord.ext import commands
-from utils.discoutils import send
 
 log = logging.getLogger('charfred')
 
@@ -92,7 +91,7 @@ class FunkyText(commands.Cog):
             log.warning('Couldn\'t delete msg!')
             pass
         finally:
-            await send(ctx, msg)
+            await ctx.send(msg)
 
     @commands.command()
     async def figlet(self, ctx, fnt: str, *, text: str):
@@ -106,9 +105,9 @@ class FunkyText(commands.Cog):
             fig = Figlet(font=fnt)
         except:
             log.warning('Couldn\'t find font!')
-            await send(ctx, f'Sorry, but {fnt} isn\'t known to pyfiglet!')
-            await send(ctx, 'Please see http://www.figlet.org/fontdb.cgi\n'
-                       'for a list of all available fonts, with examples!')
+            await ctx.send(f'Sorry, but {fnt} isn\'t known to pyfiglet!')
+            await ctx.send('Please see http://www.figlet.org/fontdb.cgi\n'
+                           'for a list of all available fonts, with examples!')
         else:
             figText = fig.renderText(text)
 
@@ -118,7 +117,7 @@ class FunkyText(commands.Cog):
                 log.warning('Couldn\'t delete msg!')
                 pass
             finally:
-                await send(ctx, f'```\n{figText}\n```')
+                await ctx.send(f'```\n{figText}\n```')
 
 
 def setup(bot):

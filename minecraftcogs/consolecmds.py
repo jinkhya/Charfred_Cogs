@@ -1,7 +1,7 @@
 from discord.ext import commands
 import logging
 from utils.config import Config
-from utils.discoutils import sendmarkdown, permission_node
+from utils.discoutils import permission_node
 from .utils.mcservutils import isUp, sendCmd
 
 log = logging.getLogger('charfred')
@@ -43,7 +43,7 @@ class ConsoleCmds(commands.Cog):
                 servers = self.servercfg['whitelistcategories'][category]
             except KeyError:
                 log.warning('Category not found!')
-                await sendmarkdown(ctx, f'< {category} does not exist! >')
+                await ctx.sendmarkdown(f'< {category} does not exist! >')
                 return
         else:
             servers = self.servercfg['servers']
@@ -57,7 +57,7 @@ class ConsoleCmds(commands.Cog):
             else:
                 log.warning(f'Could not whitelist {player} on {server}.')
                 msg.append(f'< Unable to whitelist {player}, {server} is offline! >')
-        await sendmarkdown(ctx, '\n'.join(msg))
+        await ctx.sendmarkdown('\n'.join(msg))
 
     @whitelist.command()
     async def remove(self, ctx, player: str, category: str=None):
@@ -71,7 +71,7 @@ class ConsoleCmds(commands.Cog):
                 servers = self.servercfg['whitelistcategories'][category]
             except KeyError:
                 log.warning('Category not found!')
-                await sendmarkdown(ctx, f'< {category} does not exist! >')
+                await ctx.sendmarkdown(f'< {category} does not exist! >')
                 return
         else:
             servers = self.servercfg['servers']
@@ -85,7 +85,7 @@ class ConsoleCmds(commands.Cog):
             else:
                 log.warning(f'Could not unwhitelist {player} on {server}.')
                 msg.append(f'< Unable to unwhitelist {player}, {server} is offline! >')
-        await sendmarkdown(ctx, '\n'.join(msg))
+        await ctx.sendmarkdown('\n'.join(msg))
 
     @whitelist.command()
     async def check(self, ctx, player: str):
@@ -103,7 +103,7 @@ class ConsoleCmds(commands.Cog):
                         msg.append(f'< {player} is NOT whitelisted on {server}. >')
             except FileNotFoundError:
                 msg.append(f'< {server} does not have a whitelist.json file! >')
-        await sendmarkdown(ctx, '\n'.join(msg))
+        await ctx.sendmarkdown('\n'.join(msg))
 
     @whitelist.group(invoke_without_command=True)
     @permission_node(f'{__name__}.categories')
@@ -122,7 +122,7 @@ class ConsoleCmds(commands.Cog):
                     msg.append(f'\t{server}')
         except KeyError:
             msg.append('> No Categories defined!')
-        await sendmarkdown(ctx, '\n'.join(msg))
+        await ctx.sendmarkdown('\n'.join(msg))
 
     @category.command()
     async def setdefault(self, ctx, category: str):
@@ -134,12 +134,12 @@ class ConsoleCmds(commands.Cog):
 
         if category not in self.servercfg['whitelistcategories']:
             log.warning('Category not found!')
-            await sendmarkdown(ctx, f'< {category} does not exist! >')
+            await ctx.sendmarkdown(f'< {category} does not exist! >')
         else:
             self.servercfg['defaultcategory'] = category
             log.info('Set default whitelisting category!')
             await self.servercfg.save()
-            await sendmarkdown(ctx, f'# {category} set as default whitelisting category.')
+            await ctx.sendmarkdown(f'# {category} set as default whitelisting category.')
 
     @category.command()
     async def add(self, ctx, category: str, *servers):
@@ -158,7 +158,7 @@ class ConsoleCmds(commands.Cog):
                 log.info(f'Added {server} to {category}.')
                 self.servercfg['whitelistcategories'][category].append(server)
         await self.servercfg.save()
-        await sendmarkdown(ctx, f'Done!')
+        await ctx.sendmarkdown(f'Done!')
 
     @category.command(name='remove')
     async def _remove(self, ctx, category: str, server: str=None):
@@ -170,12 +170,12 @@ class ConsoleCmds(commands.Cog):
                 self.servercfg['whitelistcategories'][category].remove(server)
             except KeyError:
                 log.warning('Category not found!')
-                await sendmarkdown(ctx, f'< {category} does not exist! >')
+                await ctx.sendmarkdown(f'< {category} does not exist! >')
             except ValueError:
                 log.warning('Server not found!')
-                await sendmarkdown(ctx, f'> {server} is not in {category}!')
+                await ctx.sendmarkdown(f'> {server} is not in {category}!')
             else:
-                await sendmarkdown(ctx, f'# {server} removed from {category}.')
+                await ctx.sendmarkdown(f'# {server} removed from {category}.')
             finally:
                 return
         log.info(f'Removing {category}.')
@@ -183,9 +183,9 @@ class ConsoleCmds(commands.Cog):
             del self.servercfg['whitelistcategories'][category]
         except KeyError:
             log.warning('Category not found!')
-            await sendmarkdown(ctx, f'< {category} does not exist! >')
+            await ctx.sendmarkdown(f'< {category} does not exist! >')
         else:
-            await sendmarkdown(ctx, f'# {category} removed!')
+            await ctx.sendmarkdown(f'# {category} removed!')
         await self.servercfg.save()
 
     @minecraft.command()
@@ -203,7 +203,7 @@ class ConsoleCmds(commands.Cog):
             msg.append(f'# Kicked {player} from {server}.')
         else:
             msg.append(f'< {server} is not online! >')
-        await sendmarkdown(ctx, '\n'.join(msg))
+        await ctx.sendmarkdown('\n'.join(msg))
 
     @minecraft.command()
     @permission_node(f'{__name__}.ban')
@@ -221,7 +221,7 @@ class ConsoleCmds(commands.Cog):
             else:
                 log.warning(f'Could not ban {player} from {server}.')
                 msg.append(f'< Unable to ban {player}, {server} is offline! >')
-        await sendmarkdown(ctx, '\n'.join(msg))
+        await ctx.sendmarkdown('\n'.join(msg))
 
     @minecraft.command(aliases=['pass'])
     @permission_node(f'{__name__}.relay')
@@ -239,7 +239,7 @@ class ConsoleCmds(commands.Cog):
         else:
             log.warning(f'Could not relay \"{command}\" to {server}.')
             msg.append(f'< Unable to relay command, {server} is offline! >')
-        await sendmarkdown(ctx, '\n'.join(msg))
+        await ctx.sendmarkdown('\n'.join(msg))
 
 
 def setup(bot):

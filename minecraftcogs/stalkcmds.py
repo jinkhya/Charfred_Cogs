@@ -2,7 +2,7 @@ import discord
 import logging
 from ttldict import TTLOrderedDict
 from discord.ext import commands
-from utils.discoutils import permission_node, send
+from utils.discoutils import permission_node
 from .utils.mcuser import MCUser, mojException
 
 log = logging.getLogger('charfred')
@@ -37,7 +37,7 @@ class StalkCmds(commands.Cog):
                     type="rich",
                     colour=discord.Colour.dark_red()
                 )
-                await send(ctx, embed=reportCard)
+                await ctx.send(embed=reportCard)
                 return
         reportCard = discord.Embed(
             title="__Subject: " + mcU.name + "__",
@@ -86,7 +86,7 @@ class StalkCmds(commands.Cog):
                                  value=f'```{pastNames}```')
         reportCard.set_footer(text="Report compiled by Agent Charfred")
         log.info('Sent Reportcard.')
-        await send(ctx, embed=reportCard)
+        await ctx.send(embed=reportCard)
 
 
 def setup(bot):

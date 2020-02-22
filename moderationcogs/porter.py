@@ -6,7 +6,7 @@ from discord import Forbidden
 from discord.ext import commands
 from discord.utils import find
 from utils.config import Config
-from utils.discoutils import permission_node, sendmarkdown
+from utils.discoutils import permission_node
 
 log = logging.getLogger('charfred')
 
@@ -68,10 +68,10 @@ class Porter(commands.Cog):
         """
         if self.flood:
             log.info('Floodmode active!')
-            await sendmarkdown(ctx, '# Floodmode is currently active!')
+            await ctx.sendmarkdown('# Floodmode is currently active!')
         else:
             log.info('Floodmode inactive!')
-            await sendmarkdown(ctx, '> Floodmode is currently inactive!')
+            await ctx.sendmarkdown('> Floodmode is currently inactive!')
 
     @floodmode.command(aliases=['start', 'on'])
     @permission_node(f'{__name__}.floodmode')
@@ -84,7 +84,7 @@ class Porter(commands.Cog):
 
         log.info('Activated floodmode!')
         self.flood = True
-        await sendmarkdown(ctx, 'Floodmode activated!')
+        await ctx.sendmarkdown('Floodmode activated!')
 
     @floodmode.command(aliases=['stop', 'off'])
     @permission_node(f'{__name__}.floodmode')
@@ -93,7 +93,7 @@ class Porter(commands.Cog):
 
         log.info('Deactivated floodmode!')
         self.flood = False
-        await sendmarkdown(ctx, 'Floodmode deactivated!')
+        await ctx.sendmarkdown('Floodmode deactivated!')
 
     @commands.command()
     @permission_node(f'{__name__}.newbiepromote')
@@ -113,15 +113,15 @@ class Porter(commands.Cog):
                 log.info('User hasn\'t joined yet, adding to waitlist.')
                 self.promotees['awaiting'].append(promotee)
                 await self.promotees.save()
-                await sendmarkdown(ctx, '# User has not joined yet, adding to waitlist.')
+                await ctx.sendmarkdown('# User has not joined yet, adding to waitlist.')
             else:
                 log.info('Cannot wait for invalid username!')
-                await sendmarkdown(ctx, f'< \"{promotee}\" is in an invalid format, please try again!')
+                await ctx.sendmarkdown(f'< \"{promotee}\" is in an invalid format, please try again!')
         else:
             log.info('User is already a member, promoting immediately.')
             memberRole = find(lambda r: r.name == self.memberRoleName, member.guild.roles)
             await member.edit(roles=[memberRole])
-            await sendmarkdown(ctx, '# User is already a member, promoting immediately.')
+            await ctx.sendmarkdown('# User is already a member, promoting immediately.')
 
     @commands.group()
     @permission_node(f'{__name__}.autokick')
@@ -134,10 +134,10 @@ class Porter(commands.Cog):
 
         if self.autokicker:
             if not self.autokicker[0].done():
-                await sendmarkdown(ctx, '# Autokick is active; kick after '
-                                   f'{self.autokicker[3]} minutes.')
+                await ctx.sendmarkdown('# Autokick is active; kick after '
+                                       f'{self.autokicker[3]} minutes.')
         else:
-            await sendmarkdown(ctx, '< Autokick is not active. >')
+            await ctx.sendmarkdown('< Autokick is not active. >')
 
     async def _hookit(self, member, content):
         log.info('Sending kick report!')
@@ -160,14 +160,14 @@ class Porter(commands.Cog):
 
         if self.autokicker and not self.autokicker[0].done():
             log.info('Autokick already active!')
-            await sendmarkdown(ctx, '# Autokick is already active!')
+            await ctx.sendmarkdown('# Autokick is already active!')
             return
 
         async def kicknotify(member):
-            await sendmarkdown(member, kickmsg, deletable=False)
+            await ctx.sendmarkdown(member, kickmsg, deletable=False)
 
         async def stopnotify():
-            await sendmarkdown(ctx, '# Autokicking suspended!')
+            await ctx.sendmarkdown('# Autokicking suspended!')
 
         def autokickdone(future):
             log.info(f'Stopping autokick.')

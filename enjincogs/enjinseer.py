@@ -3,7 +3,7 @@ import json
 from collections import namedtuple
 from discord.ext import commands
 from utils.config import Config
-from utils.discoutils import send, sendmarkdown, permission_node
+from utils.discoutils import permission_node
 from .utils.enjinutils import login, post
 
 log = logging.getLogger('charfred')
@@ -50,7 +50,7 @@ class Enjinseer(commands.Cog):
                 email, password, url, site_id = self.enjincfg['login']
             else:
                 log.warning('No saved credentials available!')
-                await sendmarkdown(ctx, '< No credentials! Login impossible. >')
+                await ctx.sendmarkdown('< No credentials! Login impossible. >')
                 return
         else:
             if url.endswith('/'):
@@ -65,14 +65,14 @@ class Enjinseer(commands.Cog):
 
         async with ctx.typing():
             log.info('Logging into Enjin...')
-            await sendmarkdown(ctx, '> Logging in...')
+            await ctx.sendmarkdown('> Logging in...')
             enjinsession = await login(self.session, self.enjinlogin)
             if enjinsession:
                 self.enjinsession = self.bot.enjinsession = enjinsession
                 self.enjincfg['login'] = [email, password, url, site_id]
-                await sendmarkdown(ctx, '# Login successful!', deletable=False)
+                await ctx.sendmarkdown('# Login successful!', deletable=False)
             else:
-                await sendmarkdown(ctx, '< Login failed! >', deletable=False)
+                await ctx.sendmarkdown('< Login failed! >', deletable=False)
 
     @enjin.command(aliases=['stupify', 'post'])
     @commands.is_owner()
@@ -87,7 +87,7 @@ class Enjinseer(commands.Cog):
         """
 
         if not self.enjinsession:
-            await sendmarkdown(ctx, '< I am not logged in to enjin yet! >')
+            await ctx.sendmarkdown('< I am not logged in to enjin yet! >')
             return
 
         async with ctx.typing():
@@ -100,7 +100,7 @@ class Enjinseer(commands.Cog):
                 log.info('Parsing parameters...')
                 if not (len(params) % 2 == 0):
                     log.warning('Uneven number of keys/values!')
-                    await sendmarkdown(ctx, '< Uneven number of keys/values! >')
+                    await ctx.sendmarkdown('< Uneven number of keys/values! >')
                     return
                 params = iter(params)
                 params = dict(list(zip(params, params)))
@@ -117,10 +117,10 @@ class Enjinseer(commands.Cog):
                 resp = json.dumps(resp, indent=2)
                 resp = [resp[i:i + 1800] for i in range(0, len(resp), 1800)]
                 for section in resp[:8]:
-                    await send(ctx, f'```json\n{section}```')
+                    await ctx.send(f'```json\n{section}```')
             else:
                 log.warning('Request failed!')
-                await sendmarkdown(ctx, '< Request failed for some reason! >')
+                await ctx.sendmarkdown('< Request failed for some reason! >')
 
 
 def setup(bot):

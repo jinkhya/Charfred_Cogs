@@ -2,7 +2,7 @@ import os
 import functools
 import psutil
 from discord.ext import commands
-from utils.discoutils import permission_node, send
+from utils.discoutils import permission_node
 
 
 class Chartop(commands.Cog):
@@ -48,7 +48,7 @@ class Chartop(commands.Cog):
                ' ',
                f'Memory Percentage:   {memPerc}']
         msg = '\n'.join(msg)
-        await send(ctx, f'```{msg}```')
+        await ctx.send(f'```{msg}```')
 
 
 def setup(bot):

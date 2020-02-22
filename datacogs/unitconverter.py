@@ -5,7 +5,6 @@ from pint import UnitRegistry, DimensionalityError, DefinitionSyntaxError, \
 
 from discord import Embed
 from discord.ext import commands
-from utils.discoutils import sendmarkdown, send
 
 log = logging.getLogger('charfred')
 
@@ -38,18 +37,18 @@ class UnitConverter(commands.Cog):
             out = m.to(targetunit)
         except DimensionalityError as e:
             log.warning(e)
-            await sendmarkdown(ctx, f'< Error! >'
-                               f'< {e} >')
+            await ctx.sendmarkdown(f'< Error! >'
+                                   f'< {e} >')
         except DefinitionSyntaxError as e:
             log.warning(e)
-            await sendmarkdown(ctx, f'< Unable to parse {measurement}! >\n'
-                               f'< {e} >')
+            await ctx.sendmarkdown(f'< Unable to parse {measurement}! >\n'
+                                   f'< {e} >')
         except UndefinedUnitError as e:
             log.warning(e)
-            await sendmarkdown(ctx, '< Sorry, I can only do basic units >\n'
-                               '< and temperatures. >')
+            await ctx.sendmarkdown('< Sorry, I can only do basic units >\n'
+                                   '< and temperatures. >')
         else:
-            await sendmarkdown(ctx, f'# {measurement} is (roughly) {out}')
+            await ctx.sendmarkdown(f'# {measurement} is (roughly) {out}')
 
     @convert.command()
     async def block(self, ctx, x, z):
@@ -58,9 +57,9 @@ class UnitConverter(commands.Cog):
 
         chunk = f'{(int(x) >> 4)}, {(int(z) >> 4)}'
         regionfile = 'r.' + str((int(x) >> 4) // 32) + '.' + str((int(z) >> 4) // 32) + '.mca'
-        await sendmarkdown(ctx, f'# Coordinates x:{x}, z:{z} correspond to:\n'
-                           f'Chunk coordinates: {chunk}\n'
-                           f'Region file: {regionfile}')
+        await ctx.sendmarkdown(f'# Coordinates x:{x}, z:{z} correspond to:\n'
+                               f'Chunk coordinates: {chunk}\n'
+                               f'Region file: {regionfile}')
 
     @convert.command()
     async def uuid(self, ctx, uuid: str):
@@ -74,7 +73,7 @@ class UnitConverter(commands.Cog):
                                     f'session/minecraft/profile/{uuid}') as r:
             d = await r.json()
         if not d:
-            await sendmarkdown(ctx, '< Couldn\'t get anything, sorry! >')
+            await ctx.sendmarkdown('< Couldn\'t get anything, sorry! >')
             return
         card = Embed(
             title=f'__Subject: {d["name"]}__',
@@ -93,7 +92,7 @@ class UnitConverter(commands.Cog):
             value="```\n" + uuid + "\n```"
         )
         card.set_footer(text="Look at that asshole... ಠ_ಠ")
-        await send(ctx, embed=card)
+        await ctx.send(embed=card)
 
 
 def setup(bot):

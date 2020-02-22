@@ -1,6 +1,5 @@
 import logging
 from discord.ext import commands
-from utils.discoutils import send
 
 log = logging.getLogger('charfred')
 
@@ -24,7 +23,7 @@ class Jokes(commands.Cog):
                    'User-Agent': ua}
         async with self.session.get('https://icanhazdadjoke.com/', headers=headers) as r:
             dadjoke = await r.json()
-            await send(ctx, f"{dadjoke['joke']}")
+            await ctx.send(f"{dadjoke['joke']}")
 
 
 def setup(bot):

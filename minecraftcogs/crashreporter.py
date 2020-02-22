@@ -2,7 +2,7 @@ from discord.ext import commands
 import logging
 import asyncio
 from discord import File
-from utils.discoutils import permission_node, sendmarkdown, promptconfirm
+from utils.discoutils import permission_node
 from .utils.mcservutils import getcrashreport, parsereport, formatreport
 
 log = logging.getLogger('charfred')
@@ -23,14 +23,14 @@ class CrashReporter(commands.Cog):
         0 for the newest report, 1 for the one before, etc.
         """
         if server not in self.servercfg['servers']:
-            await sendmarkdown(ctx, f'< I have no knowledge of {server}! >')
+            await ctx.sendmarkdown(f'< I have no knowledge of {server}! >')
             return
 
         log.info(f'Getting report for {server}.')
         serverspath = self.servercfg['serverspath']
         rpath, _ = await self.loop.run_in_executor(None, getcrashreport, server, serverspath, nthlast)
 
-        b, _, timedout = await promptconfirm(ctx, 'Do you wish to download the full report?')
+        b, _, timedout = await ctx.promptconfirm('Do you wish to download the full report?')
         if timedout:
             log.info('Crasreport prompt timed out!')
             return
@@ -51,7 +51,7 @@ class CrashReporter(commands.Cog):
         )
 
         for c in chunks:
-            await sendmarkdown(ctx, c)
+            await ctx.sendmarkdown(c)
             await asyncio.sleep(1, loop=self.loop)
         log.info('Report sent!')
 

@@ -2,7 +2,7 @@ from discord.ext import commands
 import re
 import asyncio
 import logging
-from utils.discoutils import permission_node, sendmarkdown
+from utils.discoutils import permission_node
 
 log = logging.getLogger('charfred')
 
@@ -98,7 +98,7 @@ class CronReader(commands.Cog):
         # await cronFlip.flip()
         for i in range(0, len(spiffycron), 12):
             out = '\n'.join(spiffycron[i:i + 12])
-            await sendmarkdown(ctx, out)
+            await ctx.sendmarkdown(out)
 
 
 def setup(bot):

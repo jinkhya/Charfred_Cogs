@@ -6,7 +6,7 @@ import tarfile
 from shutil import rmtree
 from utils.config import Config
 from utils.flipbooks import Flipbook
-from utils.discoutils import permission_node, sendmarkdown, promptconfirm
+from utils.discoutils import permission_node
 from .utils.mcservutils import isUp
 
 log = logging.getLogger('charfred')
@@ -31,7 +31,7 @@ class ServerBackups(commands.Cog):
 
         if server not in self.servercfg['servers']:
             log.warning(f'{server} has been misspelled or not configured!')
-            await sendmarkdown(ctx, f'< {server} has been misspelled or not configured! >')
+            await ctx.sendmarkdown(f'< {server} has been misspelled or not configured! >')
             return
         bpath = self.servercfg['backupspath']
         availablebackups = [archive for archive in os.listdir(f'{bpath}/{server}')
@@ -75,18 +75,18 @@ class ServerBackups(commands.Cog):
         backupfile = self.getbackupfile(server, backup)
         if backupfile is None:
             log.warning(f'{backup} did not match any backups for {server}!')
-            await sendmarkdown(ctx, f'< {backup} did not match any backups for {server}! >')
+            await ctx.sendmarkdown(f'< {backup} did not match any backups for {server}! >')
             return
         log.info(f'Preparing for full backup application using {backupfile}!')
-        await sendmarkdown(ctx, f'Using {backupfile}')
-        r, _, timedout = await promptconfirm(ctx, 'Would you like to proceed?')
+        await ctx.sendmarkdown(f'Using {backupfile}')
+        r, _, timedout = await ctx.promptconfirm('Would you like to proceed?')
         if timedout:
             return
         if r:
             log.info('Confirmed!')
             if isUp(server):
                 log.warning(f'{server} still up, cannot proceed!')
-                await sendmarkdown(ctx, f'{server} is still up, cannot proceed!')
+                await ctx.sendmarkdown(f'{server} is still up, cannot proceed!')
                 return
             serverpath = self.servercfg['serverspath']
             worldpath = f'{serverpath}/{server}/world'
@@ -98,7 +98,7 @@ class ServerBackups(commands.Cog):
                 return
             else:
                 log.info(f'{worldpath} deleted!')
-                await sendmarkdown(ctx, 'This next step might take some time...')
+                await ctx.sendmarkdown('This next step might take some time...')
 
                 def extracthelper():
                     with tarfile.open(backupfile, 'r:gz') as tf:
@@ -106,7 +106,7 @@ class ServerBackups(commands.Cog):
 
                 await self.loop.run_in_executor(None, extracthelper)
                 log.info('World folder extracted from backup and placed!')
-                await sendmarkdown(ctx, 'World folder replaced, job done!')
+                await ctx.sendmarkdown('World folder replaced, job done!')
         else:
             log.info('Aborted!')
 
@@ -131,23 +131,23 @@ class ServerBackups(commands.Cog):
         backupfile = self.getbackupfile(server, backup)
         if backupfile is None:
             log.warning(f'{backup} did not match any backups for {server}!')
-            await sendmarkdown(ctx, f'< {backup} did not match any backups for {server}! >')
+            await ctx.sendmarkdown(f'< {backup} did not match any backups for {server}! >')
             return
         log.info(f'Preparing for partial backup application using {backupfile}!')
-        await sendmarkdown(ctx, f'Using {backupfile}')
+        await ctx.sendmarkdown(f'Using {backupfile}')
         log.info('Regions to be extracted:')
         for r in regions:
             log.info(r)
-        await sendmarkdown(ctx, 'Regions that will be extracted:\n' +
-                           '\n'.join(regions))
-        r, _, timedout = await promptconfirm(ctx, 'Would you like to proceed?')
+        await ctx.sendmarkdown('Regions that will be extracted:\n' +
+                               '\n'.join(regions))
+        r, _, timedout = await ctx.promptconfirm('Would you like to proceed?')
         if timedout:
             return
         if r:
             log.info('Confirmed!')
             if isUp(server):
                 log.warning(f'{server} still up, cannot proceed!')
-                await sendmarkdown(ctx, f'{server} is still up, cannot proceed!')
+                await ctx.sendmarkdown(f'{server} is still up, cannot proceed!')
                 return
             serverpath = self.servercfg['serverspath']
             regionpath = f'{serverpath}/{server}/world/region'
@@ -160,22 +160,22 @@ class ServerBackups(commands.Cog):
                 except Exception as e:
                     log.error(e + f'\nDeletion of {r} failed!')
                     failed = True
-                    await sendmarkdown(ctx, f'Deletion of {r} failed!')
+                    await ctx.sendmarkdown(f'Deletion of {r} failed!')
                 else:
                     deleted.append(r)
             if failed:
-                await sendmarkdown(ctx, 'There were some errors encountered '
-                                   'during deletion!\nThe following regions '
-                                   'were deleted successfully however:\n' +
-                                   '\n'.join(deleted) + '\nPartial backup '
-                                   'application will continue, but only the '
-                                   'successfully deleted regions will be '
-                                   'replaced, please investigate why the '
-                                   'other regions failed to be deleted '
-                                   'manually!')
+                await ctx.sendmarkdown('There were some errors encountered '
+                                       'during deletion!\nThe following regions '
+                                       'were deleted successfully however:\n' +
+                                       '\n'.join(deleted) + '\nPartial backup '
+                                       'application will continue, but only the '
+                                       'successfully deleted regions will be '
+                                       'replaced, please investigate why the '
+                                       'other regions failed to be deleted '
+                                       'manually!')
             else:
-                await sendmarkdown(ctx, 'All specified regions successfully '
-                                   'deleted! Continuing with replacement...')
+                await ctx.sendmarkdown('All specified regions successfully '
+                                       'deleted! Continuing with replacement...')
 
             def extracthelper():
                 with tarfile.open(backupfile, 'r:gz') as tf:
@@ -184,7 +184,7 @@ class ServerBackups(commands.Cog):
 
             await self.loop.run_in_executor(None, extracthelper)
             log.info('Regions extracted from backup and placed!')
-            await sendmarkdown(ctx, 'Regions replaced, job done!')
+            await ctx.sendmarkdown('Regions replaced, job done!')
         else:
             log.info('Aborted!')
 

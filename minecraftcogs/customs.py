@@ -3,7 +3,7 @@ from discord.utils import find
 import re
 import logging
 from utils.config import Config
-from utils.discoutils import permission_node, sendmarkdown
+from utils.discoutils import permission_node
 from .utils.mcservutils import isUp, sendCmd
 
 log = logging.getLogger('charfred')
@@ -36,7 +36,7 @@ class Customs(commands.Cog):
             msg.append(f"\t{cmd['role']}")
             msg.append(f"\t{cmd['cmd']}\n")
         msg = '\n'.join(msg)
-        await sendmarkdown(ctx, msg)
+        await ctx.sendmarkdown(msg)
 
     @custom.command(aliases=['edit', 'modify'])
     @permission_node(f'{__name__}.customEdit')
@@ -56,14 +56,14 @@ class Customs(commands.Cog):
         when the command is ran.
         """
         if minRole not in self.bot.cfg['hierarchy']:
-            await sendmarkdown(ctx, f'< {minRole} is not in the role hierarchy. >\n'
-                               '> Please try again!')
+            await ctx.sendmarkdown(f'< {minRole} is not in the role hierarchy. >\n'
+                                   '> Please try again!')
             return
 
         self.customcmds[name] = {'role': minRole, 'cmd': cmd}
         log.info(f'Added \"{cmd}\" to custom console commands library as \"{name}\".')
-        await sendmarkdown(ctx, f'# Added \"{cmd}\" to your custom console commands'
-                           ' library as \"{name}\".')
+        await ctx.sendmarkdown(f'# Added \"{cmd}\" to your custom console commands'
+                               ' library as \"{name}\".')
         await self.customcmds.save()
 
     @custom.command(aliases=['delete'])
@@ -76,7 +76,7 @@ class Customs(commands.Cog):
         """
         del self.customcmds[name]
         log.info(f'Removed \"{name}\" from your custom console commands library.')
-        await sendmarkdown(ctx, f'# Removed \"{name}\" from your custom console commands library.')
+        await ctx.sendmarkdown(f'# Removed \"{name}\" from your custom console commands library.')
         await self.customcmds.save()
 
     @custom.command(aliases=['execute', 'exec'])
@@ -94,7 +94,7 @@ class Customs(commands.Cog):
         msg = ['Command Log', '===========']
         if cmd not in self.customcmds:
             log.warning(f'\"{cmd}\" is undefined!')
-            await sendmarkdown(ctx, f'< \"{cmd}\" is undefined! >')
+            await ctx.sendmarkdown(f'< \"{cmd}\" is undefined! >')
             return
         _cmd = self.customcmds[cmd]['cmd']
         role = self.customcmds[cmd]['role']
@@ -104,12 +104,12 @@ class Customs(commands.Cog):
             roles = [r for r in ctx.author.roles if r.name in hierarchy]
             if (not roles) or (roles[-1] < minRole):
                 log.warning(f'User is missing permissions for {cmd}!')
-                await sendmarkdown(ctx, f'< You are not permitted to run {cmd}! >\n'
-                                   f'< Minimum required role is {str(minRole)}. >')
+                await ctx.sendmarkdown(f'< You are not permitted to run {cmd}! >\n'
+                                       f'< Minimum required role is {str(minRole)}. >')
                 return
         else:
             log.warning(f'Required role "{role}" does not exist!')
-            await sendmarkdown(ctx, f'< Required role "{role}" does not exist! Abort! >')
+            await ctx.sendmarkdown(f'< Required role "{role}" does not exist! Abort! >')
             return
         log.info(f'Required: {str(minRole)}; User has: {str(roles[-1])}')
 
@@ -134,7 +134,7 @@ class Customs(commands.Cog):
             else:
                 log.warning(f'Could not execute \"{cmd}\", {server} is offline!')
                 msg.append(f'< {server} is offline! >')
-        await sendmarkdown(ctx, '\n'.join(msg))
+        await ctx.sendmarkdown('\n'.join(msg))
 
 
 def setup(bot):
