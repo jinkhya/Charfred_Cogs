@@ -247,7 +247,7 @@ def setup(bot):
         default = {
             "servers": {}, "serverspath": "NONE", "backupspath": "NONE", "oldTimer": 1440
         }
-        bot.servercfg = Config(f'{bot.dir}/configs/serverCfgs.json',
+        bot.servercfg = Config(f'{bot.dir}/configs/serverCfgs.toml',
                                default=default,
                                load=True, loop=bot.loop)
     permission_nodes = ['whitelist', 'categories', 'kick', 'ban', 'relay']
