@@ -3,6 +3,7 @@ import re
 import asyncio
 import logging
 from utils.discoutils import permission_node
+from utils.flipbooks import Flipbook
 
 log = logging.getLogger('charfred')
 
@@ -94,11 +95,11 @@ class CronReader(commands.Cog):
         crontab = stdout.decode().strip().split('\n')
         log.info('Parsing crontab...')
         spiffycron = await self.loop.run_in_executor(None, self._parseCron, crontab)
-        # cronFlip = Flipbook(ctx, spiffycron, entries_per_page=8, title='Spiffy Cronjobs')
-        # await cronFlip.flip()
-        for i in range(0, len(spiffycron), 12):
-            out = '\n'.join(spiffycron[i:i + 12])
-            await ctx.sendmarkdown(out)
+        cronFlip = Flipbook(ctx, spiffycron, entries_per_page=8, title='Spiffy Cronjobs')
+        await cronFlip.flip()
+        # for i in range(0, len(spiffycron), 12):
+        #     out = '\n'.join(spiffycron[i:i + 12])
+        #     await ctx.sendmarkdown(out)
 
 
 def setup(bot):
