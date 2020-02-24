@@ -195,7 +195,7 @@ class Watchdog(commands.Cog):
             await ctx.sendmarkdown('# Watchdog activated!', deletable=False)
 
     @watchdog.command(name='activate', aliases=['start', 'watch'])
-    async def wdstart(self, ctx, *, servers: str):
+    async def wdstart(self, ctx, *servers: str):
         """Start the process watchdog for a server."""
 
         for server in servers:
