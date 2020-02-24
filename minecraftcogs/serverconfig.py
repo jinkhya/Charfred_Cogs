@@ -34,22 +34,18 @@ class ServerConfig(commands.Cog):
             return m.author.id == ctx.author.id and m.channel.id == ctx.channel.id
 
         self.servercfg['servers'][server] = {}
+
         await ctx.send(f'```Beginning configuration for {server}!'
                        f'\nPlease enter the invocation for {server}:```')
         r1 = await self.bot.wait_for('message', check=check, timeout=120)
         self.servercfg['servers'][server]['invocation'] = r1.content
-        await ctx.send(f'```Do you want to run backups on {server}? [y/n]```')
-        r2 = await self.bot.wait_for('message', check=check, timeout=120)
-        if re.match('(y|yes)', r2.content, flags=re.I):
-            self.servercfg['servers'][server]['backup'] = True
-        else:
-            self.servercfg['servers'][server]['backup'] = False
+
         await ctx.send(f'```Please enter the name of the main world folder for {server}:```')
         r3 = await self.bot.wait_for('message', check=check, timeout=120)
         self.servercfg['servers'][server]['worldname'] = r3.content
+
         await ctx.sendmarkdown(f'You have entered the following for {server}:\n' +
                                f'Invocation: {r1.content}\n' +
-                               f'Backup: {r2.content}\n' +
                                f'Worldname: {r3.content}\n' +
                                '# Please confirm! [y/n]')
         r4 = await self.bot.wait_for('message', check=check, timeout=120)
@@ -88,7 +84,8 @@ class ServerConfig(commands.Cog):
 
         embeds = await self.loop.run_in_executor(None, self.buildEmbeds)
         cfgFlip = EmbedFlipbook(ctx, embeds, entries_per_page=1,
-                                title='Server Configurations')
+                                title='Server Configurations',
+                                close_on_exit=True)
         await cfgFlip.flip()
 
     @config.command()

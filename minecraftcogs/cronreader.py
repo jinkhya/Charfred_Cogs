@@ -93,7 +93,8 @@ class CronReader(commands.Cog):
         crontab = stdout.decode().strip().split('\n')
         log.info('Parsing crontab...')
         spiffycron = await self.loop.run_in_executor(None, self._parseCron, crontab)
-        cronFlip = Flipbook(ctx, spiffycron, entries_per_page=8, title='Spiffy Cronjobs')
+        cronFlip = Flipbook(ctx, spiffycron, entries_per_page=8, title='Spiffy Cronjobs',
+                            close_on_exit=True)
         await cronFlip.flip()
 
 
