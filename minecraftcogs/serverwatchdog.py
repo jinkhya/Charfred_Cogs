@@ -65,10 +65,7 @@ class Watchdog(commands.Cog):
             await ctx.sendmarkdown(f'< {mentionee} is not a valid role! >')
             log.warning('Role could not be found, role to mention unchanged.')
 
-    @watchdog.command(name='activate', aliases=['start', 'watch'])
-    async def wdstart(self, ctx, server: str):
-        """Start the process watchdog for a server."""
-
+    async def _wdstart(self, ctx, server):
         if server in self.watchdogs and not self.watchdogs[server][0].done():
             log.info(f'{server} watchdog active.')
             await ctx.sendmarkdown('# Watchdog already active!')
@@ -196,6 +193,13 @@ class Watchdog(commands.Cog):
             watchFuture.add_done_callback(watchDone)
             self.watchdogs[server] = (watchFuture, event)
             await ctx.sendmarkdown('# Watchdog activated!', deletable=False)
+
+    @watchdog.command(name='activate', aliases=['start', 'watch'])
+    async def wdstart(self, ctx, *, servers: str):
+        """Start the process watchdog for a server."""
+
+        for server in servers:
+            await self._wdstart(ctx, server)
 
     @watchdog.command(name='deactivate', aliases=['stop', 'unwatch'])
     async def wdstop(self, ctx, server: str):
