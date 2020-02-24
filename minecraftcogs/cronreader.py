@@ -31,7 +31,7 @@ class CronReader(commands.Cog):
                                                                               'min', 'hour',
                                                                               'day', 'cmd',
                                                                               'server', 'args')
-            state = '> ' if disabled else '# '
+            state = '# ' if disabled else ''
             if reboot:
                 condition = 'Runs at reboot:'
                 output = f'{state}{condition} {cmd} {server}'
@@ -66,8 +66,6 @@ class CronReader(commands.Cog):
                     output += f' {args}'
                 parsedlines.append(output)
 
-        parsedlines.append('< Please note that greyed out lines indicate\n'
-                           'disabled cron jobs! Blue lines are enabled. >')
         return parsedlines
 
     @commands.group(invoke_without_command=True)
@@ -97,9 +95,6 @@ class CronReader(commands.Cog):
         spiffycron = await self.loop.run_in_executor(None, self._parseCron, crontab)
         cronFlip = Flipbook(ctx, spiffycron, entries_per_page=8, title='Spiffy Cronjobs')
         await cronFlip.flip()
-        # for i in range(0, len(spiffycron), 12):
-        #     out = '\n'.join(spiffycron[i:i + 12])
-        #     await ctx.sendmarkdown(out)
 
 
 def setup(bot):
