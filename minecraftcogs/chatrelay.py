@@ -206,6 +206,7 @@ class ChatRelay(commands.Cog):
 
         writer.close()
         log.info(f'CR-Connection: Connection with {client} closed!')
+        await self.inqueue.put((client, f':SYS::```markdown\n< {client} disconnected! >\n```'))
 
     async def inqueue_worker(self):
         log.info('CR-Inqueue: Worker started!')
