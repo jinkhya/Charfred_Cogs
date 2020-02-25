@@ -2,9 +2,7 @@ from discord.ext import commands
 import discord
 import re
 import logging
-from utils.config import Config
-from utils.discoutils import permission_node
-from utils.flipbooks import EmbedFlipbook
+from utils import Config, permission_node, EmbedFlipbook
 
 log = logging.getLogger('charfred')
 

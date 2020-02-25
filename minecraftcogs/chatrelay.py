@@ -2,8 +2,7 @@ import logging
 import asyncio
 from concurrent.futures import CancelledError
 from discord.ext import commands
-from utils.config import Config
-from utils.discoutils import permission_node
+from utils import Config, permission_node
 
 log = logging.getLogger('charfred')
 

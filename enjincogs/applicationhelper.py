@@ -5,8 +5,7 @@ from time import sleep
 from threading import Event
 from discord.ext import commands
 from discord.utils import find
-from utils.config import Config
-from utils.discoutils import permission_node
+from utils import Config, permission_node
 from .utils.enjinutils import post, verifysession, login
 
 log = logging.getLogger('charfred')

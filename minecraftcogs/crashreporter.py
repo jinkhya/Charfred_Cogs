@@ -2,7 +2,7 @@ from discord.ext import commands
 import logging
 import asyncio
 from discord import File
-from utils.discoutils import permission_node
+from utils import permission_node
 from .utils.mcservutils import getcrashreport, parsereport, formatreport
 
 log = logging.getLogger('charfred')

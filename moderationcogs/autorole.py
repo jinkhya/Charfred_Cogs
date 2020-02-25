@@ -2,8 +2,7 @@ import logging
 from discord import Forbidden, HTTPException, NotFound
 from discord.ext import commands
 from discord.utils import find
-from utils.config import Config
-from utils.discoutils import permission_node
+from utils import Config, permission_node
 
 log = logging.getLogger('charfred')
 

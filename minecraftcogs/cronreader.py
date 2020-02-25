@@ -2,8 +2,7 @@ from discord.ext import commands
 import re
 import asyncio
 import logging
-from utils.discoutils import permission_node
-from utils.flipbooks import Flipbook
+from utils import permission_node, Flipbook
 
 log = logging.getLogger('charfred')
 

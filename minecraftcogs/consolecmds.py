@@ -1,7 +1,6 @@
 from discord.ext import commands
 import logging
-from utils.config import Config
-from utils.discoutils import permission_node
+from utils import Config, permission_node
 from .utils.mcservutils import isUp, sendCmd
 
 log = logging.getLogger('charfred')

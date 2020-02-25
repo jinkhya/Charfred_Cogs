@@ -2,9 +2,7 @@ import logging
 import discord
 from random import randrange
 from discord.ext import commands
-from utils.config import Config
-from utils.flipbooks import Flipbook
-from utils.discoutils import permission_node
+from utils import Config, Flipbook, permission_node
 
 log = logging.getLogger('charfred')
 

@@ -5,8 +5,7 @@ import logging
 import re
 from time import strftime, localtime, time
 from threading import Event
-from utils.config import Config
-from utils.discoutils import permission_node
+from utils import Config, permission_node
 from .utils.mcservutils import isUp, getProc, serverStart, getcrashreport, parsereport, formatreport
 
 log = logging.getLogger('charfred')

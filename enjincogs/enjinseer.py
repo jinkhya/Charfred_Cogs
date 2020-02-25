@@ -2,8 +2,7 @@ import logging
 import json
 from collections import namedtuple
 from discord.ext import commands
-from utils.config import Config
-from utils.discoutils import permission_node
+from utils import Config, permission_node
 from .utils.enjinutils import login, post
 
 log = logging.getLogger('charfred')
