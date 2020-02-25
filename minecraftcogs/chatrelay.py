@@ -167,6 +167,8 @@ class ChatRelay(commands.Cog):
             log.warning(f'CR-Connection: Using client address as name.')
             client = peer
 
+        await self.inqueue.put((client, f'```markdown\n# {client} connected!\n```'))
+
         self.outqueues[client] = asyncio.PriorityQueue(maxsize=24, loop=self.loop)
 
         in_task = self.loop.create_task(self.incoming_worker(reader, client))
@@ -221,13 +223,13 @@ class ChatRelay(commands.Cog):
 
         if self.server:
             log.warning('CR: Server already established!')
-            await ctx.sendmarkdown('> Server already running!')
+            await ctx.sendmarkdown('> Relay server already running!')
             return
         self.inqueue_worker_task = self.loop.create_task(self.inqueue_worker())
         self.server = await asyncio.start_server(self.connection_handler, '127.0.0.1', port,
                                                  loop=self.loop)
         log.info('CR: Server started!')
-        await ctx.sendmarkdown('# Server started.')
+        await ctx.sendmarkdown('# Relay server started.')
 
     @chatrelay.command(aliases=['stop'])
     @permission_node(f'{__name__}.init')
@@ -237,14 +239,14 @@ class ChatRelay(commands.Cog):
 
         if not self.server:
             log.info('CR: No server to be closed.')
-            await ctx.sendmarkdown('> No server to be closed.')
+            await ctx.sendmarkdown('> No relay server to be closed.')
             return
         self.server.close()
         self.inqueue_worker_task.cancel()
         await self.server.wait_closed()
         log.info('CR: Server closed!')
         self.server = None
-        await ctx.sendmarkdown('# Server closed, all clients disconnected!')
+        await ctx.sendmarkdown('# Relay server closed, all clients disconnected!')
 
     @chatrelay.command(aliases=['listen'])
     @permission_node(f'{__name__}.register')
@@ -298,10 +300,6 @@ class ChatRelay(commands.Cog):
         """
 
         channel_id = str(ctx.channel.id)
-        if client not in self.outqueues:
-            await ctx.sendmarkdown('< Client unknown, unregistering anyway. >\n'
-                                   '< Please check if you got the name right,'
-                                   ' when the client eventually connects. >')
         log.info(f'CR: Unregistering {ctx.channel.name} for {client}.')
 
         if client in self.relaycfg['client_to_ch']:
