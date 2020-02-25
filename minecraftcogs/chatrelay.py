@@ -31,6 +31,13 @@ class ChatRelay(commands.Cog):
             self.server.close()
             if self.inqueue_worker_task:
                 self.inqueue_worker_task.cancel()
+            if self.clients:
+                for client in self.clients.values():
+                    try:
+                        client['workers'][0].cancel()
+                        client['workers'][1].cancel()
+                    except KeyError:
+                        pass
             self.loop.create_task(self.server.wait_closed())
 
     @commands.Cog.listener()
@@ -258,7 +265,15 @@ class ChatRelay(commands.Cog):
             await ctx.sendmarkdown('> No relay server to be closed.')
             return
         self.server.close()
-        self.inqueue_worker_task.cancel()
+        if self.inqueue_worker_task:
+            self.inqueue_worker_task.cancel()
+        if self.clients:
+            for client in self.clients.values():
+                try:
+                    client['workers'][0].cancel()
+                    client['workers'][1].cancel()
+                except KeyError:
+                    pass
         await self.server.wait_closed()
         log.info('CR: Server closed!')
         self.server = None
