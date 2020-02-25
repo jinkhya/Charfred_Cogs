@@ -16,6 +16,10 @@ formats = {
 }
 
 
+def escape(string):
+    return string.strip().replace('\n', '\\n').replace('::', ':\:').replace('::', ':\:')
+
+
 class ChatRelay(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
@@ -73,8 +77,8 @@ class ChatRelay(commands.Cog):
                     # If we get here, then the prefixes are borked.
                     raise
 
-            msg_content = message.clean_content.strip().replace('\n', '\\n').replace(':', '\:')
-            content = f'MSG::Discord::{message.author.display_name}::{msg_content}::\n'
+            content = f'MSG::Discord::{escape(message.author.display_name)}:' \
+                      f':{escape(message.clean_content)}::\n'
             for client in self.relaycfg['ch_to_clients'][ch_id]:
                 try:
                     self.clients[client]['queue'].put_nowait((5, content))
