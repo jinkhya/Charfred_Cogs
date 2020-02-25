@@ -5,7 +5,7 @@ import os
 import tarfile
 from shutil import rmtree
 from utils import Config, permission_node, Flipbook
-from .utils.mcservutils import isUp
+from .utils import isUp
 
 log = logging.getLogger('charfred')
 

@@ -2,7 +2,7 @@ from discord.ext import commands
 import asyncio
 import logging
 from utils import Config, permission_node
-from .utils.mcservutils import isUp, sendCmd, sendCmds, serverStart, \
+from .utils import isUp, sendCmd, sendCmds, serverStart, \
     serverStop, serverTerminate, serverStatus, buildCountdownSteps
 
 log = logging.getLogger('charfred')

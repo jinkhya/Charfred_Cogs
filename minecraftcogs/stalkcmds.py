@@ -3,7 +3,7 @@ import logging
 from ttldict import TTLOrderedDict
 from discord.ext import commands
 from utils import permission_node
-from .utils.mcuser import MCUser, mojException
+from .utils import MCUser, mojException
 
 log = logging.getLogger('charfred')
 
