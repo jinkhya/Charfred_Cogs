@@ -7,6 +7,15 @@ from utils.discoutils import permission_node
 
 log = logging.getLogger('charfred')
 
+formats = {
+    'MSG': '[**{}**] {}: {}',
+    'STF': '**{}**: {}',
+    'DTH': '[**{}**] {} {}',
+    'ME': '[**{}**] {}: {}',
+    'SAY': '[**{}**] {}: {}',
+    'SYS': '{}'
+}
+
 
 class ChatRelay(commands.Cog):
     def __init__(self, bot):
@@ -66,7 +75,7 @@ class ChatRelay(commands.Cog):
                     raise
 
             msg_content = message.clean_content.strip().replace('\n', '\\n').replace(':', '\:')
-            content = f':MSG::Discord::{message.author.display_name}::{msg_content}::\n'
+            content = f'MSG::Discord::{message.author.display_name}::{msg_content}::\n'
             for client in self.relaycfg['ch_to_clients'][ch_id]:
                 try:
                     self.clients[client]['queue'].put_nowait((5, content))
@@ -161,7 +170,7 @@ class ChatRelay(commands.Cog):
 
         handshake = handshake.decode()
         hshk = handshake.split('::')
-        if hshk[0] == ':HSHK':
+        if hshk[0] == 'HSHK':
             try:
                 client = hshk[1]
             except IndexError:
@@ -175,7 +184,7 @@ class ChatRelay(commands.Cog):
             log.warning(f'CR-Connection: Using client address as name.')
             client = peer
 
-        await self.inqueue.put((client, f':SYS::```markdown\n# {client} connected!\n```'))
+        await self.inqueue.put((client, f'SYS::```markdown\n# {client} connected!\n```'))
 
         if client in self.clients and self.clients[client]:
             if 'worker' in self.clients[client]:
@@ -206,31 +215,43 @@ class ChatRelay(commands.Cog):
 
         writer.close()
         log.info(f'CR-Connection: Connection with {client} closed!')
-        await self.inqueue.put((client, f':SYS::```markdown\n< {client} disconnected! >\n```'))
+        await self.inqueue.put((client, f'SYS::```markdown\n< {client} disconnected! >\n```'))
 
     async def inqueue_worker(self):
         log.info('CR-Inqueue: Worker started!')
         try:
             while True:
                 client, data = await self.inqueue.get()
-                if client not in self.relaycfg['client_to_ch']:
-                    log.debug(f'CR-Inqueue: No channel for: "{client} >=< {data}", dropping!')
+
+                # Check if the data has a valid format.
+                _data = data.split('::')
+                if _data[0] not in formats:
+                    log.debug(f'CR-Inqueue: Data from {client} with invalid format: {data}')
                     continue
-                data = data.split('::')
-                if data[0] == ':SYS':
-                    channel = self.bot.get_channel(int(self.relaycfg['client_to_ch'][client]))
-                    if not channel:
-                        log.warning(f'CR-Inqueue: SYS message about {client} could not be sent!'
-                                    ' Registered channel does not exist!')
+
+                # If we get here, then the format is valid and we can relay to other clients.
+                for other in self.clients:
+                    if other == client:
                         continue
-                    await channel.send(f'{"".join(data[1:])}')
-                if data[0] == ':MSG':
-                    channel = self.bot.get_channel(int(self.relaycfg['client_to_ch'][client]))
-                    if not channel:
-                        log.warning(f'CR-Inqueue: MSG from {client} could not be relayed!'
-                                    ' Registered channel does not exist!')
-                        continue
-                    await channel.send(f'[**{data[1]}**] {data[2]} : {data[3]}')
+                    try:
+                        self.clients[other]['queue'].put_nowait((5, data))
+                    except KeyError:
+                        pass
+                    except asyncio.QueueFull:
+                        pass
+
+                # Check if we have a channel to send this message to.
+                if client not in self.relaycfg['client_to_ch']:
+                    log.debug(f'CR-Inqueue: No channel for: "{client} : {data}", dropping!')
+                    continue
+
+                # If we get here, we have a channel and can process according to format map.
+                channel = self.bot.get_channel(int(self.relaycfg['client_to_ch'][client]))
+                if not channel:
+                    log.warning(f'CR-Inqueue: {_data[0]} message from {client} could not be sent.'
+                                ' Registered channel does not exist!')
+                    continue
+                await channel.send(formats[_data[0]].format(*_data[1:]))
         except CancelledError:
             raise
         finally:
