@@ -177,10 +177,11 @@ class ChatRelay(commands.Cog):
 
         await self.inqueue.put((client, f':SYS::```markdown\n# {client} connected!\n```'))
 
-        if self.clients[client] and self.clients[client]['workers']:
-            log.warning(f'CR-Connection: {client} reconnecting after messy exit, cleaning up!')
-            for worker in self.clients[client]['workers']:
-                worker.cancel()
+        if client in self.clients and self.clients[client]:
+            if 'worker' in self.clients[client]:
+                log.warning(f'CR-Connection: {client} reconnecting after messy exit, cleaning up!')
+                for worker in self.clients[client]['workers']:
+                    worker.cancel()
 
         self.clients[client]['queue'] = asyncio.PriorityQueue(maxsize=24, loop=self.loop)
 
