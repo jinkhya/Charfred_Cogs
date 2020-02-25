@@ -183,6 +183,7 @@ class ChatRelay(commands.Cog):
                 for worker in self.clients[client]['workers']:
                     worker.cancel()
 
+        self.clients[client] = {}
         self.clients[client]['queue'] = asyncio.PriorityQueue(maxsize=24, loop=self.loop)
 
         in_task = self.loop.create_task(self.incoming_worker(reader, client))
