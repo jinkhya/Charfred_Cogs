@@ -14,7 +14,7 @@ class ChatRelay(commands.Cog):
         self.loop = bot.loop
         self.server = None
         self.inqueue = asyncio.Queue(maxsize=64, loop=self.loop)
-        self.outqueues = {}
+        self.clients = {}
         self.inqueue_worker_task = None
         self.relaycfg = Config(f'{bot.dir}/configs/chatrelaycfg.toml',
                                load=True, loop=self.loop)
@@ -41,7 +41,8 @@ class ChatRelay(commands.Cog):
         if message.author.bot or (message.guild is None):
             return
 
-        if message.content and (message.channel.id in self.relaycfg['ch_to_clients']):
+        ch_id = str(message.channel.id)
+        if message.content and (ch_id in self.relaycfg['ch_to_clients']):
 
             # Check whether the message is a command, as determined
             # by having a valid prefix, and don't proceed if it is.
@@ -59,9 +60,9 @@ class ChatRelay(commands.Cog):
 
             msg_content = message.clean_content.strip().replace('\n', '\\n').replace(':', '\:')
             content = f':MSG::Discord::{message.author.display_name}::{msg_content}::\n'
-            for client in self.relaycfg['ch_to_clients'][message.channel.id]:
+            for client in self.relaycfg['ch_to_clients'][ch_id]:
                 try:
-                    self.outqueues[client].put_nowait((5, content))
+                    self.clients[client]['queue'].put_nowait((5, content))
                 except KeyError:
                     pass
                 except asyncio.QueueFull:
@@ -80,14 +81,14 @@ class ChatRelay(commands.Cog):
             info.append('\n# Relay server is online.\n')
         else:
             info.append('\n< Relay server is offline! >\n')
-        if self.outqueues:
+        if self.clients:
             info.append('\n# Currently connected clients:')
-            for server in self.outqueues:
-                info.append(f'- {server}')
+            for client in self.clients:
+                info.append(f'- {client}')
         if self.relaycfg['ch_to_clients']:
             info.append('\n# Relay configuration:')
             for channel_id, clients in self.relaycfg['ch_to_clients'].items():
-                channel = self.bot.get_channel(channel_id)
+                channel = self.bot.get_channel(int(channel_id))
                 info.append(f'{channel.name if channel else channel_id}:')
                 if clients:
                     for client in clients:
@@ -127,7 +128,7 @@ class ChatRelay(commands.Cog):
         try:
             while True:
                 try:
-                    _, data = await self.outqueues[client].get()
+                    _, data = await self.clients[client]['queue'].get()
                 except (KeyError, AttributeError):
                     log.error(f'CR-Outgoing: Outqueue for {client} is gone!'
                               ' Connection shutting down!')
@@ -167,12 +168,19 @@ class ChatRelay(commands.Cog):
             log.warning(f'CR-Connection: Using client address as name.')
             client = peer
 
-        await self.inqueue.put((client, f'```markdown\n# {client} connected!\n```'))
+        await self.inqueue.put((client, f':SYS::```markdown\n# {client} connected!\n```'))
 
-        self.outqueues[client] = asyncio.PriorityQueue(maxsize=24, loop=self.loop)
+        if self.clients[client] and self.clients[client]['workers']:
+            log.warning(f'CR-Connection: {client} reconnecting after messy exit, cleaning up!')
+            for worker in self.clients[client]['workers']:
+                worker.cancel()
+
+        self.clients[client]['queue'] = asyncio.PriorityQueue(maxsize=24, loop=self.loop)
 
         in_task = self.loop.create_task(self.incoming_worker(reader, client))
         out_task = self.loop.create_task(self.outgoing_worker(writer, client))
+
+        self.clients[client]['workers'] = (in_task, out_task)
 
         _, waiting = await asyncio.wait([in_task, out_task],
                                         return_when=asyncio.FIRST_COMPLETED)
@@ -180,12 +188,12 @@ class ChatRelay(commands.Cog):
             task.cancel()
 
         try:
-            queue = self.outqueues.pop(client)
+            baggage = self.clients.pop(client)
         except KeyError:
             pass
         else:
-            log.info(f'CR-Connection: Outque for {client} removed with'
-                     f' {queue.qsize()} items.')
+            log.info(f'CR-Connection: Outqueue for {client} removed with'
+                     f' {baggage["queue"].qsize()} items.')
 
         writer.close()
         log.info(f'CR-Connection: Connection with {client} closed!')
@@ -196,10 +204,18 @@ class ChatRelay(commands.Cog):
             while True:
                 client, data = await self.inqueue.get()
                 if client not in self.relaycfg['client_to_ch']:
+                    log.debug(f'CR-Inqueue: No channel for: "{client} >=< {data}", dropping!')
                     continue
                 data = data.split('::')
+                if data[0] == ':SYS':
+                    channel = self.bot.get_channel(int(self.relaycfg['client_to_ch'][client]))
+                    if not channel:
+                        log.warning(f'CR-Inqueue: SYS message about {client} could not be sent!'
+                                    ' Registered channel does not exist!')
+                        continue
+                    await channel.send(f'{"".join(data[1:])}')
                 if data[0] == ':MSG':
-                    channel = self.bot.get_channel(self.relaycfg['client_to_ch'][client])
+                    channel = self.bot.get_channel(int(self.relaycfg['client_to_ch'][client]))
                     if not channel:
                         log.warning(f'CR-Inqueue: MSG from {client} could not be relayed!'
                                     ' Registered channel does not exist!')
@@ -261,14 +277,14 @@ class ChatRelay(commands.Cog):
         """
 
         channel_id = str(ctx.channel.id)
-        if client not in self.outqueues:
+        if client not in self.clients:
             await ctx.sendmarkdown('< Client unknown, registering anyway. >\n'
                                    '< Please check if you got the name right,'
                                    ' when the client eventually connects. >')
-        log.info(f'CR: Registering {ctx.channel.name} for {client}.')
+        log.info(f'CR: Trying to register {ctx.channel.name} for {client}.')
 
         if client in self.relaycfg['client_to_ch'] and self.relaycfg['client_to_ch'][client]:
-            channel = self.bot.get_channel(self.relaycfg['client_to_ch'][client])
+            channel = self.bot.get_channel(int(self.relaycfg['client_to_ch'][client]))
             if channel == ctx.channel:
                 await ctx.sendmarkdown(f'> {client} is already registered with this channel!')
             else:
@@ -300,10 +316,14 @@ class ChatRelay(commands.Cog):
         """
 
         channel_id = str(ctx.channel.id)
-        log.info(f'CR: Unregistering {ctx.channel.name} for {client}.')
+        log.info(f'CR: Trying to unregister {ctx.channel.name} for {client}.')
 
         if client in self.relaycfg['client_to_ch']:
-            del self.relaycfg['client_to_ch'][client]
+            if self.relaycfg['client_to_ch'][client] == channel_id:
+                del self.relaycfg['client_to_ch'][client]
+            else:
+                await ctx.sendmarkdown(f'< {client} is not registered for this channel! >')
+                return
 
             try:
                 self.relaycfg['ch_to_clients'][channel_id].remove(client)
@@ -316,7 +336,7 @@ class ChatRelay(commands.Cog):
             finally:
                 await self.relaycfg.save()
         else:
-            await ctx.sendmarkdown('> This channel is not registered yet.')
+            await ctx.sendmarkdown(f'> {client} is not registered with any channel.')
 
 
 def setup(bot):
