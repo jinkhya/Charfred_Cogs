@@ -15,7 +15,7 @@ class Porter(commands.Cog):
         self.bot = bot
         self.session = bot.session
         self.loop = bot.loop
-        self.promotees = Config(f'{self.bot.dir}/data/promotees_persist.json',
+        self.promotees = Config(f'{bot.dir}/data/promotees_persist.json',
                                 load=True, loop=self.bot.loop)
         self.memberRoleName = bot.cfg['cogcfgs'][f'{__name__}.memberRole'][0]
         try:

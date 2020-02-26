@@ -14,7 +14,7 @@ class Customs(commands.Cog):
         self.loop = bot.loop
         self.servercfg = bot.servercfg
         self.customcmds = Config(
-            f'{self.bot.dir}/configs/customCmds.json',
+            f'{bot.dir}/configs/customCmds.json',
             loop=self.bot.loop,
             load=True
         )
