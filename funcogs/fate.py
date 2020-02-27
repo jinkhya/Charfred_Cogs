@@ -78,12 +78,13 @@ class Fate(commands.Cog):
 
         if not amount:
             amount = 1
-        elif amount > 12:
+        else:
+            amount = int(amount)
+
+        if amount > 12:
             await ctx.send('Come on, be resonable, I only have 12 of each '
                            'of these!')
             return
-        else:
-            amount = int(amount)
 
         if dice == 120 and amount > 1:
             await ctx.send('I only have one of those, but here we go:' +
