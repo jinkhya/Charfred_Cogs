@@ -48,7 +48,7 @@ class Fate(commands.Cog):
             await ctx.send(choice(notquestion))
         else:
             await ctx.send(
-                choice(predictions[choice(predictions.keys())])
+                choice(predictions[choice(list(predictions.keys()))])
             )
 
     @commands.command()
