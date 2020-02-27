@@ -39,7 +39,10 @@ class Fate(commands.Cog):
 
     @commands.command(aliases=['8ball'])
     async def eightball(self, ctx, *, question):
-        """Ask the magic 8-Ball!"""
+        """Ask the magic 8-Ball!
+
+        Only yes or no questions please.
+        """
 
         if '?' not in question:
             await ctx.send(choice(notquestion))
@@ -75,6 +78,10 @@ class Fate(commands.Cog):
 
         if not amount:
             amount = 1
+        elif amount > 12:
+            await ctx.send('Come on, be resonable, I only have 12 of each '
+                           'of these!')
+            return
         else:
             amount = int(amount)
 
@@ -85,7 +92,7 @@ class Fate(commands.Cog):
             await ctx.send(f'*roll* ... {randint(1, dice)}')
         else:
             results = [dice] * amount
-            await ctx.send(' '.join(map(lambda n: str(randint(1, n)), results)))
+            await ctx.send('   '.join(map(lambda n: str(randint(1, n)), results)))
 
 
 def setup(bot):
