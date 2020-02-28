@@ -254,7 +254,11 @@ class ChatRelay(commands.Cog):
                     log.warning(f'CR-Inqueue: {_data[0]} message from {client} could not be sent.'
                                 ' Registered channel does not exist!')
                     continue
-                await channel.send(formats[_data[0]].format(*_data[1:]))
+                try:
+                    await channel.send(formats[_data[0]].format(*_data[1:]))
+                except IndexError as e:
+                    log.debug(f'{e}: {data}')
+                    pass
         except CancelledError:
             raise
         finally:
