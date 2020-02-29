@@ -233,15 +233,16 @@ class ChatRelay(commands.Cog):
                     continue
 
                 # If we get here, then the format is valid and we can relay to other clients.
-                for other in self.clients:
-                    if other == client:
-                        continue
-                    try:
-                        self.clients[other]['queue'].put_nowait((5, data))
-                    except KeyError:
-                        pass
-                    except asyncio.QueueFull:
-                        pass
+                if _data[0] != 'SYS':
+                    for other in self.clients:
+                        if other == client:
+                            continue
+                        try:
+                            self.clients[other]['queue'].put_nowait((5, data))
+                        except KeyError:
+                            pass
+                        except asyncio.QueueFull:
+                            pass
 
                 # Check if we have a channel to send this message to.
                 if client not in self.relaycfg['client_to_ch']:
