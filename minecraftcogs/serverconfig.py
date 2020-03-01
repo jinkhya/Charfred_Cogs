@@ -42,8 +42,29 @@ class ServerConfig(commands.Cog):
         r3 = await self.bot.wait_for('message', check=check, timeout=120)
         self.servercfg['servers'][server]['worldname'] = r3.content
 
+        await ctx.send(f'Is there a questing mod? [y/n]')
+        r5 = await self.bot.wait_for('message', check=check, timeout=120)
+        if re.match('(y|yes)', r5.content, flags=re.I):
+            await ctx.send(f'Which mod is it ? [betterquesting or data/ftb_lib]')
+            r6 = await self.bot.wait_for('message', check=check, timeout=120)
+            if re.match('betterquesting', r6.content, flags=re.I):
+                self.servercfg['servers'][server]['Quests'] = r5.content
+            elif re.match('data/ftb_lib', r6.content, flags=re.I):
+                self.servercfg['servers'][server]['Quests'] = r5.content 
+            else:
+                del self.servercfg['servers'][server]
+                await ctx.sendmarkdown(f'< Serverconfigurations for {server} have been discarded. You mistyped the questing mod >')               
+        else
+            r5 = 'no'
+
+        await ctx.send(f'```Please enter the name of the main world folder for {server}:```')
+        r3 = await self.bot.wait_for('message', check=check, timeout=120)
+        self.servercfg['servers'][server]['worldname'] = r3.content
+        r5 
+
         await ctx.sendmarkdown(f'You have entered the following for {server}:\n' +
                                f'Invocation: {r1.content}\n' +
+                               f'Quests: {r5.content}\n' +
                                f'Worldname: {r3.content}\n' +
                                '# Please confirm! [y/n]')
         r4 = await self.bot.wait_for('message', check=check, timeout=120)
